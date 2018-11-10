@@ -3,7 +3,7 @@ package de.hsnr.wpp2018;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.TreeMap;
 
 public class ImporterTest {
@@ -12,7 +12,7 @@ public class ImporterTest {
     public void excelFormat() throws IOException {
         Importer importer = new Importer();
         importer.readFile("2016.csv");
-        for (Date key : importer.getData().keySet()) {
+        for (LocalDateTime key : importer.getData().keySet()) {
             System.out.println(key + " - " + importer.getValue(key));
         }
     }
@@ -21,17 +21,17 @@ public class ImporterTest {
     public void rangeTest() throws Exception {
         Importer importer = new Importer();
         importer.readFile("2016.csv");
-        Date from = new Date(2016 - 1900, 5, 1, 0, 0, 0);
-        Date to = new Date(2016 - 1900, 10, 1, 0, 0, 0);
-        TreeMap<Date, Double> subData = importer.getData(from, to);
+        LocalDateTime from = LocalDateTime.of(2016, 5, 1, 0, 0, 0);
+        LocalDateTime to = LocalDateTime.of(2016, 10, 1, 0, 0, 0);
+        TreeMap<LocalDateTime, Double> subData = importer.getData(from, to);
         if (subData.size() == 0) {
             throw new Exception("no elements");
         }
         System.out.println("sublist size: " + subData.size());
-        if (subData.firstKey().getTime() < from.getTime()) {
+        if (subData.firstKey().compareTo(from) < 0) {
             throw new Exception("first key to small");
         }
-        if (subData.lastKey().getTime() > to.getTime()) {
+        if (subData.lastKey().compareTo(to) > 0) {
             throw new Exception("last key to small");
         }
     }

@@ -1,12 +1,14 @@
 package de.hsnr.wpp2018;
 
 import java.io.*;
-import java.util.Date;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.util.TimeZone;
 import java.util.TreeMap;
 
 class Importer {
 
-    private TreeMap<Date, Double> data = new TreeMap<>();
+    private TreeMap<LocalDateTime, Double> data = new TreeMap<>();
 
     public void readFile(String name, String separator) throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader(new File(this.getClass().getClassLoader().getResource(name).getFile())));
@@ -16,7 +18,7 @@ class Importer {
             if (parts.length < 2) {
                 continue;
             }
-            Date date;
+            LocalDateTime date;
             Double value;
             try {
                 value = Double.parseDouble(parts[parts.length - 1].replace(',', '.'));
@@ -25,23 +27,23 @@ class Importer {
             }
             switch (parts.length) {
                 case 3:
-                    String[] dateParts = parts[0].split("[.]");
+                    String[] LocalDateTimeParts = parts[0].split("[.]");
                     String[] timeParts = parts[1].split(":");
-                    if (dateParts.length != 3) {
+                    if (LocalDateTimeParts.length != 3) {
                         continue;
                     }
                     if (timeParts.length != 2) {
                         continue;
                     }
-                    String year = dateParts[2];
+                    String year = LocalDateTimeParts[2];
                     if (year.length() < 4) {
                         year = "20" + year;
                     }
-                    date = new Date(Integer.parseInt(year) - 1900, Integer.parseInt(dateParts[1]), Integer.parseInt(dateParts[0]), Integer.parseInt(timeParts[0]), Integer.parseInt(timeParts[1]));
+                    date = LocalDateTime.of(Integer.parseInt(year), Integer.parseInt(LocalDateTimeParts[1]), Integer.parseInt(LocalDateTimeParts[0]), Integer.parseInt(timeParts[0]), Integer.parseInt(timeParts[1]));
                     break;
                 case 2:
                     String timestamp = parts[0];
-                    date = new Date(Integer.parseInt(timestamp) * 1000L);
+                    date = LocalDateTime.ofInstant(Instant.ofEpochSecond(Integer.parseInt(timestamp)), TimeZone.getDefault().toZoneId());
                     break;
                 default:
                     continue;
@@ -50,20 +52,20 @@ class Importer {
         }
     }
 
-    public TreeMap<Date, Double> getData() {
+    public TreeMap<LocalDateTime, Double> getData() {
         return data;
     }
 
-    public TreeMap<Date, Double> getData(Date from, Date to) {
+    public TreeMap<LocalDateTime, Double> getData(LocalDateTime from, LocalDateTime to) {
         return new TreeMap<>(data.subMap(from, to));
     }
 
-    public boolean hasValue(Date date) {
-        return this.data.containsKey(date);
+    public boolean hasValue(LocalDateTime LocalDateTime) {
+        return this.data.containsKey(LocalDateTime);
     }
 
-    public double getValue(Date date) {
-        return this.data.get(date);
+    public double getValue(LocalDateTime LocalDateTime) {
+        return this.data.get(LocalDateTime);
     }
 
     public void readFile(String name) throws IOException {
