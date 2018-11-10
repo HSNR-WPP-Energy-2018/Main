@@ -2,11 +2,11 @@ package de.hsnr.wpp2018;
 
 import java.io.*;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.TreeMap;
 
 class Importer {
 
-    private HashMap<Date, Double> data = new HashMap<>();
+    private TreeMap<Date, Double> data = new TreeMap<>();
 
     public void readFile(String name, String separator) throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader(new File(this.getClass().getClassLoader().getResource(name).getFile())));
@@ -50,8 +50,12 @@ class Importer {
         }
     }
 
-    public HashMap<Date, Double> getData() {
+    public TreeMap<Date, Double> getData() {
         return data;
+    }
+
+    public TreeMap<Date, Double> getData(Date from, Date to) {
+        return new TreeMap<>(data.subMap(from, to));
     }
 
     public boolean hasValue(Date date) {
