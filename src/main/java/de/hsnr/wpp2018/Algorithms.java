@@ -41,9 +41,11 @@ public class Algorithms {
                 double temp = numerator/denumerator;
                 f_values.get(i).add(j,temp);
             }
+        }
 
         //Schritt 2: Setze Polynome in folgende Formel ein:
         //P(x) = f[x0]+f[x0,x1](x-x0)+f[x0,x1,x2](x-x0)(x-x1)(x-x2)...
+
         double P = f_values.get(0).get(0);
         double a = 1.0;
         for (int i=1; i<f_values.size();i++)
