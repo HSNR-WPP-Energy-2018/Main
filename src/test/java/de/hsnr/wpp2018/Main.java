@@ -13,7 +13,9 @@ public class Main
 
 
         //algorithm.newtonInterpolation(importer.data);
-        /*Den Methodenaufruf hab ich erstmal ausgegraut, weil ich hier zum Testen eine kleinere Tabelle genommen habe,
+
+        /*
+        Den Methodenaufruf hab ich erstmal ausgegraut, weil ich hier zum Testen eine kleinere Tabelle genommen habe,
         denn mit der riesigen Originaltabelle gibt es bei mir einen java.lang.OutOfMemoryError: GC overhead limit exceeded,
         weil für alle Werte extrem kleine Polynome berechnet werden müssen
          */
