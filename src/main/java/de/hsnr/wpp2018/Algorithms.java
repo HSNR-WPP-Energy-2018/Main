@@ -57,7 +57,6 @@ public class Algorithms {
         System.out.println("Approximation bei x ist " + P);
 
         //Schritt 3, sofern notwendig: P als polynomielle Formel ausschreiben (z.B. mit Horner-Schema)
-
     }
 
 }
