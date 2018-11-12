@@ -53,7 +53,6 @@ public class Algorithms {
             a = a*(x-(i-1));
             P = P + f_values.get(i).get(i)*a;
         }
-
         System.out.println("Approximation bei x ist " + P);
         //Schritt 3, sofern notwendig: P als polynomielle Formel ausschreiben (z.B. mit Horner-Schema)
     }
