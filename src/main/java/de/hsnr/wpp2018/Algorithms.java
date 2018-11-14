@@ -1,4 +1,5 @@
 package de.hsnr.wpp2018;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -6,10 +7,40 @@ import java.util.*;
 public class Algorithms {
 
 
-    public void findMissingTimes(TreeMap<Date, Double> dataTreemap)
+    public long findMissingTimes(LocalDateTime one, LocalDateTime two)
     {
-
+        Duration duration = Duration.between(one, two);
+        long diff = Math.abs(duration.toMinutes());
+        return diff;
     }
+
+
+    public void linearInterpolation(TreeMap<LocalDateTime, Double> dataTreemap)
+    {
+        long diff;
+        double x1, x2, y1, y2, x, y;
+        Map.Entry<LocalDateTime, Double> entry=dataTreemap.firstEntry();
+        while(dataTreemap.higherEntry(entry.getKey())!=null)
+        {
+            LocalDateTime one = entry.getKey();
+            LocalDateTime two = dataTreemap.higherKey(entry.getKey());
+            diff = findMissingTimes(one,two);
+            //System.out.println("Bei " + entry.getKey() + " und " + dataTreemap.higherKey(entry.getKey()) + " ist es " + diff);
+            if (diff>15)
+            {
+                x1 = 1; //ist egal, wie hoch die Werte der Indizees sind, die wir hier wählen, solange x1<=x<=x2
+                x = 2;
+                x2 = 3;
+                y1 = entry.getValue();
+                y2 = dataTreemap.higherEntry(entry.getKey()).getValue();
+                y = y1 + (x-x1)/(x2-x1)*(y2-y1);
+                System.out.println("Linear Interpolation: " + y);
+                //Muss noch Ergebnis von y in File oder Datenstruktur reinschreiben
+            }
+            entry=dataTreemap.higherEntry(entry.getKey());
+        }
+    }
+
 
     //Das hier ist erstmal nur der Algorithmus an sich, der davon ausgeht, dass nur ein fehlendes x am Ende berechnet werden muss
 

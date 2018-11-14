@@ -3,6 +3,7 @@ package de.hsnr.wpp2018;
 import java.io.*;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.TimeZone;
 import java.util.TreeMap;
 
@@ -14,12 +15,10 @@ class Importer {
         BufferedReader reader = new BufferedReader(new FileReader(new File(this.getClass().getClassLoader().getResource(name).getFile())));
         String line;
         while ((line = reader.readLine()) != null) {
-            String[] parts = line.split(separator);
-            if (parts.length < 2) {
-                continue;
-            }
-            LocalDateTime date;
             Double value;
+            LocalDateTime date;
+            String[] parts = line.split(separator);
+
             try {
                 value = Double.parseDouble(parts[parts.length - 1].replace(',', '.'));
             } catch (NumberFormatException e) {
@@ -29,12 +28,19 @@ class Importer {
                 case 3:
                     String[] LocalDateTimeParts = parts[0].split("[.]");
                     String[] timeParts = parts[1].split(":");
+
                     if (LocalDateTimeParts.length != 3) {
                         continue;
                     }
                     if (timeParts.length != 2) {
                         continue;
                     }
+
+                    if (parts.length <= 2) {
+                        System.out.println("Test");
+                    }
+
+
                     String year = LocalDateTimeParts[2];
                     if (year.length() < 4) {
                         year = "20" + year;
@@ -50,6 +56,14 @@ class Importer {
             }
             this.data.put(date, value);
         }
+        /*
+        for(Map.Entry<LocalDateTime, Double> entry : data.entrySet()) {
+            LocalDateTime key = entry.getKey();
+            Double value = entry.getValue();
+
+            System.out.println(key + " => " + value);
+        }
+        */
     }
 
     public TreeMap<LocalDateTime, Double> getData() {

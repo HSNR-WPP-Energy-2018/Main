@@ -10,7 +10,7 @@ public class Main
         Algorithms algorithm = new Algorithms();
         importer.readFile("2016.csv");
         System.out.println("Parsed data");
-
+        algorithm.linearInterpolation(importer.data);
 
         //algorithm.newtonInterpolation(importer.data);
 
