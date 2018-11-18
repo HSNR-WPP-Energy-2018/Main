@@ -7,13 +7,18 @@ import java.time.LocalDateTime;
 import java.util.TreeMap;
 
 public class ImporterTest {
+
+
     @Test
     public void excelFormat() throws IOException {
         Importer importer = new Importer();
+        Algorithms algorithm = new Algorithms();
         importer.readFile("2016.csv");
         for (LocalDateTime key : importer.getData().keySet()) {
             System.out.println(key + " - " + importer.getValue(key));
         }
+        System.out.println("");
+        algorithm.linearInterpolation(importer.data);
     }
 
     @Test
@@ -34,7 +39,5 @@ public class ImporterTest {
             throw new Exception("last key to small");
         }
     }
-
-
 
 }

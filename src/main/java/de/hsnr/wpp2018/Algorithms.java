@@ -6,6 +6,11 @@ import java.util.*;
 
 public class Algorithms {
 
+    TreeMap<LocalDateTime, Double> mergeTreeMaps(TreeMap<LocalDateTime, Double> map1, TreeMap<LocalDateTime, Double> map2) {
+        map2.putAll(map1);
+        return map2;
+    }
+
 
     public long findMissingTimes(LocalDateTime one, LocalDateTime two)
     {
@@ -17,6 +22,8 @@ public class Algorithms {
 
     public void linearInterpolation(TreeMap<LocalDateTime, Double> dataTreemap)
     {
+        TreeMap<LocalDateTime, Double> newMap = new TreeMap<>(); //Neue Treemap mit den interpolierten Ergebnissen
+        int counter = 1;
         long diff;
         double x1, x2, y1, y2, x, y;
         Map.Entry<LocalDateTime, Double> entry=dataTreemap.firstEntry();
@@ -25,21 +32,27 @@ public class Algorithms {
             LocalDateTime one = entry.getKey();
             LocalDateTime two = dataTreemap.higherKey(entry.getKey());
             diff = findMissingTimes(one,two);
-            //System.out.println("Bei " + entry.getKey() + " und " + dataTreemap.higherKey(entry.getKey()) + " ist es " + diff);
+            counter++;
             if (diff>15)
             {
-                x1 = 1; //ist egal, wie hoch die Werte der Indizees sind, die wir hier wählen, solange x1<=x<=x2
-                x = 2;
-                x2 = 3;
+                //x1<=x<=x2
+                x1 = counter-1;
+                x = counter;
+                x2 = counter+1;
                 y1 = entry.getValue();
                 y2 = dataTreemap.higherEntry(entry.getKey()).getValue();
                 y = y1 + (x-x1)/(x2-x1)*(y2-y1);
-                System.out.println("Linear Interpolation: " + y);
-                //Muss noch Ergebnis von y in File oder Datenstruktur reinschreiben
+                for (LocalDateTime newDate = one.plusMinutes(15); newDate.isBefore(two); newDate = newDate.plusMinutes(15))
+                {
+                    newMap.put(newDate,y);
+                }
             }
             entry=dataTreemap.higherEntry(entry.getKey());
         }
+        newMap = mergeTreeMaps(dataTreemap,newMap);
+        //Ergebnisse in eine neue Excel-Datei schreiben
     }
+
 
 
     //Das hier ist erstmal nur der Algorithmus an sich, der davon ausgeht, dass nur ein fehlendes x am Ende berechnet werden muss
