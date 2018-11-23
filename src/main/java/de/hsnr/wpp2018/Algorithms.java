@@ -33,7 +33,7 @@ public class Algorithms {
         TreeMap<LocalDateTime, Double> newMap = new TreeMap<>(); //Neue Treemap mit den interpolierten Ergebnissen
         int counter = 1;
         long diff;
-        double x1, x2, y1, y2, x, y_linear, y_newton;
+        double y_linear, y_newton;
         Map.Entry<LocalDateTime, Double> entry=dataTreemap.firstEntry();
         while(dataTreemap.higherEntry(entry.getKey())!=null)
         {
