@@ -2,6 +2,7 @@ package de.hsnr.wpp2018;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 public class Algorithms {
@@ -19,13 +20,20 @@ public class Algorithms {
         return diff;
     }
 
+    public double linearInterpolation(double x, double x1, double x2, double y1, double y2)
+    {
+        double y;
+        y = y1 + (x-x1)/(x2-x1)*(y2-y1);
+        return y;
+    }
 
-    public void linearInterpolation(TreeMap<LocalDateTime, Double> dataTreemap)
+
+    public void interpolate(TreeMap<LocalDateTime, Double> dataTreemap)
     {
         TreeMap<LocalDateTime, Double> newMap = new TreeMap<>(); //Neue Treemap mit den interpolierten Ergebnissen
         int counter = 1;
         long diff;
-        double x1, x2, y1, y2, x, y;
+        double x1, x2, y1, y2, x, y_linear, y_newton;
         Map.Entry<LocalDateTime, Double> entry=dataTreemap.firstEntry();
         while(dataTreemap.higherEntry(entry.getKey())!=null)
         {
@@ -36,43 +44,33 @@ public class Algorithms {
             if (diff>15)
             {
                 //x1<=x<=x2
-                x1 = counter-1;
-                x = counter;
-                x2 = counter+1;
-                y1 = entry.getValue();
-                y2 = dataTreemap.higherEntry(entry.getKey()).getValue();
-                y = y1 + (x-x1)/(x2-x1)*(y2-y1);
+                y_linear = linearInterpolation(counter,counter-1,counter+1,entry.getValue(),dataTreemap.higherEntry(entry.getKey()).getValue());
                 for (LocalDateTime newDate = one.plusMinutes(15); newDate.isBefore(two); newDate = newDate.plusMinutes(15))
                 {
-                    newMap.put(newDate,y);
+                    newMap.put(newDate,y_linear);
                 }
             }
             entry=dataTreemap.higherEntry(entry.getKey());
         }
         newMap = mergeTreeMaps(dataTreemap,newMap);
-        //Ergebnisse in eine neue Excel-Datei schreiben
+        //Ergebnisse der newMap später noch in eine neue Excel-Datei schreiben
     }
 
 
-
-    //Das hier ist erstmal nur der Algorithmus an sich, der davon ausgeht, dass nur ein fehlendes x am Ende berechnet werden muss
-
-    public void newtonInterpolation(TreeMap<LocalDateTime, Double> dataTreemap)
+    public void createNewtonPolynoms(ArrayList<Double> neighbors)
     {
         ArrayList<ArrayList<Double>> f_values = new ArrayList<>();
-        int counter = 0;
-        for(Map.Entry<LocalDateTime, Double> entry : dataTreemap.entrySet())
+
+        for (int i=0; i<neighbors.size();i++)
         {
             ArrayList<Double> temp = new ArrayList<>();
-            temp.add(entry.getValue());
-            for(int i=1; i<dataTreemap.size();i++)
+            temp.add(neighbors.get(i));
+            for(int j=1; j<neighbors.size();j++)
             {
                 temp.add(0.0);
             }
-            f_values.add(counter,temp);
-            counter++;
+            f_values.add(i,temp);
         }
-
         int x = f_values.size(); //Das nächste x, das berechnet werden soll
 
         //Schritt 1: Polynome rekursiv berechnen
@@ -97,8 +95,42 @@ public class Algorithms {
             a = a*(x-(i-1));
             P = P + f_values.get(i).get(i)*a;
         }
-        System.out.println("Approximation bei x ist " + P);
-        //Schritt 3, sofern notwendig: P als polynomielle Formel ausschreiben (z.B. mit Horner-Schema)
+        //System.out.println("Approximation beim nächsten x ist " + P);
+
+        /*Schritt 3: Interpolationsformel mit zB Horner-Schema ermitteln und die weiteren zu
+        interpolierenden x-Werte somit ermitteln, damit loop nicht immer neu durchlaufen werden muss
+        */
+
+    }
+
+
+    public void newtonInterpolation(TreeMap<LocalDateTime, Double> dataTreemap)
+    {
+        long diff;
+        int counter = 1;
+        int size_of_neighbors = 2;
+        ArrayList<Double> neighbors = new ArrayList<>();
+        Map.Entry<LocalDateTime, Double> entry=dataTreemap.firstEntry();
+        while(dataTreemap.higherEntry(entry.getKey())!=null)
+        {
+            neighbors.add(entry.getValue());
+            LocalDateTime one = entry.getKey();
+            LocalDateTime two = dataTreemap.higherKey(entry.getKey());
+            diff = findMissingTimes(one, two);
+            counter++;
+
+            if (diff > 15)
+            {
+               // neighbors.sort(Collections.reverseOrder());
+                if (neighbors.size()>=size_of_neighbors)
+                {
+                    neighbors.subList(size_of_neighbors, neighbors.size()).clear();
+                }
+                createNewtonPolynoms(neighbors);
+                neighbors.clear();
+            }
+            entry=dataTreemap.higherEntry(entry.getKey());
+        }
     }
 
 }

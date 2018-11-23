@@ -18,7 +18,8 @@ public class ImporterTest {
             System.out.println(key + " - " + importer.getValue(key));
         }
         System.out.println("");
-        algorithm.linearInterpolation(importer.data);
+        algorithm.interpolate(importer.data);
+        algorithm.newtonInterpolation(importer.data);
     }
 
     @Test
