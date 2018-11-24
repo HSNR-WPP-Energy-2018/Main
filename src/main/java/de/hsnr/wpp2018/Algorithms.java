@@ -2,7 +2,6 @@ package de.hsnr.wpp2018;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 public class Algorithms {
@@ -57,7 +56,7 @@ public class Algorithms {
     }
 
 
-    public void createNewtonPolynoms(ArrayList<Double> neighbors)
+    public ArrayList<ArrayList<Double>> f_valuesCreation(ArrayList<Double> neighbors)
     {
         ArrayList<ArrayList<Double>> f_values = new ArrayList<>();
 
@@ -71,9 +70,14 @@ public class Algorithms {
             }
             f_values.add(i,temp);
         }
-        int x = f_values.size(); //Das nächste x, das berechnet werden soll
+        return f_values;
+    }
 
-        //Schritt 1: Polynome rekursiv berechnen
+
+    public double createNewtonPolynoms(ArrayList<ArrayList<Double>> f_values, int x)
+    {
+
+        //Schritt 1: Polynome berechnen
         for(int i = 1; i<f_values.size();i++)
         {
             for (int j = 1; j<=i; j++)
@@ -97,17 +101,15 @@ public class Algorithms {
         }
         //System.out.println("Approximation beim nächsten x ist " + P);
 
-        /*Schritt 3: Interpolationsformel mit zB Horner-Schema ermitteln und die weiteren zu
-        interpolierenden x-Werte somit ermitteln, damit loop nicht immer neu durchlaufen werden muss
-        */
-
+        return P;
     }
+
 
 
     public void newtonInterpolation(TreeMap<LocalDateTime, Double> dataTreemap)
     {
         long diff;
-        int counter = 1;
+        double P;
         int size_of_neighbors = 2;
         ArrayList<Double> neighbors = new ArrayList<>();
         Map.Entry<LocalDateTime, Double> entry=dataTreemap.firstEntry();
@@ -117,20 +119,51 @@ public class Algorithms {
             LocalDateTime one = entry.getKey();
             LocalDateTime two = dataTreemap.higherKey(entry.getKey());
             diff = findMissingTimes(one, two);
-            counter++;
+            Collections.sort(neighbors, Collections.reverseOrder()); //damit die k nächsten Nachbarn nicht später von der falschen Seite abgeschnitten werden
 
             if (diff > 15)
             {
-               // neighbors.sort(Collections.reverseOrder());
                 if (neighbors.size()>=size_of_neighbors)
                 {
                     neighbors.subList(size_of_neighbors, neighbors.size()).clear();
                 }
-                createNewtonPolynoms(neighbors);
+                Collections.sort(neighbors);
+
+                int amount_of_x = 0;
+                for (LocalDateTime newDate = one.plusMinutes(15); newDate.isBefore(two); newDate = newDate.plusMinutes(15))
+                {
+                    amount_of_x++;
+                }
+                ArrayList<ArrayList<Double>> f_values = f_valuesCreation(neighbors);
+                int x = f_values.size(); //Das nächste x, das berechnet werden soll
+                P = createNewtonPolynoms(f_values,x);
+
+                /*
+                Falls mehrere x-Werte gesucht werden:
+                f_values nicht komplett neu initialisieren, sondern das vorhandene Differenzschema nur um eine weitere untere Schrägzeile in der Dreiecksmatrix ergänzen
+                -> Spart Rechenzeit
+                */
+                if (amount_of_x>=2)
+                {
+                    for (int i=1; i<amount_of_x;i++)
+                    {
+                        ArrayList<Double> temp = new ArrayList<>();
+                        temp.add(P);
+                        for(int j=1; j<f_values.size();j++)
+                        {
+                            temp.add(0.0);
+                        }
+                        f_values.add(x,temp);
+                        x = f_values.size();
+                        P = createNewtonPolynoms(f_values,x); //Bei P kommt dann der interpolierte Wert für's aktuelle x raus
+                    }
+
+                }
                 neighbors.clear();
             }
             entry=dataTreemap.higherEntry(entry.getKey());
         }
+        //Nächster Schritt: Interpolierte P-Werte in neue Excel-Tabelle schreiben oder in Datenstruktur speichern
     }
 
 }
