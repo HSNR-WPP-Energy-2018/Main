@@ -8,7 +8,7 @@ import java.util.TreeMap;
 
 public class Importer {
 
-    public TreeMap<LocalDateTime, Double> data = new TreeMap<>();
+    private TreeMap<LocalDateTime, Double> data = new TreeMap<>();
 
     public void readFile(String name, String separator) throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader(new File(this.getClass().getClassLoader().getResource(name).getFile())));
