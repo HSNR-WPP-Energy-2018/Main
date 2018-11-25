@@ -8,18 +8,13 @@ import java.util.TreeMap;
 
 public class ImporterTest {
 
-
     @Test
     public void excelFormat() throws IOException {
         Importer importer = new Importer();
-        Algorithms algorithm = new Algorithms();
         importer.readFile("2016.csv");
         for (LocalDateTime key : importer.getData().keySet()) {
             System.out.println(key + " - " + importer.getValue(key));
         }
-        System.out.println("");
-        algorithm.interpolate(importer.data);
-        algorithm.newtonInterpolation(importer.data);
     }
 
     @Test

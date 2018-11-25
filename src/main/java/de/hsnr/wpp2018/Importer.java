@@ -3,11 +3,10 @@ package de.hsnr.wpp2018;
 import java.io.*;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.Map;
 import java.util.TimeZone;
 import java.util.TreeMap;
 
-class Importer {
+public class Importer {
 
     public TreeMap<LocalDateTime, Double> data = new TreeMap<>();
 
@@ -26,26 +25,21 @@ class Importer {
             }
             switch (parts.length) {
                 case 3:
-                    String[] LocalDateTimeParts = parts[0].split("[.]");
+                    String[] localDateTimeParts = parts[0].split("[.]");
                     String[] timeParts = parts[1].split(":");
 
-                    if (LocalDateTimeParts.length != 3) {
+                    if (localDateTimeParts.length != 3) {
                         continue;
                     }
                     if (timeParts.length != 2) {
                         continue;
                     }
 
-                    if (parts.length <= 2) {
-                        System.out.println("Test");
-                    }
-
-
-                    String year = LocalDateTimeParts[2];
+                    String year = localDateTimeParts[2];
                     if (year.length() < 4) {
                         year = "20" + year;
                     }
-                    date = LocalDateTime.of(Integer.parseInt(year), Integer.parseInt(LocalDateTimeParts[1]), Integer.parseInt(LocalDateTimeParts[0]), Integer.parseInt(timeParts[0]), Integer.parseInt(timeParts[1]));
+                    date = LocalDateTime.of(Integer.parseInt(year), Integer.parseInt(localDateTimeParts[1]), Integer.parseInt(localDateTimeParts[0]), Integer.parseInt(timeParts[0]), Integer.parseInt(timeParts[1]));
                     break;
                 case 2:
                     String timestamp = parts[0];
@@ -56,14 +50,10 @@ class Importer {
             }
             this.data.put(date, value);
         }
-        /*
-        for(Map.Entry<LocalDateTime, Double> entry : data.entrySet()) {
-            LocalDateTime key = entry.getKey();
-            Double value = entry.getValue();
+    }
 
-            System.out.println(key + " => " + value);
-        }
-        */
+    public void readFile(String name) throws IOException {
+        readFile(name, ";");
     }
 
     public TreeMap<LocalDateTime, Double> getData() {
@@ -82,7 +72,4 @@ class Importer {
         return this.data.get(LocalDateTime);
     }
 
-    public void readFile(String name) throws IOException {
-        readFile(name, ";");
-    }
 }
