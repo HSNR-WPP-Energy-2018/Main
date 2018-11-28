@@ -2,7 +2,8 @@ package de.hsnr.wpp2018.algorithms;
 
 import de.hsnr.wpp2018.Algorithm;
 import de.hsnr.wpp2018.Importer;
-import de.hsnr.wpp2018.TestDataGenerator;
+import de.hsnr.wpp2018.evaluation.Rating;
+import de.hsnr.wpp2018.evaluation.TestDataGenerator;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,5 +45,6 @@ public class AlgorithmTest {
     @After
     public void output() {
         System.out.println("After interpolation: " + res.size() + " data points");
+        System.out.println("Euclid difference is: " + Rating.calculateDifference(data,  res));
     }
 }

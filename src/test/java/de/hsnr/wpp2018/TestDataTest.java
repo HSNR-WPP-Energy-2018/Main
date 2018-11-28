@@ -1,5 +1,6 @@
 package de.hsnr.wpp2018;
 
+import de.hsnr.wpp2018.evaluation.TestDataGenerator;
 import org.junit.Assert;
 import org.junit.Test;
 

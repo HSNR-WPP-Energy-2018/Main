@@ -1,4 +1,4 @@
-package de.hsnr.wpp2018;
+package de.hsnr.wpp2018.evaluation;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
