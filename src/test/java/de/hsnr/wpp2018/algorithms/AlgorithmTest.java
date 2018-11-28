@@ -28,10 +28,10 @@ public class AlgorithmTest {
     }
 
     @Test
-    public void newton() {
+    public void newton() throws Algorithm.ConfigurationException {
         TreeMap<LocalDateTime, Double> data = importer.getData();
         System.out.println(data.size());
-        TreeMap<LocalDateTime, Double> res = new Newton().interpolate(data, new Algorithm.Configuration(INTERVAL));
+        TreeMap<LocalDateTime, Double> res = new Newton().interpolate(data, new Newton.Configuration(INTERVAL, 10));
         System.out.println(res.size());
     }
 

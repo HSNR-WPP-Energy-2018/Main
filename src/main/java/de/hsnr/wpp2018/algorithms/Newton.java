@@ -54,9 +54,14 @@ public class Newton implements Algorithm {
         return p;
     }
 
-    public TreeMap<LocalDateTime, Double> interpolate(TreeMap<LocalDateTime, Double> data, Configuration configuration) {
+    public TreeMap<LocalDateTime, Double> interpolate(TreeMap<LocalDateTime, Double> data, Algorithm.Configuration configuration) throws ConfigurationException {
+
+        if (!(configuration instanceof Averaging.Configuration)) {
+            throw new ConfigurationException(Averaging.Configuration.class);
+        }
+        Configuration config = (Configuration) configuration;
         double P;
-        int size_of_neighbors = 2;
+        //int size_of_neighbors = 10;
         ArrayList<Double> neighbors = new ArrayList<>();
         Map.Entry<LocalDateTime, Double> entry = data.firstEntry();
         while (data.higherEntry(entry.getKey()) != null) {
@@ -66,8 +71,8 @@ public class Newton implements Algorithm {
             neighbors.sort(Collections.reverseOrder()); //damit die k nächsten Nachbarn nicht später von der falschen Seite abgeschnitten werden
 
             if (Helper.getDistance(one, two) > configuration.getInterval()) {
-                if (neighbors.size() >= size_of_neighbors) {
-                    neighbors.subList(size_of_neighbors, neighbors.size()).clear();
+                if (neighbors.size() >= config.getNeighbors()) {
+                    neighbors.subList(config.neighbors, neighbors.size()).clear();
                 }
                 Collections.sort(neighbors);
 
@@ -102,5 +107,18 @@ public class Newton implements Algorithm {
         }
         //Nächster Schritt: Interpolierte P-Werte in neue Excel-Tabelle schreiben oder in Datenstruktur speichern
         return data;
+    }
+
+    public static class Configuration extends Algorithm.Configuration {
+        private int neighbors;
+
+        public Configuration(int interval, int neighbors) {
+            super(interval);
+            this.neighbors = neighbors;
+        }
+
+        public int getNeighbors() {
+            return neighbors;
+        }
     }
 }
