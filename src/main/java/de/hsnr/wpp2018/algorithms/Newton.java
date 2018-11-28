@@ -28,11 +28,16 @@ public class Newton implements Algorithm<Newton.Configuration> {
 
 
     private double createNewtonPolynoms(ArrayList<ArrayList<Double>> f_values, int x) {
+        int decimals = 5;
         //Schritt 1: Polynome berechnen
         for (int i = 1; i < f_values.size(); i++) {
             for (int j = 1; j <= i; j++) {
                 double numerator = f_values.get(i).get(j - 1) - f_values.get(i - 1).get(j - 1);
                 double denumerator = (i) - (i - j);
+                if (denumerator==0)
+                {
+                    denumerator = denumerator + 0.001;
+                }
                 double temp = numerator / denumerator;
                 f_values.get(i).add(j, temp);
             }
@@ -47,10 +52,16 @@ public class Newton implements Algorithm<Newton.Configuration> {
             a = a * (x - (i - 1));
             p = p + f_values.get(i).get(i) * a;
         }
+        p = Helper.roundDouble(p,decimals);
         if (p < 0) {
-            Heuristics.castNegativesToZero(p);
+            p = Heuristics.castNegativesToZero(p);
         }
-        System.out.println("Approximation beim nächsten x ist " + p);
+
+        System.out.printf("Approximation for next x is " + "%f\n", p);
+        if (p == Double.POSITIVE_INFINITY)
+        {
+            //Heuristik ergänzen
+        }
         return p;
     }
 

@@ -14,6 +14,7 @@ public class Linear implements Algorithm<Algorithm.Configuration> {
     }
 
     public TreeMap<LocalDateTime, Double> interpolate(TreeMap<LocalDateTime, Double> data, Configuration configuration) {
+        int decimals = 5;
         TreeMap<LocalDateTime, Double> newMap = new TreeMap<>(); //Neue Treemap mit den interpolierten Ergebnissen
         int counter = 1;
         double y_linear, y_newton;
@@ -25,6 +26,8 @@ public class Linear implements Algorithm<Algorithm.Configuration> {
             if (Helper.getDistance(one, two) > configuration.getInterval()) {
                 //x1<=x<=x2
                 y_linear = interpolateValue(counter, counter - 1, counter + 1, entry.getValue(), data.higherEntry(entry.getKey()).getValue());
+                y_linear = Helper.roundDouble(y_linear,decimals);
+                System.out.printf("Approximation for next x is " + "%f\n", y_linear);
                 for (LocalDateTime newDate = one.plusMinutes(15); newDate.isBefore(two); newDate = newDate.plusMinutes(15)) {
                     newMap.put(newDate, y_linear);
                 }
