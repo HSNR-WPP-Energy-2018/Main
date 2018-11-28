@@ -32,12 +32,12 @@ public class AlgorithmTest {
     }
 
     @Test
-    public void newton() throws Algorithm.ConfigurationException {
+    public void newton() {
         res = new Newton().interpolate(data, new Newton.Configuration(INTERVAL, 10));
     }
 
     @Test
-    public void averaging() throws Algorithm.ConfigurationException {
+    public void averaging() {
         res = new Averaging().interpolate(data, new Averaging.Configuration(INTERVAL, 4));
     }
 
