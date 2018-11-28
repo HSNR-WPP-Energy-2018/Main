@@ -56,7 +56,7 @@ public class Newton implements Algorithm<Newton.Configuration> {
             p = Heuristics.castNegativesToZero(p);
         }
 
-        //System.out.printf("Approximation for next x is " + "%f\n", p);
+        System.out.printf("Approximation for next x is " + "%f\n", p);
         if (p == Double.POSITIVE_INFINITY)
         {
             //Heuristik ergänzen
