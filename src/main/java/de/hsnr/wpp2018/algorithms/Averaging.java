@@ -5,40 +5,36 @@ import de.hsnr.wpp2018.Algorithm;
 import java.time.LocalDateTime;
 import java.util.TreeMap;
 
-public class Averaging implements Algorithm {
+public class Averaging implements Algorithm<Averaging.Configuration> {
 
-    public TreeMap<LocalDateTime, Double> interpolate(TreeMap<LocalDateTime, Double> data, Algorithm.Configuration configuration) throws ConfigurationException {
-        if (!(configuration instanceof Configuration)) {
-            throw new ConfigurationException(Configuration.class);
-        }
-        Configuration config = (Configuration) configuration;
+    public TreeMap<LocalDateTime, Double> interpolate(TreeMap<LocalDateTime, Double> data, Configuration configuration) {
         TreeMap<LocalDateTime, Double> results = new TreeMap<>();
         LocalDateTime time = data.firstKey(), end = data.lastKey();
         while (!time.isAfter(end)) {
-            results.put(time, data.getOrDefault(time, interpolateValue(data, time, configuration.getInterval(), config.getNeighbors())));
+            results.put(time, data.getOrDefault(time, interpolateValue(data, configuration, time)));
             time = time.plusSeconds(configuration.getInterval());
         }
         return results;
     }
 
-    private double interpolateValue(TreeMap<LocalDateTime, Double> data, LocalDateTime key, int interval, int neighbors/* TODO: more configuration parameter */) {
+    private double interpolateValue(TreeMap<LocalDateTime, Double> data, Configuration configuration, LocalDateTime key) {
         int found = 0;
         double sum = 0;
-        LocalDateTime time = key.minusSeconds(interval);
-        for (int i = 0; i < neighbors; i++) {
+        LocalDateTime time = key.minusSeconds(configuration.getInterval());
+        for (int i = 0; i < configuration.getNeighbors(); i++) {
             if (data.containsKey(time)) {
                 sum += data.get(time);
                 found++;
             }
-            time = time.minusSeconds(interval);
+            time = time.minusSeconds(configuration.getInterval());
         }
-        time = key.minusSeconds(interval);
-        for (int i = 0; i < neighbors; i++) {
+        time = key.minusSeconds(configuration.getInterval());
+        for (int i = 0; i < configuration.getNeighbors(); i++) {
             if (data.containsKey(time)) {
                 sum += data.get(time);
                 found++;
             }
-            time = time.plusSeconds(interval);
+            time = time.plusSeconds(configuration.getInterval());
         }
         return (found == 0) ? 0 : sum / found;
     }

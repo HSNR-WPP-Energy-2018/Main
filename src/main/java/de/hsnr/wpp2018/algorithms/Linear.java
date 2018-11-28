@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class Linear implements Algorithm {
+public class Linear implements Algorithm<Algorithm.Configuration> {
 
     private double interpolateValue(double x, double x1, double x2, double y1, double y2) {
         return y1 + (x - x1) / (x2 - x1) * (y2 - y1);

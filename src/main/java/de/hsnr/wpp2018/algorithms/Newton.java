@@ -10,7 +10,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class Newton implements Algorithm {
+public class Newton implements Algorithm<Newton.Configuration> {
 
     private ArrayList<ArrayList<Double>> f_valuesCreation(ArrayList<Double> neighbors) {
         ArrayList<ArrayList<Double>> f_values = new ArrayList<>();
@@ -54,12 +54,7 @@ public class Newton implements Algorithm {
         return p;
     }
 
-    public TreeMap<LocalDateTime, Double> interpolate(TreeMap<LocalDateTime, Double> data, Algorithm.Configuration configuration) throws ConfigurationException {
-
-        if (!(configuration instanceof Averaging.Configuration)) {
-            throw new ConfigurationException(Averaging.Configuration.class);
-        }
-        Configuration config = (Configuration) configuration;
+    public TreeMap<LocalDateTime, Double> interpolate(TreeMap<LocalDateTime, Double> data, Newton.Configuration configuration) {
         double P;
         //int size_of_neighbors = 10;
         ArrayList<Double> neighbors = new ArrayList<>();
@@ -71,8 +66,8 @@ public class Newton implements Algorithm {
             neighbors.sort(Collections.reverseOrder()); //damit die k nächsten Nachbarn nicht später von der falschen Seite abgeschnitten werden
 
             if (Helper.getDistance(one, two) > configuration.getInterval()) {
-                if (neighbors.size() >= config.getNeighbors()) {
-                    neighbors.subList(config.neighbors, neighbors.size()).clear();
+                if (neighbors.size() >= configuration.getNeighbors()) {
+                    neighbors.subList(configuration.neighbors, neighbors.size()).clear();
                 }
                 Collections.sort(neighbors);
 
