@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.TreeMap;
 
 public class AlgorithmTest {
@@ -41,7 +42,11 @@ public class AlgorithmTest {
 
     @Test
     public void averaging() {
-        result = new Averaging().interpolate(testData, new Averaging.Configuration(INTERVAL, 4));
+        ArrayList<Averaging.ConfigurationInterval> intervals = new ArrayList<>();
+        intervals.add(new Averaging.ConfigurationInterval(5, (LocalDateTime current) -> current.plusWeeks(1), true, 5));
+        intervals.add(new Averaging.ConfigurationInterval(7, (LocalDateTime current) -> current.plusDays(1), true, 3));
+        intervals.add(new Averaging.ConfigurationInterval(15, (LocalDateTime current) -> current.plusSeconds(INTERVAL)));
+        result = new Averaging().interpolate(testData, new Averaging.Configuration(INTERVAL, intervals));
     }
 
     @After

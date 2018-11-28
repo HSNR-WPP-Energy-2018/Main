@@ -1,5 +1,7 @@
 package de.hsnr.wpp2018.evaluation;
 
+import de.hsnr.wpp2018.RangeAdjuster;
+
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Random;
@@ -61,9 +63,5 @@ public class TestDataGenerator {
             data.keySet().removeAll(removeSet);
         }
         return data;
-    }
-
-    interface RangeAdjuster {
-        LocalDateTime nextRange(LocalDateTime current);
     }
 }
