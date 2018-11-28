@@ -11,8 +11,8 @@ public class Helper {
         return map2;
     }
 
-    public static long getDistanceInMinutes(LocalDateTime one, LocalDateTime two) {
+    public static long getDistance(LocalDateTime one, LocalDateTime two) {
         Duration duration = Duration.between(one, two);
-        return Math.abs(duration.toMinutes());
+        return Math.abs(duration.toMinutes() * 60);
     }
 }

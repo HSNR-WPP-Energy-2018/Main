@@ -1,5 +1,6 @@
 package de.hsnr.wpp2018.algorithms;
 
+import de.hsnr.wpp2018.Algorithm;
 import de.hsnr.wpp2018.Helper;
 import de.hsnr.wpp2018.Heuristics;
 
@@ -9,43 +10,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class Interpolation {
-
-    /**
-     * Linear interpolation
-     */
-
-    private double interpolateValue(double x, double x1, double x2, double y1, double y2) {
-        return y1 + (x - x1) / (x2 - x1) * (y2 - y1);
-    }
-
-
-    public TreeMap<LocalDateTime, Double> linear(TreeMap<LocalDateTime, Double> data) {
-        TreeMap<LocalDateTime, Double> newMap = new TreeMap<>(); //Neue Treemap mit den interpolierten Ergebnissen
-        int counter = 1;
-        long diff;
-        double y_linear, y_newton;
-        Map.Entry<LocalDateTime, Double> entry = data.firstEntry();
-        while (data.higherEntry(entry.getKey()) != null) {
-            LocalDateTime one = entry.getKey();
-            LocalDateTime two = data.higherKey(entry.getKey());
-            diff = Helper.getDistanceInMinutes(one, two);
-            counter++;
-            if (diff > 15) {
-                //x1<=x<=x2
-                y_linear = interpolateValue(counter, counter - 1, counter + 1, entry.getValue(), data.higherEntry(entry.getKey()).getValue());
-                for (LocalDateTime newDate = one.plusMinutes(15); newDate.isBefore(two); newDate = newDate.plusMinutes(15)) {
-                    newMap.put(newDate, y_linear);
-                }
-            }
-            entry = data.higherEntry(entry.getKey());
-        }
-        return Helper.mergeTreeMaps(data, newMap);
-    }
-
-    /**
-     * Newton interpolation
-     */
+public class Newton implements Algorithm {
 
     private ArrayList<ArrayList<Double>> f_valuesCreation(ArrayList<Double> neighbors) {
         ArrayList<ArrayList<Double>> f_values = new ArrayList<>();
@@ -82,16 +47,14 @@ public class Interpolation {
             a = a * (x - (i - 1));
             p = p + f_values.get(i).get(i) * a;
         }
-        if (p<0)
-        {
+        if (p < 0) {
             Heuristics.castNegativesToZero(p);
         }
         System.out.println("Approximation beim nächsten x ist " + p);
         return p;
     }
 
-    public TreeMap<LocalDateTime, Double> newton(TreeMap<LocalDateTime, Double> data) {
-        long diff;
+    public TreeMap<LocalDateTime, Double> interpolate(TreeMap<LocalDateTime, Double> data, Configuration configuration) {
         double P;
         int size_of_neighbors = 2;
         ArrayList<Double> neighbors = new ArrayList<>();
@@ -100,10 +63,9 @@ public class Interpolation {
             neighbors.add(entry.getValue());
             LocalDateTime one = entry.getKey();
             LocalDateTime two = data.higherKey(entry.getKey());
-            diff = Helper.getDistanceInMinutes(one, two);
             neighbors.sort(Collections.reverseOrder()); //damit die k nächsten Nachbarn nicht später von der falschen Seite abgeschnitten werden
 
-            if (diff > 15) {
+            if (Helper.getDistance(one, two) > configuration.getInterval()) {
                 if (neighbors.size() >= size_of_neighbors) {
                     neighbors.subList(size_of_neighbors, neighbors.size()).clear();
                 }
@@ -133,7 +95,6 @@ public class Interpolation {
                         x = f_values.size();
                         P = createNewtonPolynoms(f_values, x); //Bei P kommt dann der interpolierte Wert für's aktuelle x raus
                     }
-
                 }
                 neighbors.clear();
             }
