@@ -1,6 +1,7 @@
 package de.hsnr.wpp2018.algorithms;
 
 import de.hsnr.wpp2018.Helper;
+import de.hsnr.wpp2018.Heuristics;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -81,8 +82,11 @@ public class Interpolation {
             a = a * (x - (i - 1));
             p = p + f_values.get(i).get(i) * a;
         }
-        //System.out.println("Approximation beim nächsten x ist " + P);
-
+        if (p<0)
+        {
+            Heuristics.castNegativesToZero(p);
+        }
+        System.out.println("Approximation beim nächsten x ist " + p);
         return p;
     }
 
