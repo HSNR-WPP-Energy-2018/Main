@@ -5,7 +5,7 @@ import de.hsnr.wpp2018.Importer;
 import de.hsnr.wpp2018.evaluation.Rating;
 import de.hsnr.wpp2018.evaluation.TestDataGenerator;
 import org.junit.After;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -15,36 +15,38 @@ import java.util.TreeMap;
 public class AlgorithmTest {
     private static final int INTERVAL = 15 * 60;
 
-    private TreeMap<LocalDateTime, Double> data;
-    private TreeMap<LocalDateTime, Double> res;
+    private static TreeMap<LocalDateTime, Double> original;
+    private static TreeMap<LocalDateTime, Double> testData;
+    private TreeMap<LocalDateTime, Double> result;
 
-    @Before
-    public void loadTestData() throws IOException {
+    @BeforeClass
+    public static void loadTestData() throws IOException {
         Importer importer = new Importer();
         importer.readFile("2016.csv");
-        System.out.println("Starting with " + importer.getData().size() + " data points");
-        data = new TestDataGenerator(importer.getData()).cutRanges(0.01f, 0.05f, 0f, 0.1f);
-        System.out.println("After random cuts: " + importer.getData().size() + " data points");
+        original = importer.getData();
+        System.out.println("Starting: " + original.size() + " elements");
+        testData = new TestDataGenerator(original).cutRanges(0.01f, 0.05f, 0f, 0.1f);
+        System.out.println("TestData: " + testData.size() + " elements");
     }
 
     @Test
     public void linear() {
-        res = new Linear().interpolate(data, new Algorithm.Configuration(INTERVAL));
+        result = new Linear().interpolate(testData, new Algorithm.Configuration(INTERVAL));
     }
 
     @Test
     public void newton() {
-        res = new Newton().interpolate(data, new Newton.Configuration(INTERVAL, 10));
+        result = new Newton().interpolate(testData, new Newton.Configuration(INTERVAL, 10));
     }
 
     @Test
     public void averaging() {
-        res = new Averaging().interpolate(data, new Averaging.Configuration(INTERVAL, 4));
+        result = new Averaging().interpolate(testData, new Averaging.Configuration(INTERVAL, 4));
     }
 
     @After
     public void output() {
-        System.out.println("After interpolation: " + res.size() + " data points");
-        System.out.println("Euclid difference is: " + Rating.calculateDifference(data,  res));
+        System.out.println("  Result: " + result.size() + " elements");
+        System.out.println("Euclid difference (original -> interpolated): " + Rating.calculateDifference(original, result));
     }
 }
