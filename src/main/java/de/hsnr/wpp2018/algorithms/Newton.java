@@ -32,7 +32,7 @@ public class Newton implements Algorithm<Newton.Configuration> {
 
 
 
-    private double createNewtonPolynoms(Map<LocalDateTime, ArrayList<Double>> f_values, int x) {
+    private double createNewtonPolynoms(Map<LocalDateTime, ArrayList<Double>> f_values, int x, LocalDateTime newDate) {
         int decimals = 5;
         int i=1;
         //Schritt 1: Polynome berechnen
@@ -65,6 +65,7 @@ public class Newton implements Algorithm<Newton.Configuration> {
         double a = 1.0;
         int i_counter = 0;
         for(Map.Entry<LocalDateTime,ArrayList<Double>> entry_i : f_values.entrySet()) {
+            System.out.println(entry_i.getKey());
             if (i_counter > 0 && i_counter<f_values.size()) {
                 a = a * (x - (i_counter - 1));
                 p = p + entry_i.getValue().get(i_counter) * a;
@@ -76,7 +77,8 @@ public class Newton implements Algorithm<Newton.Configuration> {
             p = Heuristics.castNegativesToZero(p);
         }
 
-        System.out.printf("Approximation for next x is " + "%f\n", p);
+        System.out.printf("Approximation for next x is " + "%f" + " at " + newDate + "\n", p); //"%f\n"
+      //  System.out.print("at " + newDate + "\n");
         if (p == Double.POSITIVE_INFINITY)
         {
             //Heuristik ergänzen
@@ -136,7 +138,10 @@ public class Newton implements Algorithm<Newton.Configuration> {
 
                 int x = f_values.size(); //Das nächste x, das berechnet werden soll
 
-                P = createNewtonPolynoms(f_values, x);
+                List<Map.Entry<LocalDateTime,ArrayList<Double>>> entryList = new ArrayList<>(f_values.entrySet());
+                LocalDateTime lastKey = entryList.get(entryList.size()-1).getKey();
+                LocalDateTime newDate = lastKey.plusMinutes(15);
+                P = createNewtonPolynoms(f_values, x, newDate);
 
                 /*
                 Falls mehrere x-Werte gesucht werden:
@@ -153,13 +158,10 @@ public class Newton implements Algorithm<Newton.Configuration> {
                             temp.add(0.0);
                         }
 
-                        List<Map.Entry<LocalDateTime,ArrayList<Double>>> entryList = new ArrayList<>(f_values.entrySet());
-                        LocalDateTime lastKey = entryList.get(entryList.size()-1).getKey();
-                        LocalDateTime newDate = lastKey.plusMinutes(15);
                         f_values.put(newDate,temp);
 
                         x = f_values.size();
-                        P = createNewtonPolynoms(f_values, x); //Bei P kommt dann der interpolierte Wert für's neue aktuelle x raus
+                        P = createNewtonPolynoms(f_values, x, newDate); //Bei P kommt dann der interpolierte Wert für's neue aktuelle x raus
                     }
                 }
 
