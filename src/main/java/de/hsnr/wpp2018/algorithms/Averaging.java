@@ -2,9 +2,11 @@ package de.hsnr.wpp2018.algorithms;
 
 import de.hsnr.wpp2018.Algorithm;
 import de.hsnr.wpp2018.RangeAdjuster;
+import de.hsnr.wpp2018.evaluation.Rating;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 
@@ -49,6 +51,72 @@ public class Averaging implements Algorithm<Averaging.Configuration> {
         return (weightedCount > 0) ? (sum / weightedCount) : 0;
     }
 
+    public static class Optimizer {
+        private List<RangeAdjuster> adjusters;
+        private int minNeighbors;
+        private int maxNeighbors;
+        private double minWeight;
+        private double maxWeight;
+        private double weightStep;
+
+        private Configuration currentConfiguration;
+        private Configuration bestConfiguration;
+        private double bestScore = Double.MAX_VALUE;
+
+        public Optimizer(int interval, List<RangeAdjuster> adjusters, int minNeighbors, int maxNeighbors, double minWeight, double maxWeight, double weightStep) {
+            this.adjusters = adjusters;
+            this.minNeighbors = minNeighbors;
+            this.maxNeighbors = maxNeighbors;
+            this.minWeight = minWeight;
+            this.maxWeight = maxWeight;
+            this.weightStep = weightStep;
+            ArrayList<ConfigurationInterval> intervals = new ArrayList<>();
+            for (RangeAdjuster adjuster : adjusters) {
+                intervals.add(new ConfigurationInterval(minNeighbors, adjuster, false, minWeight));
+            }
+            this.currentConfiguration = new Configuration(interval, intervals);
+        }
+
+        public Configuration optimize(TreeMap<LocalDateTime, Double> original, TreeMap<LocalDateTime, Double> data) {
+            return optimize(original, data, 0);
+        }
+
+        private Configuration optimize(TreeMap<LocalDateTime, Double> original, TreeMap<LocalDateTime, Double> data, int currentIndex) {
+            ConfigurationInterval currentInterval = this.currentConfiguration.getNeighborIntervals().get(currentIndex);
+            for (int n = minNeighbors; n <= maxNeighbors; n++) {
+                currentInterval.neighbors = n;
+                double weight = minWeight;
+                while (weight <= maxWeight) {
+                    currentInterval.weight = weight;
+                    currentInterval.neighborsWeighted = false;
+                    if (currentIndex >= (this.adjusters.size() - 1)) {
+                        evaluate(original, data);
+                    } else {
+                        optimize(original, data, currentIndex + 1);
+                    }
+                    currentInterval.neighborsWeighted = true;
+                    if (currentIndex >= (this.adjusters.size() - 1)) {
+                        evaluate(original, data);
+                    } else {
+                        optimize(original, data, currentIndex + 1);
+                    }
+                    weight += weightStep;
+                }
+            }
+            return bestConfiguration;
+        }
+
+        private void evaluate(TreeMap<LocalDateTime, Double> original, TreeMap<LocalDateTime, Double> data) {
+            TreeMap<LocalDateTime, Double> interpolated = new Averaging().interpolate(data, this.currentConfiguration);
+            double score = Rating.calculateDifference(original, interpolated);
+            System.out.println("score: " + score + " with config: " + currentConfiguration);
+            if (score < bestScore) {
+                bestScore = score;
+                bestConfiguration = this.currentConfiguration.copy();
+            }
+        }
+    }
+
     public static class Configuration extends Algorithm.Configuration {
         private List<ConfigurationInterval> neighborIntervals;
 
@@ -60,6 +128,26 @@ public class Averaging implements Algorithm<Averaging.Configuration> {
         public List<ConfigurationInterval> getNeighborIntervals() {
             return neighborIntervals;
         }
+
+        public Configuration copy() {
+            ArrayList<ConfigurationInterval> intervals = new ArrayList<>();
+            for (ConfigurationInterval interval : this.getNeighborIntervals()) {
+                intervals.add(new ConfigurationInterval(interval.getNeighbors(), interval.getAdjuster(), interval.isNeighborsWeighted(), interval.getWeight()));
+            }
+            return new Configuration(this.getInterval(), intervals);
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder intervals = new StringBuilder();
+            for (ConfigurationInterval interval : getNeighborIntervals()) {
+                if (intervals.length() != 0) {
+                    intervals.append(", ");
+                }
+                intervals.append(interval);
+            }
+            return "Configuration(interval= " + this.getInterval() + ", intervals=[" + intervals + "])";
+        }
     }
 
     public static class ConfigurationInterval {
@@ -70,7 +158,7 @@ public class Averaging implements Algorithm<Averaging.Configuration> {
 
         public ConfigurationInterval(int neighbors, RangeAdjuster adjuster, boolean neighborsWeighted, double weight) {
             this.neighbors = neighbors;
-            this.adjuster= adjuster;
+            this.adjuster = adjuster;
             this.neighborsWeighted = neighborsWeighted;
             this.weight = weight;
         }
@@ -94,6 +182,16 @@ public class Averaging implements Algorithm<Averaging.Configuration> {
 
         public double getWeight() {
             return weight;
+        }
+
+        @Override
+        public String toString() {
+            return "ConfigurationInterval{" +
+                    "neighbors=" + neighbors +
+                    ", neighborsWeighted=" + neighborsWeighted +
+                    // ", adjuster=" + adjuster +
+                    ", weight=" + weight +
+                    '}';
         }
     }
 }

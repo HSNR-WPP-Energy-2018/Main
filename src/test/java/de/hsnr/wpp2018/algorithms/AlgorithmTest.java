@@ -2,6 +2,7 @@ package de.hsnr.wpp2018.algorithms;
 
 import de.hsnr.wpp2018.Algorithm;
 import de.hsnr.wpp2018.Importer;
+import de.hsnr.wpp2018.RangeAdjuster;
 import de.hsnr.wpp2018.evaluation.Rating;
 import de.hsnr.wpp2018.evaluation.TestDataGenerator;
 import org.junit.After;
@@ -47,6 +48,16 @@ public class AlgorithmTest {
         intervals.add(new Averaging.ConfigurationInterval(7, (LocalDateTime current) -> current.plusDays(1), true, 3));
         intervals.add(new Averaging.ConfigurationInterval(15, (LocalDateTime current) -> current.plusSeconds(INTERVAL)));
         result = new Averaging().interpolate(testData, new Averaging.Configuration(INTERVAL, intervals));
+    }
+
+    // @Test
+    public void evaluateAveraging() {
+        ArrayList<RangeAdjuster> adjusters = new ArrayList<>();
+        adjusters.add((LocalDateTime current) -> current.plusWeeks(1));
+        adjusters.add((LocalDateTime current) -> current.plusDays(1));
+        Averaging.Configuration configuration = new Averaging.Optimizer(INTERVAL, adjusters, 1, 10, 1, 10, 0.1).optimize(original, testData);
+        System.out.println("Configuration for best score: " + configuration);
+        result = new Averaging().interpolate(testData, configuration);
     }
 
     @After
