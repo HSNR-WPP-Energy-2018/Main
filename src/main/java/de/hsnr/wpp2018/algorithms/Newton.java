@@ -6,7 +6,7 @@ import de.hsnr.wpp2018.Heuristics;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static java.util.stream.Collectors.toMap;
 
@@ -32,9 +32,10 @@ public class Newton implements Algorithm<Newton.Configuration> {
 
 
 
-    private double createNewtonPolynoms(Map<LocalDateTime, ArrayList<Double>> f_values, int x, LocalDateTime newDate) {
+    private double createNewtonPolynoms(Map<LocalDateTime, ArrayList<Double>> f_values, int x, LocalDateTime newDate, LocalDateTime lastDate) {
         int decimals = 5;
         int i=1;
+
         //Schritt 1: Polynome berechnen
         LocalDateTime previous_key = null;
         ArrayList<Double> previous_val = null;
@@ -65,7 +66,7 @@ public class Newton implements Algorithm<Newton.Configuration> {
         double a = 1.0;
         int i_counter = 0;
         for(Map.Entry<LocalDateTime,ArrayList<Double>> entry_i : f_values.entrySet()) {
-            System.out.println(entry_i.getKey());
+            //System.out.println(entry_i.getValue().get(0));
             if (i_counter > 0 && i_counter<f_values.size()) {
                 a = a * (x - (i_counter - 1));
                 p = p + entry_i.getValue().get(i_counter) * a;
@@ -77,8 +78,7 @@ public class Newton implements Algorithm<Newton.Configuration> {
             p = Heuristics.castNegativesToZero(p);
         }
 
-        System.out.printf("Approximation for next x is " + "%f" + " at " + newDate + "\n", p); //"%f\n"
-      //  System.out.print("at " + newDate + "\n");
+        //System.out.printf("Approximation for next x is " + "%f" + " at " + newDate + "\n", p); //"%f\n"
         if (p == Double.POSITIVE_INFINITY)
         {
             //Heuristik ergänzen
@@ -91,6 +91,7 @@ public class Newton implements Algorithm<Newton.Configuration> {
 
     public TreeMap<LocalDateTime, Double> interpolate(TreeMap<LocalDateTime, Double> data, Newton.Configuration configuration) {
         double P;
+        TreeMap<LocalDateTime, Double> resultmap = new TreeMap<>();
         TreeMap<LocalDateTime, Double> neighbors_map = new TreeMap<>();
         Map<LocalDateTime, Double> neighbors_asc = new LinkedHashMap<>();
         Map.Entry<LocalDateTime, Double> entry = data.firstEntry();
@@ -139,9 +140,11 @@ public class Newton implements Algorithm<Newton.Configuration> {
                 int x = f_values.size(); //Das nächste x, das berechnet werden soll
 
                 List<Map.Entry<LocalDateTime,ArrayList<Double>>> entryList = new ArrayList<>(f_values.entrySet());
-                LocalDateTime lastKey = entryList.get(entryList.size()-1).getKey();
-                LocalDateTime newDate = lastKey.plusMinutes(15);
-                P = createNewtonPolynoms(f_values, x, newDate);
+                LocalDateTime lastDate = entryList.get(entryList.size()-1).getKey();
+
+                LocalDateTime newDate = lastDate.plusMinutes(15);
+                P = createNewtonPolynoms(f_values, x, newDate, lastDate);
+                resultmap.put(newDate,P);
 
                 /*
                 Falls mehrere x-Werte gesucht werden:
@@ -161,7 +164,8 @@ public class Newton implements Algorithm<Newton.Configuration> {
                         f_values.put(newDate,temp);
 
                         x = f_values.size();
-                        P = createNewtonPolynoms(f_values, x, newDate); //Bei P kommt dann der interpolierte Wert für's neue aktuelle x raus
+                        P = createNewtonPolynoms(f_values, x, newDate, lastDate); //Bei P kommt dann der interpolierte Wert für's neue aktuelle x raus
+                        resultmap.put(newDate,P);
                     }
                 }
 
@@ -171,7 +175,10 @@ public class Newton implements Algorithm<Newton.Configuration> {
             }
             entry = data.higherEntry(entry.getKey());
         }
-        //Nächster Schritt: Interpolierte P-Werte in neue Excel-Tabelle schreiben oder in Datenstruktur speichern
+        resultmap.forEach((key, value) ->
+        {
+            data.put(key,value);
+        });
         return data;
     }
 

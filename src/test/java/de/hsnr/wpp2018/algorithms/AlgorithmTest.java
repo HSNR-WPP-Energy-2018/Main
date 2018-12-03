@@ -1,6 +1,7 @@
 package de.hsnr.wpp2018.algorithms;
 
 import de.hsnr.wpp2018.Algorithm;
+import de.hsnr.wpp2018.Heuristics;
 import de.hsnr.wpp2018.Importer;
 import de.hsnr.wpp2018.RangeAdjuster;
 import de.hsnr.wpp2018.evaluation.Rating;
@@ -39,6 +40,7 @@ public class AlgorithmTest {
     @Test
     public void newton() {
         result = new Newton().interpolate(testData, new Newton.Configuration(INTERVAL, 10));
+        Heuristics.interpolateOverDays(result);
     }
 
     @Test
