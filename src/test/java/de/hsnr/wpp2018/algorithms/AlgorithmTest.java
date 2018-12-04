@@ -17,6 +17,8 @@ import java.util.TreeMap;
 
 public class AlgorithmTest {
     private static final int INTERVAL = 15 * 60;
+    private static final int PERSONS = 2;
+    private static final double SIZE = 80.0;
 
     private static TreeMap<LocalDateTime, Double> original;
     private static TreeMap<LocalDateTime, Double> testData;
@@ -40,7 +42,7 @@ public class AlgorithmTest {
     @Test
     public void newton() {
         result = new Newton().interpolate(testData, new Newton.Configuration(INTERVAL, 10));
-        Heuristics.interpolateOverDays(result);
+        Heuristics.useHeuristics(result, new Heuristics.Household(PERSONS, SIZE));
     }
 
     @Test
