@@ -17,18 +17,7 @@ public class Heuristics {
         return value;
     }
 
-    //check whether abnormally high consumption is normal on that day
-    public static boolean isNationalHoliday(LocalDateTime date)
-    {
-        boolean isTrue = false;
-        Month month = date.getMonth();
-        int dayOfMonth  = date.getDayOfMonth();
-        if (month.equals(Month.DECEMBER) && dayOfMonth == 24)
-        {
-            isTrue = !isTrue;
-        }
-        return isTrue;
-    }
+
 
     public static boolean isBusinessDay(LocalDateTime day)
     {
@@ -44,7 +33,7 @@ public class Heuristics {
 
     public static double average_waste_per_day(Heuristics.Household household)
     {
-        int persons = household.getNumber_of_persons();
+        int persons = household.getNumberOfPersons();
         double avg_waste = 0;
 
         switch (persons) {
@@ -75,24 +64,24 @@ public class Heuristics {
     /*Wenn ein Wert unrealistisch hoch ist, dann wird (sofern es sich hier um Wochentage handelt), dieser ignoriert und mit einem
       Differenzwert aufgefüllt, der nötig wäre, um auf den Verbrauchswert vom Vortag zu kommen (sofern positiv)
     */
-    public static double yesterdayDiff(LocalDateTime key, LocalDateTime day_start, LocalDateTime yesterday_end, LocalDateTime yesterday_start, TreeMap<LocalDateTime, Double> newdata)
+    public static double yesterdayDiff(LocalDateTime key, LocalDateTime dayStart, LocalDateTime yesterdayEnd, LocalDateTime yesterdayStart, TreeMap<LocalDateTime, Double> newdata)
     {
         double diff = 0;
-        if(isBusinessDay(key) && isBusinessDay(day_start)) {
-            double energy_yesterday = 0;
-            for (LocalDateTime i = yesterday_start; i.isBefore(day_start); i = i.plusMinutes(15)) {
+        if(isBusinessDay(key) && isBusinessDay(dayStart)) {
+            double energyYesterday = 0;
+            for (LocalDateTime i = yesterdayStart; i.isBefore(dayStart); i = i.plusMinutes(15)) {
                 if (newdata.get(i) != null) //Warum sind da überhaupt noch null-Werte drin? Muss ich mal prüfen
                 {
-                    energy_yesterday += newdata.get(i);
+                    energyYesterday += newdata.get(i);
                 }
             }
             double energy_today = 0;
-            for (LocalDateTime i = day_start; i.isBefore(key); i = i.plusMinutes(15)) {
+            for (LocalDateTime i = dayStart; i.isBefore(key); i = i.plusMinutes(15)) {
                 if (newdata.get(i) != null) {
                     energy_today += newdata.get(i);
                 }
             }
-            diff = energy_yesterday - energy_today;
+            diff = energyYesterday - energy_today;
         }
         return diff;
     }
@@ -102,26 +91,21 @@ public class Heuristics {
     public static TreeMap<LocalDateTime, Double> useHeuristics(TreeMap<LocalDateTime, Double> newdata, Heuristics.Household household)
     {
         AtomicInteger counter = new AtomicInteger();
-        double daily_avg_waste = Heuristics.average_waste_per_day(household);
+        double dailyAvgWaste = Heuristics.average_waste_per_day(household);
 
         newdata.forEach((key, value) ->
         {
-            if (value > daily_avg_waste)
+            if (value > dailyAvgWaste)
             {
-                //Wenn es sich um einen Feiertag handelt, ist imo eine separate Heuristik notwendig
-                boolean check_holiday = Heuristics.isNationalHoliday(key);
-                System.out.println(check_holiday + " + " + value);
-                if (!check_holiday)
-                {
-                LocalDateTime day_start = key.minusDays(1);
-                LocalDateTime yesterday_end = day_start.minusMinutes(15);
-                LocalDateTime yesterday_start = yesterday_end.minusDays(1);
-                double diff_from_yesterday = Heuristics.yesterdayDiff(key, day_start, yesterday_end, yesterday_start, newdata);
-                if (diff_from_yesterday >= 0)
+                LocalDateTime dayStart = key.minusDays(1);
+                LocalDateTime yesterdayEnd = dayStart.minusMinutes(15);
+                LocalDateTime yesterdayStart = yesterdayEnd.minusDays(1);
+                double diffFromYesterday = Heuristics.yesterdayDiff(key, dayStart, yesterdayEnd, yesterdayStart, newdata);
+                if (diffFromYesterday >= 0)
                     {
-                    newdata.put(key, diff_from_yesterday);
+                    newdata.put(key, diffFromYesterday);
                     }
-                }
+
             }
             counter.getAndIncrement();
         });
