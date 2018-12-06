@@ -21,13 +21,13 @@ public class Heuristics {
 
     public static boolean isBusinessDay(LocalDateTime day)
     {
-        boolean isTrue = false;
         DayOfWeek weekday = day.getDayOfWeek();
-        if (!weekday.equals(DayOfWeek.SATURDAY) && !weekday.equals(DayOfWeek.SUNDAY))
-        {
-            isTrue = !isTrue;
+        if (!weekday.equals(DayOfWeek.SATURDAY) && !weekday.equals(DayOfWeek.SUNDAY)) {
+            return true;
         }
-        return isTrue;
+        else {
+            return false;
+        }
     }
 
 
