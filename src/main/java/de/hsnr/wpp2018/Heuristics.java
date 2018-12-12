@@ -4,28 +4,27 @@ import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.TreeMap;
-import java.util.concurrent.atomic.AtomicInteger;
-
 
 public class Heuristics {
 
-    public static double castNegativesToZero(double value)
+    private double processHeating;
+    private double processCooling;
+    private double ICT;
+    private double warmWater;
+    private double illumination;
+    private double heating;
+    private double mechanicalEquip;
+
+    //Prozentualer Verbrauchsanteil der Haushaltsgeräte
+    public Heuristics(double waste)
     {
-        value = 0.0;
-        return value;
-    }
-
-
-
-    public static boolean isBusinessDay(LocalDateTime day)
-    {
-        DayOfWeek weekday = day.getDayOfWeek();
-        if (!weekday.equals(DayOfWeek.SATURDAY) && !weekday.equals(DayOfWeek.SUNDAY)) {
-            return true;
-        }
-        else {
-            return false;
-        }
+        this.processHeating = waste*30/100; //Prozesswärme
+        this.processCooling = waste*23/100; //Prozesskälte
+        this.ICT = waste*17/100; //IuK-Systeme
+        this.warmWater = waste*12/100; //Warmwasseraufbereitung
+        this.illumination = waste*8/100; //Beleuchtung
+        this.heating = waste*7/100; //Heizung
+        this.mechanicalEquip = waste*3/100; //Mechanische Geräte
     }
 
 
@@ -53,6 +52,34 @@ public class Heuristics {
         return avg_waste;
     }
 
+
+    public static void nocturnalWaste(Heuristics.Household household)
+    {
+        double meanDaily = average_waste_per_day(household);
+        Heuristics heuristics = new Heuristics(meanDaily);
+        //System.out.println(heuristics.heating + " test");
+
+    }
+
+    public static double castNegativesToZero(double value)
+    {
+        value = 0.0;
+        return value;
+    }
+
+
+    public static boolean isBusinessDay(LocalDateTime day)
+    {
+        DayOfWeek weekday = day.getDayOfWeek();
+        if (!weekday.equals(DayOfWeek.SATURDAY) && !weekday.equals(DayOfWeek.SUNDAY)) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+
     public static TreeMap<LocalDateTime,Double> seasonalConsumption(TreeMap<LocalDateTime,Double> newdata)
     {
         return newdata;
@@ -62,24 +89,32 @@ public class Heuristics {
     /*Wenn ein Wert unrealistisch hoch ist, dann wird (sofern es sich hier um Wochentage handelt), dieser ignoriert und mit einem
       Differenzwert aufgefüllt, der nötig wäre, um auf den Verbrauchswert vom Vortag zu kommen (sofern positiv)
     */
-    public static double yesterdayDiff(LocalDateTime key, LocalDateTime dayStart, LocalDateTime yesterdayEnd, LocalDateTime yesterdayStart, TreeMap<LocalDateTime, Double> newdata)
+    public static double yesterdayDiff(LocalDateTime today, LocalDateTime dayStart, LocalDateTime yesterdayEnd, LocalDateTime yesterdayStart, ArrayList<Algorithm.Consumption> newdata)
     {
         double diff = 0;
-        if(isBusinessDay(key) && isBusinessDay(dayStart)) {
+        if(isBusinessDay(today) && isBusinessDay(dayStart)) {
             double energyYesterday = 0;
-            for (LocalDateTime i = yesterdayStart; i.isBefore(dayStart); i = i.plusMinutes(15)) {
-                if (newdata.get(i) != null) //Warum sind da überhaupt noch null-Werte drin? Muss ich mal prüfen
+            double energyToday = 0;
+            for (int i=0; i<newdata.size();i++)
+            {
+                //Wenn die Zeit im Intervall von [Anfang_Gestern, Ende_Gestern] liegt
+                if (newdata.get(i).getTime().isAfter(yesterdayStart.minusMinutes(15)) && newdata.get(i).getTime().isBefore(dayStart))
                 {
-                    energyYesterday += newdata.get(i);
+                    energyYesterday += newdata.get(i).getEnergyData();
+                }
+                //Wenn die Zeit im Intervall von [Anfang Heute, VOR aktuell betrachtetem zu hohen Wert] liegt
+                else if(newdata.get(i).getTime().isAfter(dayStart) && newdata.get(i).getTime().isBefore(today))
+                {
+                    energyToday += newdata.get(i).getEnergyData();
                 }
             }
-            double energy_today = 0;
-            for (LocalDateTime i = dayStart; i.isBefore(key); i = i.plusMinutes(15)) {
-                if (newdata.get(i) != null) {
-                    energy_today += newdata.get(i);
-                }
-            }
-            diff = energyYesterday - energy_today;
+            /*
+            Überlegung (hoffe, dass sie Sinn ergibt):
+            Hier habe ich nicht abs() genommen, denn wenn energyToday auch ohne den zu hohen Peak nennenswert höher ist als der avg-Verbrauch vom gestrigen Tag,
+            ist es mMn sinnlos, anstatt des Peaks eine Differenz draufzurechnen, die auch sehr groß sein kann
+            -> Heuristik wende ich später also nur an, wenn diff>0 (Denn das bedeutet, dass energyYesterday höher als Today ohne Betrachtung des Peaks ist
+            */
+            diff = energyYesterday - energyToday;
         }
         return diff;
     }
@@ -93,38 +128,19 @@ public class Heuristics {
 
         for (int i=0; i<newdata.size();i++)
         {
-            if (newdata.get(i).getEnergyData() > dailyAvgWaste)
+            if (newdata.get(i).getEnergyData() > dailyAvgWaste && newdata.get(i).isInterpolated())
             {
                 LocalDateTime today = newdata.get(i).getTime();
                 LocalDateTime dayStart = today.minusDays(1);
                 LocalDateTime yesterdayEnd = dayStart.minusMinutes(15);
                 LocalDateTime yesterdayStart = yesterdayEnd.minusDays(1);
-              //  double diffFromYesterday = Heuristics.yesterdayDiff(today, dayStart, yesterdayEnd, yesterdayStart, newdata);
+                double diffFromYesterday = Heuristics.yesterdayDiff(today, dayStart, yesterdayEnd, yesterdayStart, newdata);
+                if (diffFromYesterday>=0)
+                {
+                    newdata.get(i).setEnergyData(diffFromYesterday);
+                }
             }
         }
-
-
-        AtomicInteger counter = new AtomicInteger();
-      //  double dailyAvgWaste = Heuristics.average_waste_per_day(household);
-
-        /*
-        newdata.forEach((key, value) ->
-        {
-            if (value > dailyAvgWaste)
-            {
-                LocalDateTime dayStart = key.minusDays(1);
-                LocalDateTime yesterdayEnd = dayStart.minusMinutes(15);
-                LocalDateTime yesterdayStart = yesterdayEnd.minusDays(1);
-                double diffFromYesterday = Heuristics.yesterdayDiff(key, dayStart, yesterdayEnd, yesterdayStart, newdata);
-                if (diffFromYesterday >= 0)
-                    {
-                    newdata.put(key, diffFromYesterday);
-                    }
-
-            }
-            counter.getAndIncrement();
-        });
-        */
         return newdata;
 
     }

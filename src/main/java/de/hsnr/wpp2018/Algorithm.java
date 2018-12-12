@@ -57,6 +57,10 @@ public interface Algorithm<T extends Algorithm.Configuration> {
             return time;
         }
 
+        public void setEnergyData(Double energyData) {
+            this.energyData = energyData;
+        }
+
         public Double getEnergyData() {
             return energyData;
         }
