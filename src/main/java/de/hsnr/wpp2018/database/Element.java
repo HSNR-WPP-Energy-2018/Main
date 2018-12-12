@@ -2,6 +2,7 @@ package de.hsnr.wpp2018.database;
 
 import java.time.LocalDateTime;
 import java.time.Month;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 public class Element {
@@ -66,9 +67,30 @@ public class Element {
         return descriptors;
     }
 
+    public boolean matchesDescriptors(List<Descriptor> descriptors, boolean matchAll) {
+        for (Descriptor queryDescriptor : descriptors) {
+            boolean matched = false;
+            for (Descriptor elementDescriptor : this.descriptors) {
+                matched = matched || queryDescriptor.matches(elementDescriptor);
+                if (matched && !matchAll) {
+                    return true;
+                }
+            }
+            if (!matched && matchAll) {
+                return false;
+            }
+        }
+        return matchAll;
+    }
+
     public double getValue(Month month, int day, int hour, int minute, int second) {
-        // TODO: implement
-        return -1;
+        LocalDateTime now = LocalDateTime.now();
+        // use last year because start month, day, etc. may be after the element start "date"
+        LocalDateTime tempStart = LocalDateTime.of(now.getYear() - 1, startMonth, startDay, startHour, startMinute, startSecond);
+        LocalDateTime tempKey = LocalDateTime.of(now.getYear(), month, day, hour, minute, second);
+        //TODO: how to handle requests for dates in between two keys?
+        int key = (int) Math.floor((tempStart.until(tempKey, ChronoUnit.SECONDS) / (double) this.interval) % this.values.size());
+        return values.get(key);
     }
 
     public double getValue(LocalDateTime date) {
