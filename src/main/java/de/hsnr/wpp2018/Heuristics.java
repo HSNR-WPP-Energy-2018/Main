@@ -27,7 +27,6 @@ public class Heuristics {
         this.mechanicalEquip = waste*3/100; //Mechanische Geräte
     }
 
-
     public static double average_waste_per_day(Heuristics.Household household)
     {
         int persons = household.getNumberOfPersons();
