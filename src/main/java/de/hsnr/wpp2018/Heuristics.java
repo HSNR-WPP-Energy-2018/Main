@@ -82,6 +82,7 @@ public class Heuristics {
 
     public static TreeMap<LocalDateTime,Double> seasonalConsumption(TreeMap<LocalDateTime,Double> newdata)
     {
+
         return newdata;
     }
 
