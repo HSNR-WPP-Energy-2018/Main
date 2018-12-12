@@ -6,7 +6,6 @@ import de.hsnr.wpp2018.Heuristics;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static java.util.stream.Collectors.toMap;
 
@@ -89,12 +88,13 @@ public class Newton implements Algorithm<Newton.Configuration> {
 
 
 
-    public TreeMap<LocalDateTime, Double> interpolate(TreeMap<LocalDateTime, Double> data, Newton.Configuration configuration) {
+    public ArrayList<Algorithm.Consumption> interpolate(TreeMap<LocalDateTime, Double> data, Configuration configuration) {
         double P;
         TreeMap<LocalDateTime, Double> resultmap = new TreeMap<>();
         TreeMap<LocalDateTime, Double> neighbors_map = new TreeMap<>();
         Map<LocalDateTime, Double> neighbors_asc = new LinkedHashMap<>();
         Map.Entry<LocalDateTime, Double> entry = data.firstEntry();
+        ArrayList<Algorithm.Consumption> values = new ArrayList<>();
 
 
         while (data.higherEntry(entry.getKey()) != null) {
@@ -112,14 +112,14 @@ public class Newton implements Algorithm<Newton.Configuration> {
 
 
             if (Helper.getDistance(one, two) > configuration.getInterval()) {
-                    int counter = 0;
-                    for(Iterator<Map.Entry<LocalDateTime, Double>>it=neighbors_desc.entrySet().iterator();it.hasNext();){
-                        Map.Entry<LocalDateTime, Double> entry2 = it.next();
-                        if (counter >= configuration.getNeighbors()) {
-                            it.remove();
-                        }
-                        counter++;
+                int counter = 0;
+                for(Iterator<Map.Entry<LocalDateTime, Double>>it=neighbors_desc.entrySet().iterator();it.hasNext();){
+                    Map.Entry<LocalDateTime, Double> entry2 = it.next();
+                    if (counter >= configuration.getNeighbors()) {
+                        it.remove();
                     }
+                    counter++;
+                }
 
                 neighbors_desc.entrySet()
                         .stream()
@@ -144,6 +144,7 @@ public class Newton implements Algorithm<Newton.Configuration> {
 
                 LocalDateTime newDate = lastDate.plusMinutes(15);
                 P = createNewtonPolynoms(f_values, x, newDate, lastDate);
+                values.add(new Algorithm.Consumption(newDate,P,true));
                 resultmap.put(newDate,P);
 
                 /*
@@ -166,6 +167,7 @@ public class Newton implements Algorithm<Newton.Configuration> {
                         x = f_values.size();
                         P = createNewtonPolynoms(f_values, x, newDate, lastDate); //Bei P kommt dann der interpolierte Wert für's neue aktuelle x raus
                         resultmap.put(newDate,P);
+                        values.add(new Algorithm.Consumption(newDate,P,true));
                     }
                 }
 
@@ -173,13 +175,26 @@ public class Newton implements Algorithm<Newton.Configuration> {
                 neighbors_asc.clear();
                 neighbors_map.clear();
             }
+            else
+            {
+                values.add(new Algorithm.Consumption(entry.getKey(),entry.getValue(),false));
+            }
             entry = data.higherEntry(entry.getKey());
         }
+/*
         resultmap.forEach((key, value) ->
         {
+            values.add(new Algorithm.Consumption(key,value,true));
             data.put(key,value);
         });
-        return data;
+*/
+
+        for (int i=0;i<values.size();i++)
+        {
+            System.out.println(values.get(i).getTime() + " + " + values.get(i).getEnergyData() + " + " + values.get(i).isInterpolated());
+        }
+
+        return values;
     }
 
     public static class Configuration extends Algorithm.Configuration {
@@ -193,5 +208,18 @@ public class Newton implements Algorithm<Newton.Configuration> {
         public int getNeighbors() {
             return neighbors;
         }
+    }
+
+    public static class Consumption extends Algorithm.Consumption {
+        private LocalDateTime time;
+        private double energyData;
+        private boolean isInterpolated;
+
+        public Consumption(LocalDateTime date, Double energyData, boolean isInterpolated) {
+            super(date, energyData,isInterpolated);
+            //this.energyData = energyData;
+            //this.isInterpolated = isInterpolated;
+        }
+
     }
 }

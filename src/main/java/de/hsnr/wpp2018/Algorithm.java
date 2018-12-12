@@ -1,11 +1,11 @@
 package de.hsnr.wpp2018;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.TreeMap;
 
 public interface Algorithm<T extends Algorithm.Configuration> {
 
-    TreeMap<LocalDateTime, Double> interpolate(TreeMap<LocalDateTime, Double> data, T configuration);
 
     class Configuration {
         private int interval;
@@ -20,7 +20,6 @@ public interface Algorithm<T extends Algorithm.Configuration> {
     }
 
     class Household {
-        //hier kann dann evtl auch später eine Info über das Berufsbild oder das Reiseverhalten der Personen ein, sodass man zB weiß, ob sie in den Ferien oft zu Hause sind
         private int numberOfPersons;
         private double livingSpace;
 
@@ -37,5 +36,35 @@ public interface Algorithm<T extends Algorithm.Configuration> {
         public double getLivingSpace() {
             return livingSpace;
         }
+    }
+
+
+    class Consumption {
+       // private TreeMap<LocalDateTime, Double> energyData;
+
+        private LocalDateTime time;
+        private Double energyData;
+        private boolean isInterpolated;
+
+        public Consumption(LocalDateTime time, double energyData, boolean isInterpolated)
+        {
+            this.time = time;
+            this.energyData = energyData;
+            this.isInterpolated = isInterpolated;
+        }
+
+        public LocalDateTime getTime() {
+            return time;
+        }
+
+        public Double getEnergyData() {
+            return energyData;
+        }
+
+        public boolean isInterpolated() {
+            return isInterpolated;
+        }
+
+
     }
 }

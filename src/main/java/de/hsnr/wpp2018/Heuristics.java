@@ -1,10 +1,8 @@
 package de.hsnr.wpp2018;
 
-import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.Month;
+import java.util.ArrayList;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -88,11 +86,28 @@ public class Heuristics {
 
 
 
-    public static TreeMap<LocalDateTime, Double> useHeuristics(TreeMap<LocalDateTime, Double> newdata, Heuristics.Household household)
+    public static ArrayList<Algorithm.Consumption> useHeuristics(ArrayList<Algorithm.Consumption> newdata, Household household)
     {
-        AtomicInteger counter = new AtomicInteger();
+
         double dailyAvgWaste = Heuristics.average_waste_per_day(household);
 
+        for (int i=0; i<newdata.size();i++)
+        {
+            if (newdata.get(i).getEnergyData() > dailyAvgWaste)
+            {
+                LocalDateTime today = newdata.get(i).getTime();
+                LocalDateTime dayStart = today.minusDays(1);
+                LocalDateTime yesterdayEnd = dayStart.minusMinutes(15);
+                LocalDateTime yesterdayStart = yesterdayEnd.minusDays(1);
+              //  double diffFromYesterday = Heuristics.yesterdayDiff(today, dayStart, yesterdayEnd, yesterdayStart, newdata);
+            }
+        }
+
+
+        AtomicInteger counter = new AtomicInteger();
+      //  double dailyAvgWaste = Heuristics.average_waste_per_day(household);
+
+        /*
         newdata.forEach((key, value) ->
         {
             if (value > dailyAvgWaste)
@@ -109,7 +124,9 @@ public class Heuristics {
             }
             counter.getAndIncrement();
         });
+        */
         return newdata;
+
     }
 
 

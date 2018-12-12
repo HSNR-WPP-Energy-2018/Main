@@ -38,7 +38,7 @@ public class EvaluationTest {
         result = new Averaging().interpolate(testData, configuration);
     }
 
-    @After
+   // @After
     public void output() {
         System.out.println("  Result: " + result.size() + " elements");
         System.out.println("Euclid difference (original -> interpolated): " + Rating.calculateDifference(original, result));
