@@ -73,9 +73,11 @@ public class Newton implements Algorithm<Newton.Configuration> {
             i_counter++;
         }
         p = Helper.roundDouble(p,decimals);
+        /*
         if (p < 0) {
             p = Heuristics.castNegativesToZero(p);
         }
+        */
 
         //System.out.printf("Approximation for next x is " + "%f" + " at " + newDate + "\n", p); //"%f\n"
         if (p == Double.POSITIVE_INFINITY)
@@ -188,11 +190,6 @@ public class Newton implements Algorithm<Newton.Configuration> {
             data.put(key,value);
         });
 */
-
-        for (int i=0;i<values.size();i++)
-        {
-            System.out.println(values.get(i).getTime() + " + " + values.get(i).getEnergyData() + " + " + values.get(i).isInterpolated());
-        }
 
         return values;
     }

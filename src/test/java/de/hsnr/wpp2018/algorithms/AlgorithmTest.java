@@ -54,7 +54,8 @@ public class AlgorithmTest {
         result = new Averaging().interpolate(testData, new Averaging.Configuration(INTERVAL, intervals));
     }
 
-    /* Ich musste das erstmal auskommentieren, weil die Methode beim neuen Datentyp Algorithm.Consumption noch nicht funktioniert und das Programm sonst abschmiert
+    /* Ich musste das erstmal auskommentieren, weil die Methode beim neuen Datentyp Algorithm.Consumption noch nicht funktioniert und das Programm sonst abschmiert,
+    wenn man die Newton-Methode ausführt
 
     @After
     public void output() {

@@ -24,7 +24,7 @@ public class Linear implements Algorithm<Algorithm.Configuration> {
             LocalDateTime two = data.higherKey(entry.getKey());
             counter++;
             if (Helper.getDistance(one, two) > configuration.getInterval()) {
-                //x1<=x<=x2
+                //x1<=x<=x2s
                 y_linear = interpolateValue(counter, counter - 1, counter + 1, entry.getValue(), data.higherEntry(entry.getKey()).getValue());
                 y_linear = Helper.roundDouble(y_linear,decimals);
                 System.out.printf("Approximation for next x is " + "%f\n", y_linear);
@@ -36,4 +36,6 @@ public class Linear implements Algorithm<Algorithm.Configuration> {
         }
         return Helper.mergeTreeMaps(data, newMap);
     }
+
+
 }

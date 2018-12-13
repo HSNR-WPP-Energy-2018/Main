@@ -2,6 +2,8 @@ package de.hsnr.wpp2018;
 
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.chrono.ChronoLocalDateTime;
 import java.util.ArrayList;
 import java.util.TreeMap;
 
@@ -56,13 +58,16 @@ public class Heuristics {
     {
         double meanDaily = average_waste_per_day(household);
         Heuristics heuristics = new Heuristics(meanDaily);
+
         //System.out.println(heuristics.heating + " test");
 
     }
 
-    public static double castNegativesToZero(double value)
+
+    public static double minDailyConsumption(double value)
     {
-        value = 0.0;
+        Heuristics heuristics = new Heuristics(value);
+        value = heuristics.processCooling; //Sei Minimalverbrauch pro Tag lediglich durch Kühlgeräte bestimmt (Person ist nicht zu Hause etc.)s
         return value;
     }
 
@@ -89,8 +94,11 @@ public class Heuristics {
     /*Wenn ein Wert unrealistisch hoch ist, dann wird (sofern es sich hier um Wochentage handelt), dieser ignoriert und mit einem
       Differenzwert aufgefüllt, der nötig wäre, um auf den Verbrauchswert vom Vortag zu kommen (sofern positiv)
     */
-    public static double yesterdayDiff(LocalDateTime today, LocalDateTime dayStart, LocalDateTime yesterdayEnd, LocalDateTime yesterdayStart, ArrayList<Algorithm.Consumption> newdata)
+    public static double yesterdayDiff(LocalDateTime today, ArrayList<Algorithm.Consumption> newdata)
     {
+        LocalDateTime dayStart = today.minusDays(1);
+        LocalDateTime yesterdayEnd = dayStart.minusMinutes(15);
+        LocalDateTime yesterdayStart = yesterdayEnd.minusDays(1);
         double diff = 0;
         if(isBusinessDay(today) && isBusinessDay(dayStart)) {
             double energyYesterday = 0;
@@ -120,26 +128,41 @@ public class Heuristics {
     }
 
 
-
+//Hier werden alle Heuristiken aufgerufen
     public static ArrayList<Algorithm.Consumption> useHeuristics(ArrayList<Algorithm.Consumption> newdata, Household household)
     {
+        LocalTime weekdayNightBegin = LocalTime.of(00,00); //evtl aufpassen, falls Heuristik auf 23 Uhr gestellt wird -> betrachtet anderen Tag
+        LocalTime weekdayNightEnd = LocalTime.of(06,00);
+        LocalTime weekendNightBegin = LocalTime.of(01,00);
+        LocalTime weekendDayBegin = LocalTime.of(9,00);
+
 
         double dailyAvgWaste = Heuristics.average_waste_per_day(household);
 
         for (int i=0; i<newdata.size();i++)
         {
-            if (newdata.get(i).getEnergyData() > dailyAvgWaste && newdata.get(i).isInterpolated())
+            //Durchschnittlichen nächtlichen Verbrauchswert für alle UNinterpolierten Werte sammeln
+            if (!newdata.get(i).isInterpolated() && isBusinessDay(newdata.get(i).getTime())
+            && newdata.get(i).getTime().toLocalTime().isAfter(weekdayNightBegin) && newdata.get(i).getTime().toLocalTime().isBefore(weekdayNightEnd))
             {
-                LocalDateTime today = newdata.get(i).getTime();
-                LocalDateTime dayStart = today.minusDays(1);
-                LocalDateTime yesterdayEnd = dayStart.minusMinutes(15);
-                LocalDateTime yesterdayStart = yesterdayEnd.minusDays(1);
-                double diffFromYesterday = Heuristics.yesterdayDiff(today, dayStart, yesterdayEnd, yesterdayStart, newdata);
+                System.out.println(newdata.get(i).getTime().toLocalTime());
+            }
+
+
+            if (newdata.get(i).getEnergyData() <= 0 && newdata.get(i).isInterpolated())
+            {
+                newdata.get(i).setEnergyData(minDailyConsumption(dailyAvgWaste));
+            }
+            else if (newdata.get(i).getEnergyData() > dailyAvgWaste && newdata.get(i).isInterpolated())
+            {
+
+                double diffFromYesterday = Heuristics.yesterdayDiff(newdata.get(i).getTime(), newdata);
                 if (diffFromYesterday>=0)
                 {
                     newdata.get(i).setEnergyData(diffFromYesterday);
                 }
             }
+
         }
         return newdata;
 
