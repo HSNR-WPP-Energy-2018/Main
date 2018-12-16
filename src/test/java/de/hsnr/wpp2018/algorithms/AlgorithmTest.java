@@ -42,7 +42,8 @@ public class AlgorithmTest {
     @Test
     public void newton() {
         resultList = new Newton().interpolate(testData, new Newton.Configuration(INTERVAL, 10));
-        Heuristics.useHeuristics(resultList, new Heuristics.Household(PERSONS, SIZE));
+        //Heuristics.useHeuristics(resultList, new Heuristics.Household(PERSONS, SIZE));
+        Heuristics.nocturnalWaste(resultList, new Heuristics.Household(PERSONS, SIZE));
     }
 
     @Test
