@@ -9,24 +9,9 @@ import java.util.TreeMap;
 
 public class Heuristics {
 
-    private double processHeating;
-    private double processCooling;
-    private double ICT;
-    private double warmWater;
-    private double illumination;
-    private double heating;
-    private double mechanicalEquip;
+    //SPÄTER ZU OPTIMIZATIONS NOCH HINZUFÜGEN & einige Methoden wie zB isBusinessDay evtl zu "Helper" hinzufügen
 
-    //Prozentualer Verbrauchsanteil der Haushaltsgeräte
-    public Heuristics(double waste) {
-        this.processHeating = waste * 30 / 100; //Prozesswärme
-        this.processCooling = waste * 23 / 100; //Prozesskälte
-        this.ICT = waste * 17 / 100; //IuK-Systeme
-        this.warmWater = waste * 12 / 100; //Warmwasseraufbereitung
-        this.illumination = waste * 8 / 100; //Beleuchtung
-        this.heating = waste * 7 / 100; //Heizung
-        this.mechanicalEquip = waste * 3 / 100; //Mechanische Geräte
-    }
+
 
     public static double average_waste_per_day(Heuristics.Household household) {
         int persons = household.getNumberOfPersons();
@@ -60,45 +45,10 @@ public class Heuristics {
     }
 
 
-    //Evtl mergen mit UseHeuristics, sodass wir aus AlgorithmTest nur eine Methode aus der Klasse aufrufen müssen?
-    public static void nocturnalWaste(ArrayList<Algorithm.Consumption> newdata, Heuristics.Household household) {
-        double meanDaily = average_waste_per_day(household);
-        double meanHourly = meanDaily / 60;
-        Heuristics devices = new Heuristics(meanHourly);
-        double minTolerance = devices.processCooling;
-        double maxTolerance = devices.heating + devices.processCooling + (devices.ICT / 2);
-        double avgNight = devices.heating + devices.processCooling;
-
-        LocalTime weekdayNightBegin = LocalTime.of(23, 00); //evtl aufpassen, falls Heuristik auf 23 Uhr gestellt wird -> betrachtet anderen Tag
-        LocalTime weekdayNightEnd = LocalTime.of(07, 00);
-        LocalTime weekendNightBegin = LocalTime.of(00, 00);
-        LocalTime weekendNightEnd = LocalTime.of(9, 00);
-
-        for (int i = 0; i < newdata.size(); i++) {
-            LocalDateTime today = newdata.get(i).getTime();
-            //Verbrauch nachts an Werktagen
-            if (isBusinessDay(newdata.get(i).getTime())) {
-                if (!newdata.get(i).isInterpolated() && today.toLocalTime().isAfter(weekdayNightBegin) || today.toLocalTime().isBefore(weekdayNightEnd)) {
-                    if (newdata.get(i).getEnergyData() < minTolerance || newdata.get(i).getEnergyData() > maxTolerance) {
-                        newdata.get(i).setEnergyData(avgNight);
-                    }
-                }
-            }
-            //Verbrauch nachts an Wochenenden
-            else {
-                if (!newdata.get(i).isInterpolated() && today.toLocalTime().isAfter(weekendNightBegin) || today.toLocalTime().isBefore(weekendNightEnd)) {
-                    if (newdata.get(i).getEnergyData() < minTolerance || newdata.get(i).getEnergyData() > maxTolerance) {
-                        newdata.get(i).setEnergyData(avgNight);
-                    }
-                }
-            }
-        }
-    }
-
 
     public static double minDailyConsumption(double value) {
-        Heuristics heuristics = new Heuristics(value);
-        value = heuristics.processCooling; //Sei Minimalverbrauch pro Tag lediglich durch Kühlgeräte bestimmt (Person ist nicht zu Hause etc.)
+        Wastings wastings = new Wastings(value);
+        value = wastings.getProcessCooling(); //Sei Minimalverbrauch pro Tag lediglich durch Kühlgeräte bestimmt (Person ist nicht zu Hause etc.)
         return value;
     }
 
@@ -166,6 +116,14 @@ public class Heuristics {
 
         public Household(int number_of_persons, double living_space) {
             super(number_of_persons, living_space);
+        }
+
+    }
+
+    public static class Wastings extends Algorithm.Wastings {
+
+        public Wastings(double wasteVal) {
+            super(wasteVal);
         }
 
     }
