@@ -63,6 +63,7 @@ public class AvgNightDay {
 
     }
 
+
     public static class Wastings extends Algorithm.Wastings {
 
         public Wastings(double wasteVal) {
