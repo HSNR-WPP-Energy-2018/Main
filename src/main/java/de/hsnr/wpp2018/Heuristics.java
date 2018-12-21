@@ -2,11 +2,10 @@ package de.hsnr.wpp2018;
 
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.chrono.ChronoLocalDateTime;
+import java.time.Month;
 import java.util.ArrayList;
-import java.util.TreeMap;
 
+//Eine Sammlung von Heuristiken, die in den Optimierungsmethoden aufgerufen werden können
 public class Heuristics {
 
     //SPÄTER ZU OPTIMIZATIONS NOCH HINZUFÜGEN & einige Methoden wie zB isBusinessDay evtl zu "Helper" hinzufügen
@@ -45,16 +44,10 @@ public class Heuristics {
     }
 
 
-
     public static double minDailyConsumption(double value) {
         Wastings wastings = new Wastings(value);
         value = wastings.getProcessCooling(); //Sei Minimalverbrauch pro Tag lediglich durch Kühlgeräte bestimmt (Person ist nicht zu Hause etc.)
         return value;
-    }
-
-
-    public static TreeMap<LocalDateTime, Double> seasonalConsumption(TreeMap<LocalDateTime, Double> newdata) {
-        return newdata;
     }
 
 

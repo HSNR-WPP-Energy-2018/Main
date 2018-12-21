@@ -1,4 +1,4 @@
-package de.hsnr.wpp2018.Optimizations;
+package de.hsnr.wpp2018.optimizations;
 
 import de.hsnr.wpp2018.Algorithm;
 import de.hsnr.wpp2018.Heuristics;
@@ -10,12 +10,12 @@ import java.util.ArrayList;
 public class AvgNightDay {
 
 
-    public static void nightDayWaste(ArrayList<Algorithm.Consumption> newdata, Heuristics.Household household) {
+    public static ArrayList<Algorithm.Consumption> nightDayWaste(ArrayList<Algorithm.Consumption> newdata, Heuristics.Household household) {
         double meanDaily = Heuristics.average_waste_per_day(household);
         double meanHourly = meanDaily / 60;
         Heuristics.Wastings wastings = new Heuristics.Wastings(meanHourly); //stündlicher Verbrauch
 
-        double minNightTolerance = wastings.getProcessCooling();
+        double minNightTolerance = wastings.getProcessCooling(); //fängt zusätzlich interpolierte Werte gleich oder unter Null ab
         double maxNightTolerance = wastings.getHeating() + wastings.getProcessCooling() + (wastings.getICT()/ 2);
         double avgNight = wastings.getHeating() + wastings.getProcessCooling();
         double avgMorning = avgNight + wastings.getIllumination() + (wastings.getWarmWater()/6); //Licht + 10 min Duschen
@@ -92,23 +92,8 @@ public class AvgNightDay {
             }
         }
 
-    }
-
-
-    public static class Household extends Algorithm.Household {
-
-        public Household(int number_of_persons, double living_space) {
-            super(number_of_persons, living_space);
-        }
+        return newdata;
 
     }
 
-
-    public static class Wastings extends Algorithm.Wastings {
-
-        public Wastings(double wasteVal) {
-            super(wasteVal);
-        }
-
-    }
 }

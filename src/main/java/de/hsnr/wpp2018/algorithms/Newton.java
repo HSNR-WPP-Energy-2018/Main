@@ -32,7 +32,7 @@ public class Newton implements Algorithm<Newton.Configuration> {
 
 
     private double createNewtonPolynoms(Map<LocalDateTime, ArrayList<Double>> f_values, int x, LocalDateTime newDate, LocalDateTime lastDate) {
-        int decimals = 5;
+        int decimals = 6;
         int i=1;
 
         //Schritt 1: Polynome berechnen

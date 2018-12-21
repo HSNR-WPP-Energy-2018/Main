@@ -3,11 +3,10 @@ package de.hsnr.wpp2018.algorithms;
 import de.hsnr.wpp2018.Algorithm;
 import de.hsnr.wpp2018.Heuristics;
 import de.hsnr.wpp2018.Importer;
-// import de.hsnr.wpp2018.Optimizations.AvgNightDay;
-import de.hsnr.wpp2018.Optimizations.AvgNightDay;
-import de.hsnr.wpp2018.evaluation.Rating;
+// import de.hsnr.wpp2018.optimizations.AvgNightDay;
+import de.hsnr.wpp2018.optimizations.AvgNightDay;
 import de.hsnr.wpp2018.evaluation.TestDataGenerator;
-import org.junit.After;
+import de.hsnr.wpp2018.optimizations.SeasonalDifferences;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -45,7 +44,8 @@ public class AlgorithmTest {
     public void newton() {
         resultList = new Newton().interpolate(testData, new Newton.Configuration(INTERVAL, 10));
         //Heuristics.useHeuristics(resultList, new Heuristics.Household(PERSONS, SIZE));
-         AvgNightDay.nightDayWaste(resultList, new Heuristics.Household(PERSONS, SIZE));
+         resultList = AvgNightDay.nightDayWaste(resultList, new Heuristics.Household(PERSONS, SIZE));
+         resultList = SeasonalDifferences.adjustSeasons(resultList);
     }
 
     @Test
