@@ -1,19 +1,17 @@
 package de.hsnr.wpp2018.algorithms;
 
 import de.hsnr.wpp2018.Algorithm;
-import de.hsnr.wpp2018.optimizations.Heuristics;
+import de.hsnr.wpp2018.optimizations.*;
 import de.hsnr.wpp2018.Importer;
 // import de.hsnr.wpp2018.optimizations.AvgNightDay;
-import de.hsnr.wpp2018.optimizations.AvgNightDay;
 import de.hsnr.wpp2018.evaluation.TestDataGenerator;
-import de.hsnr.wpp2018.optimizations.PatternRecognition;
-import de.hsnr.wpp2018.optimizations.SeasonalDifferences;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.TreeMap;
 
 public class AlgorithmTest {
@@ -44,12 +42,12 @@ public class AlgorithmTest {
     @Test
     public void newton() {
         resultList = new Newton().interpolate(testData, new Newton.Configuration(INTERVAL, 10));
-        /* behalten und später geeignete Aufrufmethode für verschiedene Heuristiken bauen
-         Heuristics.useHeuristics(resultList, new Heuristics.Household(PERSONS, SIZE));
+        Holidays.scanFile();
+         //behalten und später geeignete Aufrufmethode für verschiedene Heuristiken bauen
+         //Heuristics.useHeuristics(resultList, new Heuristics.Household(PERSONS, SIZE));
          resultList = AvgNightDay.nightDayWaste(resultList, new Heuristics.Household(PERSONS, SIZE));
          resultList = SeasonalDifferences.adjustSeasons(resultList);
-         */
-         resultList = PatternRecognition.checkBehaviour(resultList, 3, 0.1);
+         //resultList = PatternRecognition.checkBehaviour(resultList, 3, 0.1);
     }
 
     @Test

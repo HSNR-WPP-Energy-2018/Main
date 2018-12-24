@@ -75,8 +75,8 @@ public class PatternRecognition {
         double meanRangeUpperBound = meanRange + (rangeTolerance * meanRange);
         double meanRangeLowerBound = meanRange - (rangeTolerance * meanRange);
         for (int i = 0; i < newdata.size(); i++) {
-            LocalDateTime today = newdata.get(i).getTime();
             if (newdata.get(i).isInterpolated()) {
+                System.out.println(newdata.get(i).getTime());
                 int finalI = i;
                 avgWastings.forEach((key, avgRangeValue) -> {
                     if (key.inRange(newdata.get(finalI).getTime().toLocalTime())) {
