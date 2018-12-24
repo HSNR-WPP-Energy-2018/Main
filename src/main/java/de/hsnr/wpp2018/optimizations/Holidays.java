@@ -31,7 +31,6 @@ public class Holidays {
 
         ClassLoader classloader = Thread.currentThread().getContextClassLoader();
         InputStream inputStream = classloader.getResourceAsStream("feiertage_2019.ics");
-
         try (BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))) {
             String line = null;
             while((line = br.readLine()) != null) {
