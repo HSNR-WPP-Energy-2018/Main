@@ -1,14 +1,14 @@
-package de.hsnr.wpp2018;
+package de.hsnr.wpp2018.optimizations;
+
+import de.hsnr.wpp2018.Algorithm;
 
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
-import java.time.Month;
 import java.util.ArrayList;
 
 //Eine Sammlung von Heuristiken, die in den Optimierungsmethoden aufgerufen werden können
 public class Heuristics {
 
-    //SPÄTER ZU OPTIMIZATIONS NOCH HINZUFÜGEN & einige Methoden wie zB isBusinessDay evtl zu "Helper" hinzufügen
 
 
 

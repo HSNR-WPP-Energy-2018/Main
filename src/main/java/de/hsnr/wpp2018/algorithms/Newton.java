@@ -2,7 +2,6 @@ package de.hsnr.wpp2018.algorithms;
 
 import de.hsnr.wpp2018.Algorithm;
 import de.hsnr.wpp2018.Helper;
-import de.hsnr.wpp2018.Heuristics;
 
 import java.time.LocalDateTime;
 import java.util.*;

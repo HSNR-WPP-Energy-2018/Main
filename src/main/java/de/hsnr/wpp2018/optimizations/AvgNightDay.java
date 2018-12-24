@@ -1,7 +1,6 @@
 package de.hsnr.wpp2018.optimizations;
 
 import de.hsnr.wpp2018.Algorithm;
-import de.hsnr.wpp2018.Heuristics;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -33,7 +32,7 @@ public class AvgNightDay {
 
             if (newdata.get(i).isInterpolated())
             {
-                if (Heuristics.isBusinessDay(newdata.get(i).getTime())) {
+                if (Heuristics.isBusinessDay(today)) {
                     //Verbrauch nachts an Werktagen (hier muss ein "oder" hin, weil der Zähler nach 23 wieder auf 00 resettet wird
                     if (today.toLocalTime().isAfter(weekdayNightBegin) || today.toLocalTime().isBefore(weekdayNightEnd)) {
                         if (newdata.get(i).getEnergyData() < minNightTolerance || newdata.get(i).getEnergyData() > maxNightTolerance) {
