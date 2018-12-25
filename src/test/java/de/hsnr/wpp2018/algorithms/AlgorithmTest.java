@@ -36,7 +36,7 @@ public class AlgorithmTest {
 
     @Test
     public void linear() {
-        result = new Linear().interpolate(testData, new Algorithm.Configuration(INTERVAL));
+        resultList = new Linear().interpolate(testData, new Algorithm.Configuration(INTERVAL));
     }
 
     @Test
