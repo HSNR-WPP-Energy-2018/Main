@@ -54,6 +54,8 @@ public class SeasonalDifferences {
                 }
             }
         }
+
+        //newdata.forEach((i) -> System.out.println("Time: " + i.getTime() + ". Value: " + i.getEnergyData() + ". Interpolated? " + i.isInterpolated()));
         return newdata;
     }
 

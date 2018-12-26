@@ -34,20 +34,36 @@ public class AlgorithmTest {
         System.out.println("TestData: " + testData.size() + " elements");
     }
 
+
+    public void applyHeuristics(ArrayList<Algorithm.Consumption> resultlist, int algorithmNumber)
+    {
+        Holidays.scanFile();
+
+        switch (algorithmNumber) {
+            case 1:
+                Heuristics.useHeuristics(resultList, new Heuristics.Household(PERSONS, SIZE)); //noch umbauen!
+                break;
+            case 2:
+                resultList = AvgNightDay.nightDayWaste(resultList, new Heuristics.Household(PERSONS, SIZE));
+                break;
+            case 3:
+                resultList = PatternRecognition.checkBehaviour(resultList, 3, 0.1);
+        }
+        resultList = SeasonalDifferences.adjustSeasons(resultList);
+
+
+    }
+
     @Test
     public void linear() {
         resultList = new Linear().interpolate(testData, new Algorithm.Configuration(INTERVAL));
+        applyHeuristics(resultList, 3);
     }
 
     @Test
     public void newton() {
         resultList = new Newton().interpolate(testData, new Newton.Configuration(INTERVAL, 10));
-        Holidays.scanFile();
-         //behalten und später geeignete Aufrufmethode für verschiedene Heuristiken bauen
-         //Heuristics.useHeuristics(resultList, new Heuristics.Household(PERSONS, SIZE));
-         resultList = AvgNightDay.nightDayWaste(resultList, new Heuristics.Household(PERSONS, SIZE));
-         resultList = SeasonalDifferences.adjustSeasons(resultList);
-         //resultList = PatternRecognition.checkBehaviour(resultList, 3, 0.1);
+        applyHeuristics(resultList, 2);
     }
 
     @Test

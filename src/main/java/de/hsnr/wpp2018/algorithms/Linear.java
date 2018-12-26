@@ -39,7 +39,6 @@ public class Linear implements Algorithm<Algorithm.Configuration> {
             entry = data.higherEntry(entry.getKey());
         }
 
-
         return values;
     }
 

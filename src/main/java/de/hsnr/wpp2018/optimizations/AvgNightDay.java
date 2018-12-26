@@ -14,11 +14,15 @@ public class AvgNightDay {
         double meanHourly = meanDaily / 60;
         Heuristics.Wastings wastings = new Heuristics.Wastings(meanHourly); //stündlicher Verbrauch
 
-        double minNightTolerance = wastings.getProcessCooling(); //fängt zusätzlich interpolierte Werte gleich oder unter Null ab
-        double maxNightTolerance = wastings.getHeating() + wastings.getProcessCooling() + (wastings.getICT() / 2);
-        double avgNight = wastings.getHeating() + wastings.getProcessCooling();
+        /*
+         (Quelle: VDE) Es wird geschätzt, dass ein solcher „Standby-Verbrauch“ rund 4 % der Bruttostromnachfrage
+         in Deutschland (Betrachtungszeitraum: 2004 bis 2006) betrug
+        */
+        double minNightTolerance = meanHourly*4/100; //im Bestcase so ziemlich kein Verbrauch -> fängt interpolierte Werte gleich oder unter Null ab
+        double maxNightTolerance = minNightTolerance + wastings.getHeating() + (wastings.getICT() / 2);
+        double avgNight = minNightTolerance + wastings.getHeating();
         double avgMorning = avgNight + wastings.getIllumination() + (wastings.getWarmWater() / 6); //Licht + 10 min Duschen
-        double avgDay = wastings.getHeating() + wastings.getProcessCooling() + wastings.getICT() + wastings.getIllumination();
+        double avgDay = wastings.getHeating() + wastings.getICT() + wastings.getIllumination();
 
         LocalTime weekdayNightBegin = LocalTime.of(23, 00); //evtl aufpassen, falls Heuristik auf 23 Uhr gestellt wird -> betrachtet anderen Tag
         LocalTime weekdayNightEnd = LocalTime.of(07, 00);
@@ -83,6 +87,7 @@ public class AvgNightDay {
             }
         }
 
+        //newdata.forEach((i) -> System.out.println("Time: " + i.getTime() + ". Value: " + i.getEnergyData() + ". Interpolated? " + i.isInterpolated()));
         return newdata;
 
     }
