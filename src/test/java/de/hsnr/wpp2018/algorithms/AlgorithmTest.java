@@ -45,11 +45,11 @@ public class AlgorithmTest {
                 break;
             case 2:
                 resultList = AvgNightDay.nightDayWaste(resultList, new Heuristics.Household(PERSONS, SIZE));
+                resultList = SeasonalDifferences.adjustSeasons(resultList);
                 break;
-            case 3:
+            case 3: //Die Ergebnisse von linear + case 3 scheinen meist recht realistisch zu sein
                 resultList = PatternRecognition.checkBehaviour(resultList, 3, 0.1);
         }
-        resultList = SeasonalDifferences.adjustSeasons(resultList);
 
 
     }
@@ -57,7 +57,7 @@ public class AlgorithmTest {
     @Test
     public void linear() {
         resultList = new Linear().interpolate(testData, new Algorithm.Configuration(INTERVAL));
-        applyHeuristics(resultList, 3);
+        applyHeuristics(resultList, 2);
     }
 
     @Test
@@ -74,6 +74,15 @@ public class AlgorithmTest {
         intervals.add(new Averaging.ConfigurationInterval(15, (LocalDateTime current) -> current.plusSeconds(INTERVAL)));
         result = new Averaging().interpolate(testData, new Averaging.Configuration(INTERVAL, intervals));
     }
+
+    //funktioniert noch nicht!!!!!!!!
+    /*
+    @Test
+    public void splines() {
+        resultList = new CubicSplines().interpolate(testData, new CubicSplines.Configuration(INTERVAL, 10));
+        applyHeuristics(resultList, 2);
+    }
+    */
 
     /* Ich musste das erstmal auskommentieren, weil die Methode beim neuen Datentyp Algorithm.Consumption noch nicht funktioniert und das Programm sonst abschmiert,
     wenn man die Newton-Methode ausführt
