@@ -76,13 +76,13 @@ public class AlgorithmTest {
     }
 
     //funktioniert noch nicht!!!!!!!!
-    /*
+
     @Test
     public void splines() {
         resultList = new CubicSplines().interpolate(testData, new CubicSplines.Configuration(INTERVAL, 10));
         applyHeuristics(resultList, 2);
     }
-    */
+
 
     /* Ich musste das erstmal auskommentieren, weil die Methode beim neuen Datentyp Algorithm.Consumption noch nicht funktioniert und das Programm sonst abschmiert,
     wenn man die Newton-Methode ausführt
