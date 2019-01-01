@@ -57,8 +57,8 @@ public class Element {
         return values.get(key);
     }
 
-    public double getValue(LocalDateTime date) {
-        return getValue(date.getMonth(), date.getDayOfMonth(), date.getHour(), date.getMinute(), date.getSecond());
+    public double getValue(LocalDateTime time) {
+        return getValue(time.getMonth(), time.getDayOfMonth(), time.getHour(), time.getMinute(), time.getSecond());
     }
 
     @Override

@@ -1,7 +1,7 @@
 package de.hsnr.wpp2018.algorithms;
 
-import de.hsnr.wpp2018.Algorithm;
-import de.hsnr.wpp2018.RangeAdjuster;
+import de.hsnr.wpp2018.base.Algorithm;
+import de.hsnr.wpp2018.base.Consumption;
 import de.hsnr.wpp2018.evaluation.Rating;
 
 import java.time.Duration;
@@ -12,27 +12,27 @@ import java.util.TreeMap;
 
 public class Averaging implements Algorithm<Averaging.Configuration> {
 
-    public TreeMap<LocalDateTime, Double> interpolate(TreeMap<LocalDateTime, Double> data, Configuration configuration) {
-        TreeMap<LocalDateTime, Double> results = new TreeMap<>();
+    public TreeMap<LocalDateTime, Consumption> interpolate(TreeMap<LocalDateTime, Consumption> data, Configuration configuration) {
+        TreeMap<LocalDateTime, Consumption> results = new TreeMap<>();
         LocalDateTime time = data.firstKey(), end = data.lastKey();
         while (!time.isAfter(end)) {
-            results.put(time, data.getOrDefault(time, interpolateValue(data, configuration, time)));
+            results.put(time, data.getOrDefault(time, new Consumption(interpolateValue(data, configuration, time), true)));
             time = time.plusSeconds(configuration.getInterval());
         }
         return results;
     }
 
-    private double interpolateValue(TreeMap<LocalDateTime, Double> data, Configuration configuration, LocalDateTime key) {
+    private double interpolateValue(TreeMap<LocalDateTime, Consumption> data, Configuration configuration, LocalDateTime key) {
         double sum = 0, weightSum = 0;
         for (ConfigurationInterval interval : configuration.getNeighborIntervals()) {
-            sum += interpolateInterval(data, key, interval.getNeighbors(), interval.isNeighborsWeighted(), interval.getAdjuster());
+            sum += interpolateInterval(data, key, interval.getNeighbors(), interval.isNeighborsWeighted(), interval.getInterval());
             weightSum += interval.getWeight();
         }
         return (weightSum > 0) ? (sum / weightSum) : sum;
     }
 
-    private double interpolateInterval(TreeMap<LocalDateTime, Double> data, LocalDateTime key, int neighbors, boolean weighted, RangeAdjuster adjuster) {
-        long diffInSeconds = Math.abs(Duration.between(adjuster.nextRange(key), key).getSeconds());
+    private double interpolateInterval(TreeMap<LocalDateTime, Consumption> data, LocalDateTime key, int neighbors, boolean weighted, int interval) {
+        long diffInSeconds = Math.abs(Duration.between(key.plusMinutes(interval), key).getSeconds());
         double weightedCount = 0, sum = 0;
         LocalDateTime left = key, right = key;
         for (int i = 0; i < neighbors; i++) {
@@ -41,18 +41,18 @@ public class Averaging implements Algorithm<Averaging.Configuration> {
             double elementWeight = weighted ? (1 / (2D * i)) : 1;
             if (data.containsKey(left)) {
                 weightedCount += elementWeight;
-                sum += data.get(left);
+                sum += data.get(left).getValue();
             }
             if (data.containsKey(right)) {
                 weightedCount += elementWeight;
-                sum += data.get(right);
+                sum += data.get(right).getValue();
             }
         }
         return (weightedCount > 0) ? (sum / weightedCount) : 0;
     }
 
     public static class Optimizer {
-        private List<RangeAdjuster> adjusters;
+        private List<Integer> intervals;
         private int minNeighbors;
         private int maxNeighbors;
         private double minWeight;
@@ -63,25 +63,25 @@ public class Averaging implements Algorithm<Averaging.Configuration> {
         private Configuration bestConfiguration;
         private double bestScore = Double.MAX_VALUE;
 
-        public Optimizer(int interval, List<RangeAdjuster> adjusters, int minNeighbors, int maxNeighbors, double minWeight, double maxWeight, double weightStep) {
-            this.adjusters = adjusters;
+        public Optimizer(int interval, List<Integer> intervals, int minNeighbors, int maxNeighbors, double minWeight, double maxWeight, double weightStep) {
+            this.intervals = intervals;
             this.minNeighbors = minNeighbors;
             this.maxNeighbors = maxNeighbors;
             this.minWeight = minWeight;
             this.maxWeight = maxWeight;
             this.weightStep = weightStep;
-            ArrayList<ConfigurationInterval> intervals = new ArrayList<>();
-            for (RangeAdjuster adjuster : adjusters) {
-                intervals.add(new ConfigurationInterval(minNeighbors, adjuster, false, minWeight));
+            ArrayList<ConfigurationInterval> localIntervals = new ArrayList<>();
+            for (Integer adjuster : intervals) {
+                localIntervals.add(new ConfigurationInterval(minNeighbors, adjuster, false, minWeight));
             }
-            this.currentConfiguration = new Configuration(interval, intervals);
+            this.currentConfiguration = new Configuration(interval, localIntervals);
         }
 
-        public Configuration optimize(TreeMap<LocalDateTime, Double> original, TreeMap<LocalDateTime, Double> data) {
+        public Configuration optimize(TreeMap<LocalDateTime, Consumption> original, TreeMap<LocalDateTime, Consumption> data) {
             return optimize(original, data, 0);
         }
 
-        private Configuration optimize(TreeMap<LocalDateTime, Double> original, TreeMap<LocalDateTime, Double> data, int currentIndex) {
+        private Configuration optimize(TreeMap<LocalDateTime, Consumption> original, TreeMap<LocalDateTime, Consumption> data, int currentIndex) {
             ConfigurationInterval currentInterval = this.currentConfiguration.getNeighborIntervals().get(currentIndex);
             for (int n = minNeighbors; n <= maxNeighbors; n++) {
                 currentInterval.neighbors = n;
@@ -89,13 +89,13 @@ public class Averaging implements Algorithm<Averaging.Configuration> {
                 while (weight <= maxWeight) {
                     currentInterval.weight = weight;
                     currentInterval.neighborsWeighted = false;
-                    if (currentIndex >= (this.adjusters.size() - 1)) {
+                    if (currentIndex >= (this.intervals.size() - 1)) {
                         evaluate(original, data);
                     } else {
                         optimize(original, data, currentIndex + 1);
                     }
                     currentInterval.neighborsWeighted = true;
-                    if (currentIndex >= (this.adjusters.size() - 1)) {
+                    if (currentIndex >= (this.intervals.size() - 1)) {
                         evaluate(original, data);
                     } else {
                         optimize(original, data, currentIndex + 1);
@@ -106,8 +106,8 @@ public class Averaging implements Algorithm<Averaging.Configuration> {
             return bestConfiguration;
         }
 
-        private void evaluate(TreeMap<LocalDateTime, Double> original, TreeMap<LocalDateTime, Double> data) {
-            TreeMap<LocalDateTime, Double> interpolated = new Averaging().interpolate(data, this.currentConfiguration);
+        private void evaluate(TreeMap<LocalDateTime, Consumption> original, TreeMap<LocalDateTime, Consumption> data) {
+            TreeMap<LocalDateTime, Consumption> interpolated = new Averaging().interpolate(data, this.currentConfiguration);
             double score = Rating.calculateDifference(original, interpolated);
             System.out.println("score: " + score + " with config: " + currentConfiguration);
             if (score < bestScore) {
@@ -132,7 +132,7 @@ public class Averaging implements Algorithm<Averaging.Configuration> {
         public Configuration copy() {
             ArrayList<ConfigurationInterval> intervals = new ArrayList<>();
             for (ConfigurationInterval interval : this.getNeighborIntervals()) {
-                intervals.add(new ConfigurationInterval(interval.getNeighbors(), interval.getAdjuster(), interval.isNeighborsWeighted(), interval.getWeight()));
+                intervals.add(new ConfigurationInterval(interval.getNeighbors(), interval.getInterval(), interval.isNeighborsWeighted(), interval.getWeight()));
             }
             return new Configuration(this.getInterval(), intervals);
         }
@@ -153,27 +153,27 @@ public class Averaging implements Algorithm<Averaging.Configuration> {
     public static class ConfigurationInterval {
         private int neighbors; // for every direction
         private boolean neighborsWeighted; // weight neighbors by distance (eg. 0.24 - 0.33 - 0.5 - ELEMENT - 0.5 - 0.33 - 0.25)
-        private RangeAdjuster adjuster;
+        private int interval;
         private double weight; // weight for this value
 
-        public ConfigurationInterval(int neighbors, RangeAdjuster adjuster, boolean neighborsWeighted, double weight) {
+        public ConfigurationInterval(int neighbors, int interval, boolean neighborsWeighted, double weight) {
             this.neighbors = neighbors;
-            this.adjuster = adjuster;
+            this.interval = interval;
             this.neighborsWeighted = neighborsWeighted;
             this.weight = weight;
         }
 
-        public ConfigurationInterval(int neighbors, RangeAdjuster adjuster) {
+        public ConfigurationInterval(int neighbors, int interval) {
             this.neighbors = neighbors;
-            this.adjuster = adjuster;
+            this.interval = interval;
         }
 
         public int getNeighbors() {
             return neighbors;
         }
 
-        public RangeAdjuster getAdjuster() {
-            return adjuster;
+        public int getInterval() {
+            return interval;
         }
 
         public boolean isNeighborsWeighted() {
@@ -189,7 +189,7 @@ public class Averaging implements Algorithm<Averaging.Configuration> {
             return "ConfigurationInterval{" +
                     "neighbors=" + neighbors +
                     ", neighborsWeighted=" + neighborsWeighted +
-                    // ", adjuster=" + adjuster +
+                    ", interval=" + interval +
                     ", weight=" + weight +
                     '}';
         }

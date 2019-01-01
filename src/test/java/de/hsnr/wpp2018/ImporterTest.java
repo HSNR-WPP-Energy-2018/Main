@@ -1,5 +1,6 @@
 package de.hsnr.wpp2018;
 
+import de.hsnr.wpp2018.base.Consumption;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -23,7 +24,7 @@ public class ImporterTest {
         importer.readFile("2016.csv");
         LocalDateTime from = LocalDateTime.of(2016, 5, 1, 0, 0, 0);
         LocalDateTime to = LocalDateTime.of(2016, 10, 1, 0, 0, 0);
-        TreeMap<LocalDateTime, Double> subData = importer.getData(from, to);
+        TreeMap<LocalDateTime, Consumption> subData = importer.getData(from, to);
         if (subData.size() == 0) {
             throw new Exception("no elements");
         }

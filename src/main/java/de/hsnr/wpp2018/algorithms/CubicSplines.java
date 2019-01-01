@@ -1,7 +1,8 @@
 package de.hsnr.wpp2018.algorithms;
 
-import de.hsnr.wpp2018.Algorithm;
 import de.hsnr.wpp2018.Helper;
+import de.hsnr.wpp2018.base.Algorithm;
+import de.hsnr.wpp2018.base.Consumption;
 import org.apache.commons.math3.analysis.interpolation.LinearInterpolator;
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
 
@@ -10,11 +11,9 @@ import java.util.*;
 
 import static java.util.stream.Collectors.toMap;
 
-public class CubicSplines implements Algorithm<Algorithm.Configuration> {
-
+public class CubicSplines implements Algorithm<CubicSplines.Configuration> {
 
     public double equationSys(ArrayList<Double> xArray, ArrayList<Double> yArray) {
-
         double[] x = xArray.stream().mapToDouble(Double::doubleValue).toArray();
         double[] y = yArray.stream().mapToDouble(Double::doubleValue).toArray();
 
@@ -24,46 +23,40 @@ public class CubicSplines implements Algorithm<Algorithm.Configuration> {
         /* Hier kommen die polynomiellen Funktionen raus, die in Frage kommen
         / Arrays.stream(polyFunction.getPolynomials()).forEach(System.out::println);
         */
-
-        double value = polyFunction.value(x.length); //interpolierter Wert
-        return value;
+        return polyFunction.value(x.length);
     }
 
-    public TreeMap<LocalDateTime, Double> removingValues(Map<LocalDateTime, Double> neighbors_desc) {
-        TreeMap<LocalDateTime, Double> neighbors_asc = new TreeMap<>();
+    public TreeMap<LocalDateTime, Double> removingValues(Map<LocalDateTime, Double> neighborsDesc) {
+        TreeMap<LocalDateTime, Double> neighborsAsc = new TreeMap<>();
         int local = 0;
-        for (Iterator<Map.Entry<LocalDateTime, Double>> it = neighbors_desc.entrySet().iterator(); it.hasNext() && local < 4; ) {
+        for (Iterator<Map.Entry<LocalDateTime, Double>> it = neighborsDesc.entrySet().iterator(); it.hasNext() && local < 4; ) {
             Map.Entry<LocalDateTime, Double> entry2 = it.next();
-            neighbors_asc.put(entry2.getKey(), entry2.getValue());
+            neighborsAsc.put(entry2.getKey(), entry2.getValue());
             local++;
         }
-        return neighbors_asc;
+        return neighborsAsc;
     }
 
-
-    public ArrayList<Consumption> interpolate(TreeMap<LocalDateTime, Double> data, Configuration configuration) {
+    public TreeMap<LocalDateTime, Consumption> interpolate(TreeMap<LocalDateTime, Consumption> data, Configuration configuration) {
         int decimals = 5;
-        ArrayList<Algorithm.Consumption> values = new ArrayList<>();  //Neue ArrayList mit den interpolierten Ergebnissen
-        TreeMap<LocalDateTime, Double> neighbors_map = new TreeMap<>();
+        TreeMap<LocalDateTime, Consumption> values = new TreeMap<>();
+        TreeMap<LocalDateTime, Double> neighborsMap = new TreeMap<>();
 
-        Map.Entry<LocalDateTime, Double> entry = data.firstEntry();
+        Map.Entry<LocalDateTime, Consumption> entry = data.firstEntry();
         while (data.higherEntry(entry.getKey()) != null) {
-            neighbors_map.put(entry.getKey(), entry.getValue());
+            neighborsMap.put(entry.getKey(), entry.getValue().getValue());
             LocalDateTime one = entry.getKey();
             LocalDateTime two = data.higherKey(entry.getKey());
 
-            Map<LocalDateTime, Double> neighbors_desc = neighbors_map.entrySet()
+            Map<LocalDateTime, Double> neighborsDesc = neighborsMap.entrySet()
                     .stream()
                     .sorted(Map.Entry.<LocalDateTime, Double>comparingByKey().reversed())
-                    .collect(toMap(Map.Entry::getKey,
-                            Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
-
+                    .collect(toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
 
             if (Helper.getDistance(one, two) > configuration.getInterval()) {
-
-                synchronized (neighbors_desc) {
+                synchronized (neighborsDesc) {
                     int counter = 0;
-                    for (Iterator<Map.Entry<LocalDateTime, Double>> it = neighbors_desc.entrySet().iterator(); it.hasNext(); ) {
+                    for (Iterator<Map.Entry<LocalDateTime, Double>> it = neighborsDesc.entrySet().iterator(); it.hasNext(); ) {
                         Map.Entry<LocalDateTime, Double> entry2 = it.next();
                         if (counter >= 4) {
                             it.remove();
@@ -72,45 +65,40 @@ public class CubicSplines implements Algorithm<Algorithm.Configuration> {
                     }
                 }
 
-
-                double nextVal = data.get(two);
-                TreeMap<LocalDateTime, Double> neighbors_asc = removingValues(neighbors_desc);
+                double nextVal = data.get(two).getValue();
+                TreeMap<LocalDateTime, Double> neighborsAsc = removingValues(neighborsDesc);
 
                 ArrayList<Double> xArray = new ArrayList<>();
                 ArrayList<Double> yArray = new ArrayList<>();
 
-                for (int i = 0; i < neighbors_asc.size() + 1; i++) {
-                    if (i != neighbors_asc.size()) {
-                        xArray.add(Double.valueOf(i + 1));
+                for (int i = 0; i < neighborsAsc.size() + 1; i++) {
+                    if (i != neighborsAsc.size()) {
+                        xArray.add(i + 1d);
                     } else {
-                        xArray.add(Double.valueOf(i + 2));
+                        xArray.add(i + 2d);
                     }
                 }
 
-                neighbors_asc.forEach((key, value) -> yArray.add(value));
+                neighborsAsc.forEach((key, value) -> yArray.add(value));
                 yArray.add(nextVal);
 
                 double result = equationSys(xArray, yArray);
-                result = Helper.roundDouble(result,decimals);
+                result = Helper.roundDouble(result, decimals);
 
                 for (LocalDateTime newDate = one.plusMinutes(15); newDate.isBefore(two); newDate = newDate.plusMinutes(15)) {
-                    values.add(new Algorithm.Consumption(newDate, result, true));
+                    values.put(newDate, new Consumption(result, true));
                 }
 
-                neighbors_desc.clear();
-                neighbors_asc.clear();
-                neighbors_map.clear();
-
-
+                neighborsDesc.clear();
+                neighborsAsc.clear();
+                neighborsMap.clear();
             } else {
-                values.add(new Algorithm.Consumption(one, entry.getValue(), false));
+                values.put(one, entry.getValue().copyAsOriginal());
             }
             entry = data.higherEntry(entry.getKey());
         }
-
         return values;
     }
-
 
     public static class Configuration extends Algorithm.Configuration {
         private int neighbors;
@@ -124,6 +112,4 @@ public class CubicSplines implements Algorithm<Algorithm.Configuration> {
             return neighbors;
         }
     }
-
-
 }

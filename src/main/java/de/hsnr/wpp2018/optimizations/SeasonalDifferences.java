@@ -1,14 +1,13 @@
 package de.hsnr.wpp2018.optimizations;
 
-import de.hsnr.wpp2018.Algorithm;
 import de.hsnr.wpp2018.Helper;
+import de.hsnr.wpp2018.base.Consumption;
+
 import java.time.LocalDateTime;
 import java.time.Month;
-import java.util.ArrayList;
+import java.util.TreeMap;
 
 public class SeasonalDifferences {
-
-
     /*
     Quelle: Geographie Innsbruck Tirol Atlas (Projekt vom Europäischen Fonds für regionale Entwicklung (EFRE))
     http://tirolatlas.uibk.ac.at/maps/thema/query.py/text?lang=de;id=1099
@@ -18,45 +17,43 @@ public class SeasonalDifferences {
     Quelle: Strom-Magazin https://www.strom-magazin.de/strommarkt/stromverbrauch-im-jahresverlauf-der-winter-ist-stromsaison_51786.html
     Die Stromverbrauchskurve im Sommer liegt in Deutschland etwa zehn Prozentpunkte unter der Verbrauchskurve im Winter
     (Stand ist jedoch 2002)
-     */
+    */
 
-    public static boolean isWinterSeason(LocalDateTime thisDate){
-        Month m = thisDate.getMonth();
+    public static boolean isWinterSeason(Month month) {
         //Hierfür habe ich bisher keine elegantere Lösung gefunden, die gleichzeitig auch das Jahr ignoriert
-        if (m.equals(Month.NOVEMBER) || m.equals(Month.DECEMBER) || m.equals((Month.JANUARY))
-                || m.equals(Month.FEBRUARY) || m.equals(Month.MARCH) || m.equals(Month.APRIL)) {
-            return true;
-        } else {
-            return false;
+        Month[] months = {
+                Month.NOVEMBER,
+                Month.DECEMBER,
+                Month.JANUARY,
+                Month.FEBRUARY,
+                Month.MARCH,
+                Month.APRIL,
+        };
+        for (Month m : months) {
+            if (month.equals(m)) {
+                return true;
+            }
         }
+        return false;
     }
 
-
-    public static ArrayList<Algorithm.Consumption> adjustSeasons(ArrayList<Algorithm.Consumption> newdata) {
+    public static void adjustSeasons(TreeMap<LocalDateTime, Consumption> data) {
         double percents = 10;
         int decimals = 6; //Nachkommastellen zum Runden
-        for (int i=0; i<newdata.size();i++)
-        {
-            LocalDateTime today = newdata.get(i).getTime();
-            if (newdata.get(i).isInterpolated())
-            {
+        for (LocalDateTime time : data.keySet()) {
+            if (data.get(time).isInterpolated()) {
                 //WinterSaison -> (+10%) Grundumsatz
-                if (isWinterSeason(today))
-                {
-                    newdata.get(i).setEnergyData(newdata.get(i).getEnergyData() + (percents / 100) * newdata.get(i).getEnergyData());
-                    newdata.get(i).setEnergyData(Helper.roundDouble(newdata.get(i).getEnergyData(),decimals));
+                if (isWinterSeason(time.getMonth())) {
+                    data.get(time).setValue(data.get(time).getValue() + (percents / 100) * data.get(time).getValue());
+                    data.get(time).setValue(Helper.roundDouble(data.get(time).getValue(), decimals));
                 }
                 //SommerSaison -> (-10%) Grundumsatz
-                else
-                {
-                    newdata.get(i).setEnergyData(newdata.get(i).getEnergyData() - (percents / 100) * newdata.get(i).getEnergyData());
-                    newdata.get(i).setEnergyData(Helper.roundDouble(newdata.get(i).getEnergyData(),decimals));
+                else {
+                    data.get(time).setValue(data.get(time).getValue() - (percents / 100) * data.get(time).getValue());
+                    data.get(time).setValue(Helper.roundDouble(data.get(time).getValue(), decimals));
                 }
             }
         }
-
-        //newdata.forEach((i) -> System.out.println("Time: " + i.getTime() + ". Value: " + i.getEnergyData() + ". Interpolated? " + i.isInterpolated()));
-        return newdata;
+        //data.forEach((i) -> System.out.println("Time: " + i.getTime() + ". Value: " + i.getValue() + ". Interpolated? " + i.isInterpolated()));
     }
-
 }

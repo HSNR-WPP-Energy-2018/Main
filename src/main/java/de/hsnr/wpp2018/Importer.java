@@ -1,5 +1,7 @@
 package de.hsnr.wpp2018;
 
+import de.hsnr.wpp2018.base.Consumption;
+
 import java.io.*;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -7,15 +9,14 @@ import java.util.TimeZone;
 import java.util.TreeMap;
 
 public class Importer {
-
-    private TreeMap<LocalDateTime, Double> data = new TreeMap<>();
+    private TreeMap<LocalDateTime, Consumption> data = new TreeMap<>();
 
     public void readFile(String name, String separator) throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader(new File(this.getClass().getClassLoader().getResource(name).getFile())));
         String line;
         while ((line = reader.readLine()) != null) {
-            Double value;
-            LocalDateTime date;
+            double value;
+            LocalDateTime time;
             String[] parts = line.split(separator);
 
             try {
@@ -39,16 +40,16 @@ public class Importer {
                     if (year.length() < 4) {
                         year = "20" + year;
                     }
-                    date = LocalDateTime.of(Integer.parseInt(year), Integer.parseInt(localDateTimeParts[1]), Integer.parseInt(localDateTimeParts[0]), Integer.parseInt(timeParts[0]), Integer.parseInt(timeParts[1]));
+                    time = LocalDateTime.of(Integer.parseInt(year), Integer.parseInt(localDateTimeParts[1]), Integer.parseInt(localDateTimeParts[0]), Integer.parseInt(timeParts[0]), Integer.parseInt(timeParts[1]));
                     break;
                 case 2:
                     String timestamp = parts[0];
-                    date = LocalDateTime.ofInstant(Instant.ofEpochSecond(Integer.parseInt(timestamp)), TimeZone.getDefault().toZoneId());
+                    time = LocalDateTime.ofInstant(Instant.ofEpochSecond(Integer.parseInt(timestamp)), TimeZone.getDefault().toZoneId());
                     break;
                 default:
                     continue;
             }
-            this.data.put(date, value);
+            this.data.put(time, new Consumption(value));
         }
     }
 
@@ -56,11 +57,11 @@ public class Importer {
         readFile(name, ";");
     }
 
-    public TreeMap<LocalDateTime, Double> getData() {
+    public TreeMap<LocalDateTime, Consumption> getData() {
         return data;
     }
 
-    public TreeMap<LocalDateTime, Double> getData(LocalDateTime from, LocalDateTime to) {
+    public TreeMap<LocalDateTime, Consumption> getData(LocalDateTime from, LocalDateTime to) {
         return new TreeMap<>(data.subMap(from, to));
     }
 
@@ -68,8 +69,7 @@ public class Importer {
         return this.data.containsKey(LocalDateTime);
     }
 
-    public double getValue(LocalDateTime LocalDateTime) {
+    public Consumption getValue(LocalDateTime LocalDateTime) {
         return this.data.get(LocalDateTime);
     }
-
 }

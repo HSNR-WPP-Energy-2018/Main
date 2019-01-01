@@ -1,24 +1,26 @@
 package de.hsnr.wpp2018.optimizations;
 
-import de.hsnr.wpp2018.Algorithm;
 import de.hsnr.wpp2018.Helper;
+import de.hsnr.wpp2018.base.Consumption;
+import de.hsnr.wpp2018.base.TimeInterval;
+import de.hsnr.wpp2018.base.WastingData;
 
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicReference;
-
 
 public class PatternRecognition {
 
-
-    public static double calcFromPattern(Algorithm.Consumption currentData, double avgRangeValue, double meanRange, double rangeTolerance) {
-        Heuristics.Wastings wastings = new Heuristics.Wastings(meanRange);
+    public static double calcFromPattern(Consumption currentData, double avgRangeValue, double meanRange, double rangeTolerance) {
+        WastingData wastingData = new WastingData(meanRange);
 
         double minNightTolerance = meanRange * 4 / 100;
-        double maxNightTolerance = minNightTolerance + wastings.getHeating() + (wastings.getICT() / 2);
-        double avgNight = minNightTolerance + wastings.getHeating();
-        double avgDay = wastings.getHeating() + wastings.getICT() + wastings.getIllumination();
+        double maxNightTolerance = minNightTolerance + wastingData.getHeating() + (wastingData.getICT() / 2);
+        double avgNight = minNightTolerance + wastingData.getHeating();
+        double avgDay = wastingData.getHeating() + wastingData.getICT() + wastingData.getIllumination();
 
 
         //Leichte Abweichungen in % vom Mittelwert betrachten, da kaum ein interpolierter Wert exakt = meanRange sein wird
@@ -29,34 +31,33 @@ public class PatternRecognition {
 
         //Person scheint in dem Zeitintervall zu schlafen oder nicht da zu sein, weil avg-Wert dieses Intervalls merkbar unter dem Verbrauchsdurchschnitt liegt
         if (avgRangeValue < meanRangeLowerBound) {
-            if (currentData.getEnergyData() < minNightTolerance || currentData.getEnergyData() > maxNightTolerance) {
+            if (currentData.getValue() < minNightTolerance || currentData.getValue() > maxNightTolerance) {
                 result = avgNight;
             }
         }
         //Person scheint in dem Zeitintervall viele Geräte zu benutzen, weil avg-Wert dieses Intervalls merkbar über dem Verbrauchsdurchschnitt liegt
         else if (avgRangeValue > meanRangeUpperBound) {
-            if (currentData.getEnergyData() < avgDay) {
+            if (currentData.getValue() < avgDay) {
                 result = avgDay;
-            } else if (currentData.getEnergyData() > meanRange) {
+            } else if (currentData.getValue() > meanRange) {
                 result = meanRange;
             }
         }
         //Aktueller Intervallwert entspricht ca. globalem Mean Range -> Interpolierter Wert soll auch auf den Wert angepasst werden, sofern nötig
         else {
-            if (currentData.getEnergyData() > meanRangeUpperBound || currentData.getEnergyData() < meanRangeLowerBound) {
+            if (currentData.getValue() > meanRangeUpperBound || currentData.getValue() < meanRangeLowerBound) {
                 result = meanRange;
             }
         }
 
-        if (result==0.0)
-        {
-            result = currentData.getEnergyData();
+        if (result == 0.0) {
+            result = currentData.getValue();
         }
         return result;
     }
 
     //Stärke der Heuristik: Geht mehr auf individuelles Profil ein + erkennt zusätzlich nun Wochentage <> Wochenenden
-    public static ArrayList<Algorithm.Consumption> checkBehaviour(ArrayList<Algorithm.Consumption> newdata, int range, double rangeTolerance) {
+    public static void checkBehaviour(TreeMap<LocalDateTime, Consumption> data, int range, double rangeTolerance) {
         int decimals = 6; //Nachkommastellen zum Runden
 
         HashMap<TimeInterval, ArrayList<Double>> intervalWastingsWeekday = new HashMap<>();
@@ -65,44 +66,40 @@ public class PatternRecognition {
         HashMap<TimeInterval, Double> avgWastingsWeekend = new HashMap<>();
 
         for (int i = 0; i < (24 / range); i++) {
-            TimeInterval temp = TimeInterval.createRange(LocalTime.of((i * range), 00), LocalTime.of((i * range), 00).plusHours(2).plusMinutes(59));
-            TimeInterval temp2 = TimeInterval.createRange(LocalTime.of((i * range), 00), LocalTime.of((i * range), 00).plusHours(2).plusMinutes(59));
+            TimeInterval temp = TimeInterval.createRange(LocalTime.of((i * range), 0), LocalTime.of((i * range), 0).plusHours(2).plusMinutes(59));
+            TimeInterval temp2 = TimeInterval.createRange(LocalTime.of((i * range), 0), LocalTime.of((i * range), 0).plusHours(2).plusMinutes(59));
             ArrayList<Double> tempList = new ArrayList<>();
             tempList.add(0.0);
             intervalWastingsWeekday.put(temp, tempList);
             intervalWastingsWeekend.put(temp2, tempList);
         }
 
-
-        for (int i = 0; i < newdata.size(); i++) {
-            if (!newdata.get(i).isInterpolated()) {
-                int finalI = i;
-                if (Heuristics.isBusinessDay(newdata.get(i).getTime())) {
-
+        for (LocalDateTime time : data.keySet()) {
+            if (!data.get(time).isInterpolated()) {
+                if (Heuristics.isBusinessDay(time)) {
                     intervalWastingsWeekday.forEach((key, value) -> {
-                        if (key.inRange(newdata.get(finalI).getTime().toLocalTime())) {
-                            value.add(newdata.get(finalI).getEnergyData());
+                        if (key.inRange(time.toLocalTime())) {
+                            value.add(data.get(time).getValue());
                             intervalWastingsWeekday.put(key, value);
                         }
                     });
                 } else {
                     intervalWastingsWeekend.forEach((key, value) -> {
-                        if (key.inRange(newdata.get(finalI).getTime().toLocalTime())) {
-                            value.add(newdata.get(finalI).getEnergyData());
+                        if (key.inRange(time.toLocalTime())) {
+                            value.add(data.get(time).getValue());
                             intervalWastingsWeekend.put(key, value);
                         }
                     });
                 }
-
             }
         }
 
         //Avg Energy Consumption für das jeweilige TimeInterval finden
-        intervalWastingsWeekday.forEach((key, value) -> {
+        intervalWastingsWeekday.forEach((key, values) -> {
             double sum = 0.0;
             int counter = 0;
-            for (int i = 0; i < value.size(); i++) {
-                sum += value.get(i);
+            for (double value : values) {
+                sum += value;
                 counter++;
             }
             if (counter != 0) {
@@ -112,12 +109,11 @@ public class PatternRecognition {
                 avgWastingsWeekday.put(key, 0.0);
             }
         });
-
-        intervalWastingsWeekend.forEach((TimeInterval key, ArrayList<Double> value) -> {
+        intervalWastingsWeekend.forEach((TimeInterval key, ArrayList<Double> values) -> {
             double sum = 0.0;
             int counter = 0;
-            for (int i = 0; i < value.size(); i++) {
-                sum += value.get(i);
+            for (double value : values) {
+                sum += value;
                 counter++;
             }
             if (counter != 0) {
@@ -128,76 +124,41 @@ public class PatternRecognition {
             }
         });
 
-
         //Ermittelt durchschnittlichen Tagesverbrauch OHNE Haushalts-Heuristik von den Stadtwerken
         double meanDailyWeekday = 0.0;
         for (double value : avgWastingsWeekday.values()) {
             meanDailyWeekday += value;
         }
-        double meanRangeWeekday = Double.valueOf(meanDailyWeekday / (24 / range));
-
+        double meanRangeWeekday = meanDailyWeekday / (24d / range);
         double meanDailyWeekend = 0.0;
         for (double value : avgWastingsWeekend.values()) {
             meanDailyWeekend += value;
         }
-        double meanRangeWeekend = Double.valueOf(meanDailyWeekend / (24 / range));
+        double meanRangeWeekend = meanDailyWeekend / (24d / range);
 
-
-        for (int i = 0; i < newdata.size(); i++) {
-            if (newdata.get(i).isInterpolated()) {
-                int finalI = i;
+        for (LocalDateTime time : data.keySet()) {
+            if (data.get(time).isInterpolated()) {
                 AtomicReference<Double> result = new AtomicReference<>(0.0);
-                if (Heuristics.isBusinessDay(newdata.get(i).getTime())) {
+                if (Heuristics.isBusinessDay(time)) {
                     avgWastingsWeekday.forEach((key, avgRangeValue) -> {
-                        if (key.inRange(newdata.get(finalI).getTime().toLocalTime())) {
-                            result.set(calcFromPattern(newdata.get(finalI), avgRangeValue, meanRangeWeekday, rangeTolerance));
-                            newdata.get(finalI).setEnergyData(Double.valueOf(result.toString()));
+                        if (key.inRange(time.toLocalTime())) {
+                            result.set(calcFromPattern(data.get(time), avgRangeValue, meanRangeWeekday, rangeTolerance));
+                            data.get(time).setValue(Double.valueOf(result.toString()));
                         }
 
                     });
                 } else {
                     avgWastingsWeekend.forEach((key, avgRangeValue) -> {
-                        if (key.inRange(newdata.get(finalI).getTime().toLocalTime())) {
-                            result.set(calcFromPattern(newdata.get(finalI), avgRangeValue, meanRangeWeekend, rangeTolerance));
-                            newdata.get(finalI).setEnergyData(Double.valueOf(result.toString()));
+                        if (key.inRange(time.toLocalTime())) {
+                            result.set(calcFromPattern(data.get(time), avgRangeValue, meanRangeWeekend, rangeTolerance));
+                            data.get(time).setValue(Double.valueOf(result.toString()));
                         }
 
                     });
                 }
-
-                newdata.get(i).setEnergyData(Helper.roundDouble(newdata.get(i).getEnergyData(), decimals));
+                data.get(time).setValue(Helper.roundDouble(data.get(time).getValue(), decimals));
             }
-
         }
-        newdata.forEach((i) -> System.out.println("Time: " + i.getTime() + ". Value: " + i.getEnergyData() + ". Interpolated? " + i.isInterpolated()));
-        return newdata;
-    }
-}
-
-
-class TimeInterval {
-    public LocalTime getStarttime() {
-        return starttime;
-    }
-
-    public LocalTime getEndtime() {
-        return endtime;
-    }
-
-    private LocalTime starttime;
-
-    private LocalTime endtime;
-
-    private TimeInterval(LocalTime starttime, LocalTime endtime) {
-        this.starttime = starttime;
-        this.endtime = endtime;
-    }
-
-    static TimeInterval createRange(LocalTime starttime, LocalTime endtime) {
-        return new TimeInterval(starttime, endtime);
-    }
-
-    boolean inRange(LocalTime time) {
-        return !time.isBefore(starttime) && time.isBefore(endtime);
+        data.forEach((time, value) -> System.out.println("Time: " + time + ". Value: " + value.getValue() + ". Interpolated? " + value.isInterpolated()));
     }
 }
