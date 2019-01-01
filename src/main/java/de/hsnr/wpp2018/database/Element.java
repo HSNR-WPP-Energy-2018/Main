@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class Element {
     // just keep a list of values and the interval (minutes) to be independent of actual times
@@ -48,7 +50,6 @@ public class Element {
 
     public double getValue(Month month, int day, int hour, int minute, int second) {
         LocalDateTime now = LocalDateTime.now();
-        // use last year because start month, day, etc. may be after the element start "date"
         LocalDateTime tempStart = LocalDateTime.of(now.getYear(), Month.JANUARY, 1, 0, 0, 0);
         LocalDateTime tempKey = LocalDateTime.of(now.getYear(), month, day, hour, minute, second);
         //TODO: how to handle requests for dates in between two keys?
@@ -58,5 +59,12 @@ public class Element {
 
     public double getValue(LocalDateTime date) {
         return getValue(date.getMonth(), date.getDayOfMonth(), date.getHour(), date.getMinute(), date.getSecond());
+    }
+
+    @Override
+    public String toString() {
+        return "interval=" + getInterval() +
+                " - descriptors=" + getDescriptors().stream().map(Object::toString).collect(Collectors.toList()) +
+                " - values=" + getValues().stream().map(Objects::toString).collect(Collectors.toList());
     }
 }

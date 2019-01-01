@@ -19,4 +19,9 @@ public class StringDescriptor implements Descriptor {
         }
         return false;
     }
+
+    @Override
+    public String toString() {
+        return getValue();
+    }
 }

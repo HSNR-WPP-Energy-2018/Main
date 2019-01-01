@@ -3,26 +3,26 @@ package de.hsnr.wpp2018.database;
 public class NumberDescriptor implements Descriptor {
 
     private String key;
-    private double vale;
+    private double value;
     private double tolerance = 0;
 
-    public NumberDescriptor(String key, double vale, double tolerance) {
+    public NumberDescriptor(String key, double value, double tolerance) {
         this.key = key;
-        this.vale = vale;
+        this.value = value;
         this.tolerance = tolerance;
     }
 
-    public NumberDescriptor(String key, double vale) {
+    public NumberDescriptor(String key, double value) {
         this.key = key;
-        this.vale = vale;
+        this.value = value;
     }
 
     public String getKey() {
         return key;
     }
 
-    public double getVale() {
-        return vale;
+    public double getValue() {
+        return value;
     }
 
     public double getTolerance() {
@@ -33,9 +33,14 @@ public class NumberDescriptor implements Descriptor {
     public boolean matches(Descriptor descriptor) {
         if (descriptor instanceof NumberDescriptor) {
             if (((NumberDescriptor) descriptor).getKey().equals(getKey())) {
-                return Math.abs(this.getVale() - ((NumberDescriptor) descriptor).getVale()) <= getTolerance();
+                return Math.abs(this.getValue() - ((NumberDescriptor) descriptor).getValue()) <= getTolerance();
             }
         }
         return false;
+    }
+
+    @Override
+    public String toString() {
+        return getKey() + "=" + getValue() + ":" + getTolerance();
     }
 }
