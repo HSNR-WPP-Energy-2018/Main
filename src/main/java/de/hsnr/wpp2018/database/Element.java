@@ -51,6 +51,11 @@ public class Element {
     public double getValue(Month month, int day, int hour, int minute, int second) {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime tempStart = LocalDateTime.of(now.getYear(), Month.JANUARY, 1, 0, 0, 0);
+        // TODO: how to handle this?
+        if (!now.toLocalDate().isLeapYear() && month.equals(Month.FEBRUARY) && (day == 29)) {
+            month = Month.MARCH;
+            day = 1;
+        }
         LocalDateTime tempKey = LocalDateTime.of(now.getYear(), month, day, hour, minute, second);
         //TODO: how to handle requests for dates in between two keys?
         int key = (int) Math.floor((tempStart.until(tempKey, ChronoUnit.MINUTES) / (double) this.interval) % this.values.size());
@@ -63,7 +68,7 @@ public class Element {
 
     @Override
     public String toString() {
-        return "interval=" + getInterval() +
+        return "interval=" + getInterval() + " seconds" +
                 " - descriptors=" + getDescriptors().stream().map(Object::toString).collect(Collectors.toList()) +
                 " - values=" + getValues().stream().map(Objects::toString).collect(Collectors.toList());
     }

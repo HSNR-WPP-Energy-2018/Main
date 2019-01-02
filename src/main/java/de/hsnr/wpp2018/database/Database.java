@@ -1,8 +1,10 @@
 package de.hsnr.wpp2018.database;
 
+import de.hsnr.wpp2018.base.Consumption;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.TreeMap;
 import java.util.List;
 
 public class Database {
@@ -35,17 +37,17 @@ public class Database {
         return getElements(descriptors, false);
     }
 
-    private double getValue(List<Element> elements, LocalDateTime time) {
+    private Consumption getValue(List<Element> elements, LocalDateTime time) {
         double value = 0;
         for (Element element : elements) {
             value += element.getValue(time);
         }
-        return value / elements.size(); //TODO: support other form of weighting?
+        return new Consumption(value / elements.size(), true); //TODO: support other form of weighting?
     }
 
-    public HashMap<LocalDateTime, Double> interpolate(List<Descriptor> descriptors, LocalDateTime start, LocalDateTime end, int interval) {
+    public TreeMap<LocalDateTime, Consumption> interpolate(List<Descriptor> descriptors, LocalDateTime start, LocalDateTime end, int interval) {
         List<Element> elements = getElements(descriptors);
-        HashMap<LocalDateTime, Double> res = new HashMap<>();
+        TreeMap<LocalDateTime, Consumption> res = new TreeMap<>();
         LocalDateTime time = start;
         while (!time.isAfter(end)) {
             res.put(time, getValue(elements, time));
@@ -54,9 +56,9 @@ public class Database {
         return res;
     }
 
-    public HashMap<LocalDateTime, Double> interpolate(List<Descriptor> descriptors, HashMap<LocalDateTime, Double> data) {
+    public TreeMap<LocalDateTime, Consumption> interpolate(List<Descriptor> descriptors, TreeMap<LocalDateTime, Consumption> data) {
         List<Element> elements = getElements(descriptors);
-        HashMap<LocalDateTime, Double> res = new HashMap<>();
+        TreeMap<LocalDateTime, Consumption> res = new TreeMap<>();
         for (LocalDateTime time : data.keySet()) {
             //TODO: adjust value according to provided data by defining heuristic
             res.put(time, getValue(elements, time));

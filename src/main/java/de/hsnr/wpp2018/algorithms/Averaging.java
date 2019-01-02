@@ -32,7 +32,7 @@ public class Averaging implements Algorithm<Averaging.Configuration> {
     }
 
     private double interpolateInterval(TreeMap<LocalDateTime, Consumption> data, LocalDateTime key, int neighbors, boolean weighted, int interval) {
-        long diffInSeconds = Math.abs(Duration.between(key.plusMinutes(interval), key).getSeconds());
+        long diffInSeconds = Math.abs(Duration.between(key.plusSeconds(interval), key).getSeconds());
         double weightedCount = 0, sum = 0;
         LocalDateTime left = key, right = key;
         for (int i = 0; i < neighbors; i++) {
@@ -153,7 +153,7 @@ public class Averaging implements Algorithm<Averaging.Configuration> {
     public static class ConfigurationInterval {
         private int neighbors; // for every direction
         private boolean neighborsWeighted; // weight neighbors by distance (eg. 0.24 - 0.33 - 0.5 - ELEMENT - 0.5 - 0.33 - 0.25)
-        private int interval;
+        private int interval; // interval in seconds
         private double weight; // weight for this value
 
         public ConfigurationInterval(int neighbors, int interval, boolean neighborsWeighted, double weight) {
@@ -189,7 +189,7 @@ public class Averaging implements Algorithm<Averaging.Configuration> {
             return "ConfigurationInterval{" +
                     "neighbors=" + neighbors +
                     ", neighborsWeighted=" + neighborsWeighted +
-                    ", interval=" + interval +
+                    ", interval=" + interval + " seconds" +
                     ", weight=" + weight +
                     '}';
         }

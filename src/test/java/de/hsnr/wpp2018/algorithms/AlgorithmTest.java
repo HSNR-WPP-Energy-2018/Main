@@ -2,11 +2,19 @@ package de.hsnr.wpp2018.algorithms;
 
 import de.hsnr.wpp2018.base.Algorithm;
 import de.hsnr.wpp2018.base.Household;
+import de.hsnr.wpp2018.database.Database;
+import de.hsnr.wpp2018.database.Descriptor;
+import de.hsnr.wpp2018.database.Element;
+import de.hsnr.wpp2018.database.StringDescriptor;
 import de.hsnr.wpp2018.optimizations.*;
 import org.junit.Test;
 
+import java.time.Month;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class AlgorithmTest extends BaseTest {
     static final int INTERVAL = 15 * 60;
@@ -43,8 +51,8 @@ public class AlgorithmTest extends BaseTest {
     @Test
     public void averaging() {
         ArrayList<Averaging.ConfigurationInterval> intervals = new ArrayList<>();
-        intervals.add(new Averaging.ConfigurationInterval(5, Math.toIntExact(TimeUnit.DAYS.toMinutes(7)), true, 5));
-        intervals.add(new Averaging.ConfigurationInterval(7, Math.toIntExact(TimeUnit.DAYS.toMinutes(1)), true, 3));
+        intervals.add(new Averaging.ConfigurationInterval(5, Math.toIntExact(TimeUnit.DAYS.toSeconds(7)), true, 5));
+        intervals.add(new Averaging.ConfigurationInterval(7, Math.toIntExact(TimeUnit.DAYS.toSeconds(1)), true, 3));
         intervals.add(new Averaging.ConfigurationInterval(15, INTERVAL));
         result = new Averaging().interpolate(testData, new Averaging.Configuration(INTERVAL, intervals));
     }
@@ -53,5 +61,22 @@ public class AlgorithmTest extends BaseTest {
     public void splines() {
         result = new CubicSplines().interpolate(testData, new CubicSplines.Configuration(INTERVAL, 10));
         applyHeuristics(2);
+    }
+
+    @Test
+    public void database() {
+        Database database = new Database();
+        List<Double> values = new ArrayList<>();
+        values.add(0d);
+        values.addAll(original.entrySet().stream()
+                .filter(entry -> !(entry.getKey().getMonth().equals(Month.FEBRUARY) && entry.getKey().getDayOfMonth() == 29))
+                .sorted(Map.Entry.comparingByKey())
+                .map(entry -> entry.getValue().getValue())
+                .collect(Collectors.toList())
+        );
+        ArrayList<Descriptor> descriptors = new ArrayList<>();
+        descriptors.add(new StringDescriptor("test"));
+        database.addElement(new Element(INTERVAL, values, descriptors));
+        result = new DatabaseInterface(database).interpolate(testData, new DatabaseInterface.Configuration(INTERVAL, descriptors));
     }
 }
