@@ -31,19 +31,42 @@ public class Holidays {
 
         ClassLoader classloader = Thread.currentThread().getContextClassLoader();
         InputStream inputStream = classloader.getResourceAsStream("feiertage_2019.ics");
+
+        /*Feiertage, die auf einen Samstag oder Sonntag fallen, werden sowieso mit Wochenendheuristik bearbeitet
+        * & es werden nur die Feiertage beachtet, die in einigen oder vielen Bundesländern als Feiertag gelten*/
+        String[] ignoreDates = {"Neujahr","Tag der Deutschen Einheit", "Silvester", "Allerheiligen",
+                "Karfreitag", "Ostermontag", "Tag der Arbeit", "Christi Himmelfahrt", "Pfingstmontag",
+                "Heiligabend", "Fronleichnam", "1. Weihnachtsfeiertag", "2. Weihnachtsfeiertag"};
+
         try (BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))) {
             String line = null;
+            boolean noWorkingDay = false;
             while((line = br.readLine()) != null) {
-                if (line.contains("DTSTART"))
+
+                if (line.contains("SUMMARY"))
                 {
-                    String[] parts = line.split("=|\\;|\\:");
+                    noWorkingDay = false;
+                    String[] parts1 = line.split("=|\\;|\\:");
+                    for (String s : ignoreDates) {
+                        if (parts1[1].equals(s)) {
+                            noWorkingDay = true;
+                        }
+                    }
+
+                }
+
+                if (line.contains("DTSTART") && noWorkingDay)
+                {
+                    String[] parts2 = line.split("=|\\;|\\:");
                     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-                    LocalDate holidayDate = LocalDate.parse(parts[3], formatter);
+                    LocalDate holidayDate = LocalDate.parse(parts2[3], formatter);
                     holidayArray.add(holidayDate);
                 }
             }
-        } catch (IOException e) {
+
+          } catch (IOException e) {
             e.printStackTrace();
         }
+
     }
 }
