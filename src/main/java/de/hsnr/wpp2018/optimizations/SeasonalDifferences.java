@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.TreeMap;
 
+
 public class SeasonalDifferences {
     /*
     Quelle: Geographie Innsbruck Tirol Atlas (Projekt vom Europäischen Fonds für regionale Entwicklung (EFRE))
@@ -18,6 +19,7 @@ public class SeasonalDifferences {
     Die Stromverbrauchskurve im Sommer liegt in Deutschland etwa zehn Prozentpunkte unter der Verbrauchskurve im Winter
     (Stand ist jedoch 2002)
     */
+
 
     public static boolean isWinterSeason(Month month) {
         //Hierfür habe ich bisher keine elegantere Lösung gefunden, die gleichzeitig auch das Jahr ignoriert
@@ -37,23 +39,61 @@ public class SeasonalDifferences {
         return false;
     }
 
-    public static void adjustSeasons(TreeMap<LocalDateTime, Consumption> data) {
-        double percents = 10;
+
+    public static double percentageFromConsumption(TreeMap<LocalDateTime, Consumption> data){
+        double winter = 0;
+        double summer = 0;
+        for (LocalDateTime time : data.keySet()) {
+            if (!data.get(time).isInterpolated()) {
+                if (isWinterSeason(time.getMonth())) {
+                    winter += data.get(time).getValue();
+                }
+                else
+                {
+                    summer += data.get(time).getValue();
+                }
+            }
+        }
+
+        double percentageRate  = summer/winter*100;
+
+        if (percentageRate>=100)
+        {
+            System.out.println("Calculated higher consumption values in summer. Maybe check for correctness. Taking 10%-Heuristic instead.");
+            percentageRate = 10;
+        }
+        return percentageRate;
+    }
+
+    public static void adjustSeasons(TreeMap<LocalDateTime, Consumption> data, boolean heuristic) {
+        double percents;
+
+        if (!heuristic) //Reale Consumption-Data verwenden
+        {
+            percents = percentageFromConsumption(data);
+        }
+        else //Wähle Heuristik vom EFRE
+        {
+            percents = 10;
+        }
+
+
         int decimals = 6; //Nachkommastellen zum Runden
         for (LocalDateTime time : data.keySet()) {
             if (data.get(time).isInterpolated()) {
-                //WinterSaison -> (+10%) Grundumsatz
+                //WinterSaison -> (+10%) Grundumsatz oder (+ermittelter Prozentwert%) Grundumsatz
                 if (isWinterSeason(time.getMonth())) {
                     data.get(time).setValue(data.get(time).getValue() + (percents / 100) * data.get(time).getValue());
                     data.get(time).setValue(Helper.roundDouble(data.get(time).getValue(), decimals));
                 }
-                //SommerSaison -> (-10%) Grundumsatz
+                //SommerSaison -> (-10%) Grundumsatz oder (-ermittelter Prozentwert%) Grundumsatz
                 else {
                     data.get(time).setValue(data.get(time).getValue() - (percents / 100) * data.get(time).getValue());
                     data.get(time).setValue(Helper.roundDouble(data.get(time).getValue(), decimals));
                 }
             }
+            //System.out.println("Time: " + time + ". Value: " + data.get(time).getValue() + ". Interpolated? " + data.get(time).isInterpolated());
         }
-        //data.forEach((i) -> System.out.println("Time: " + i.getTime() + ". Value: " + i.getValue() + ". Interpolated? " + i.isInterpolated()));
+
     }
 }

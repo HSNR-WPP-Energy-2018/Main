@@ -29,7 +29,7 @@ public class AlgorithmTest extends BaseTest {
                 break;
             case 2:
                 AvgNightDay.nightDayWaste(result, new Household(PERSONS, SIZE));
-                SeasonalDifferences.adjustSeasons(result);
+                SeasonalDifferences.adjustSeasons(result, true);
                 break;
             case 3: //Die Ergebnisse von linear + case 3 scheinen meist recht realistisch zu sein
                 PatternRecognition.checkBehaviour(result, 3, 0.1);
