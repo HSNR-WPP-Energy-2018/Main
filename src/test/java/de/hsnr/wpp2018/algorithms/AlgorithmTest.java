@@ -22,7 +22,8 @@ public class AlgorithmTest extends BaseTest {
     private static final double SIZE = 80.0;
 
     private void applyHeuristics(int algorithmNumber) {
-        Holidays.scanFile();
+        Holidays.scanFile("Thüringen");
+
         switch (algorithmNumber) {
             case 1:
                 Heuristics.useHeuristics(result, new Household(PERSONS, SIZE)); //noch umbauen!
