@@ -20,9 +20,7 @@ public class SeasonalDifferences {
     (Stand ist jedoch 2002)
     */
 
-
     public static boolean isWinterSeason(Month month) {
-        //Hierfür habe ich bisher keine elegantere Lösung gefunden, die gleichzeitig auch das Jahr ignoriert
         Month[] months = {
                 Month.NOVEMBER,
                 Month.DECEMBER,
@@ -40,25 +38,22 @@ public class SeasonalDifferences {
     }
 
 
-    public static double percentageFromConsumption(TreeMap<LocalDateTime, Consumption> data){
+    public static double percentageFromConsumption(TreeMap<LocalDateTime, Consumption> data) {
         double winter = 0;
         double summer = 0;
         for (LocalDateTime time : data.keySet()) {
             if (!data.get(time).isInterpolated()) {
                 if (isWinterSeason(time.getMonth())) {
                     winter += data.get(time).getValue();
-                }
-                else
-                {
+                } else {
                     summer += data.get(time).getValue();
                 }
             }
         }
 
-        double percentageRate  = summer/winter*100;
+        double percentageRate = summer / winter * 100;
 
-        if (percentageRate>=100)
-        {
+        if (percentageRate >= 100) {
             System.out.println("Calculated higher consumption values in summer. Maybe check for correctness. Taking 10%-Heuristic instead.");
             percentageRate = 10;
         }
@@ -68,15 +63,11 @@ public class SeasonalDifferences {
     public static void adjustSeasons(TreeMap<LocalDateTime, Consumption> data, boolean heuristic) {
         double percents;
 
-        if (!heuristic) //Reale Consumption-Data verwenden
-        {
+        if (!heuristic) { //Reale Consumption-Data verwenden
             percents = percentageFromConsumption(data);
-        }
-        else //Wähle Heuristik vom EFRE
-        {
+        } else { //Wähle Heuristik vom EFRE
             percents = 10;
         }
-
 
         int decimals = 6; //Nachkommastellen zum Runden
         for (LocalDateTime time : data.keySet()) {
@@ -94,6 +85,5 @@ public class SeasonalDifferences {
             }
             //System.out.println("Time: " + time + ". Value: " + data.get(time).getValue() + ". Interpolated? " + data.get(time).isInterpolated());
         }
-
     }
 }

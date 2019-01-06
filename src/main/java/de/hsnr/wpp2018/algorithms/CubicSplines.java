@@ -3,6 +3,8 @@ package de.hsnr.wpp2018.algorithms;
 import de.hsnr.wpp2018.Helper;
 import de.hsnr.wpp2018.base.Algorithm;
 import de.hsnr.wpp2018.base.Consumption;
+import de.hsnr.wpp2018.base.ParserException;
+import de.hsnr.wpp2018.base.ParserHelper;
 import org.apache.commons.math3.analysis.interpolation.LinearInterpolator;
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
 
@@ -12,6 +14,7 @@ import java.util.*;
 import static java.util.stream.Collectors.toMap;
 
 public class CubicSplines implements Algorithm<CubicSplines.Configuration> {
+    public static final String NAME = "cubic-splines";
 
     public double equationSys(ArrayList<Double> xArray, ArrayList<Double> yArray) {
         double[] x = xArray.stream().mapToDouble(Double::doubleValue).toArray();
@@ -98,6 +101,18 @@ public class CubicSplines implements Algorithm<CubicSplines.Configuration> {
             entry = data.higherEntry(entry.getKey());
         }
         return values;
+    }
+
+    @Override
+    public String getConfigurationExplanation() {
+        return "interval=<int>;neighbors=<int>";
+    }
+
+    @Override
+    public TreeMap<LocalDateTime, Consumption> interpolate(TreeMap<LocalDateTime, Consumption> data, Map<String, String> configuration) throws ParserException {
+        int interval = ParserHelper.getInteger(configuration, "interval", 0);
+        int neighbors = ParserHelper.getInteger(configuration, "neighbors", 0);
+        return interpolate(data, new Configuration(interval, neighbors));
     }
 
     public static class Configuration extends Algorithm.Configuration {

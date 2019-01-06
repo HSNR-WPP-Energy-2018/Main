@@ -1,5 +1,6 @@
 package de.hsnr.wpp2018.database;
 
+import de.hsnr.wpp2018.base.ParserException;
 import org.junit.Test;
 
 public class ParserTest {
@@ -16,7 +17,7 @@ public class ParserTest {
         try {
             element = Parser.parse(data);
             System.out.println("Parsed element: " + element);
-        } catch (Parser.ParseException e) {
+        } catch (ParserException e) {
             System.out.println("error parsing data: " + e);
         }
     }

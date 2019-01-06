@@ -3,12 +3,15 @@ package de.hsnr.wpp2018.algorithms;
 import de.hsnr.wpp2018.Helper;
 import de.hsnr.wpp2018.base.Algorithm;
 import de.hsnr.wpp2018.base.Consumption;
+import de.hsnr.wpp2018.base.ParserException;
+import de.hsnr.wpp2018.base.ParserHelper;
 
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.TreeMap;
 
 public class Linear implements Algorithm<Algorithm.Configuration> {
+    public static final String NAME = "linear";
 
     private double interpolateValue(double x, double x1, double x2, double y1, double y2) {
         return y1 + (x - x1) / (x2 - x1) * (y2 - y1);
@@ -38,5 +41,16 @@ public class Linear implements Algorithm<Algorithm.Configuration> {
         }
 
         return values;
+    }
+
+    @Override
+    public String getConfigurationExplanation() {
+        return "interval=<int>";
+    }
+
+    @Override
+    public TreeMap<LocalDateTime, Consumption> interpolate(TreeMap<LocalDateTime, Consumption> data, Map<String, String> configuration) throws ParserException {
+        int interval = ParserHelper.getInteger(configuration, "interval", 0);
+        return interpolate(data, new Configuration(interval));
     }
 }

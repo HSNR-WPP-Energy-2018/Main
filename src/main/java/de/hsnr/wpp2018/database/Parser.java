@@ -1,10 +1,15 @@
 package de.hsnr.wpp2018.database;
 
+import de.hsnr.wpp2018.base.ParserException;
+
 import java.io.*;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
+/**
+ * @deprecated
+ */
 public class Parser {
 
     /**
@@ -16,10 +21,10 @@ public class Parser {
      * @param data File contents
      * @return instantiated {@link Element}
      */
-    public static Element parse(String data) throws ParseException {
+    public static Element parse(String data) throws ParserException {
         String[] parts = data.split("\n");
         if (parts.length < 3) {
-            throw new ParseException("to few parts");
+            throw new ParserException("to few parts");
         }
         int interval;
         ArrayList<Double> values = new ArrayList<>();
@@ -27,7 +32,7 @@ public class Parser {
         try {
             interval = Integer.parseInt(parts[0]);
         } catch (NumberFormatException e) {
-            throw new ParseException("first line is not a number");
+            throw new ParserException("first line is not a number");
         }
         String[] descriptorStrings = parts[1].split("[,]");
         for (String descriptorString : descriptorStrings) {
@@ -39,13 +44,13 @@ public class Parser {
                 try {
                     value = Double.parseDouble(descriptorData[0]);
                 } catch (NumberFormatException e) {
-                    throw new ParseException("number-descriptor value not a number");
+                    throw new ParserException("number-descriptor value not a number");
                 }
                 if (descriptorData.length > 1) {
                     try {
                         tolerance = Double.parseDouble(descriptorData[1]);
                     } catch (NumberFormatException e) {
-                        throw new ParseException("number-descriptor tolerance not a number");
+                        throw new ParserException("number-descriptor tolerance not a number");
                     }
                 }
                 descriptors.add(new NumberDescriptor(key, value, tolerance));
@@ -60,25 +65,16 @@ public class Parser {
                     double value = Double.parseDouble(element);
                     values.add(value);
                 } catch (NumberFormatException e) {
-                    throw new ParseException("invalid value at line " + i);
+                    throw new ParserException("invalid value at line " + i);
                 }
             }
         }
         return new Element(interval, values, descriptors);
     }
 
-    public static Element parse(InputStream inputStream) throws ParseException {
+    public static Element parse(InputStream inputStream) throws ParserException {
         BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, Charset.defaultCharset()));
         String content = br.lines().collect(Collectors.joining(System.lineSeparator()));
         return parse(content);
-    }
-
-    public static class ParseException extends Exception {
-        /**
-         * {@inheritDoc}
-         */
-        public ParseException(String message) {
-            super(message);
-        }
     }
 }

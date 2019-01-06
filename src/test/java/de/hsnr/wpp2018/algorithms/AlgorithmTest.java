@@ -78,6 +78,6 @@ public class AlgorithmTest extends BaseTest {
         ArrayList<Descriptor> descriptors = new ArrayList<>();
         descriptors.add(new StringDescriptor("test"));
         database.addElement(new Element(INTERVAL, values, descriptors));
-        result = new DatabaseInterface(database).interpolate(testData, new DatabaseInterface.Configuration(INTERVAL, descriptors));
+        result = new DatabaseInterface().interpolate(testData, new DatabaseInterface.Configuration(INTERVAL, database, descriptors));
     }
 }

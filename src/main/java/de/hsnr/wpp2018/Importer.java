@@ -9,10 +9,12 @@ import java.util.TimeZone;
 import java.util.TreeMap;
 
 public class Importer {
+    public static final String DEFAULT_SEPARATOR = ";";
+
     private TreeMap<LocalDateTime, Consumption> data = new TreeMap<>();
 
-    public void readFile(String name, String separator) throws IOException {
-        BufferedReader reader = new BufferedReader(new FileReader(new File(this.getClass().getClassLoader().getResource(name).getFile())));
+    public void readFile(File file, String separator) throws IOException {
+        BufferedReader reader = new BufferedReader(new FileReader(file));
         String line;
         while ((line = reader.readLine()) != null) {
             double value;
@@ -53,8 +55,16 @@ public class Importer {
         }
     }
 
+    public void readFile(String name, String separator) throws IOException {
+        readFile(new File(this.getClass().getClassLoader().getResource(name).getFile()), separator);
+    }
+
+    public void readFile(File file) throws IOException {
+        readFile(file, DEFAULT_SEPARATOR);
+    }
+
     public void readFile(String name) throws IOException {
-        readFile(name, ";");
+        readFile(name, DEFAULT_SEPARATOR);
     }
 
     public TreeMap<LocalDateTime, Consumption> getData() {
