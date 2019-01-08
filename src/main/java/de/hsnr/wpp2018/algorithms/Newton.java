@@ -3,6 +3,8 @@ package de.hsnr.wpp2018.algorithms;
 import de.hsnr.wpp2018.Helper;
 import de.hsnr.wpp2018.base.Algorithm;
 import de.hsnr.wpp2018.base.Consumption;
+import de.hsnr.wpp2018.base.ParserException;
+import de.hsnr.wpp2018.base.ParserHelper;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -10,6 +12,7 @@ import java.util.*;
 import static java.util.stream.Collectors.toMap;
 
 public class Newton implements Algorithm<Newton.Configuration> {
+    public static final String NAME = "newton";
 
     private Map<LocalDateTime, ArrayList<Consumption>> fValuesCreation(Map<LocalDateTime, Consumption> neighborsAsc) {
         Map<LocalDateTime, ArrayList<Consumption>> fValues = new LinkedHashMap<>();
@@ -177,6 +180,18 @@ public class Newton implements Algorithm<Newton.Configuration> {
 */
 
         return values;
+    }
+
+    @Override
+    public String getConfigurationExplanation() {
+        return "interval=<int>;neighbors=<int>";
+    }
+
+    @Override
+    public TreeMap<LocalDateTime, Consumption> interpolate(TreeMap<LocalDateTime, Consumption> data, Map<String, String> configuration) throws ParserException {
+        int interval = ParserHelper.getInteger(configuration, "interval", 0);
+        int neighbors = ParserHelper.getInteger(configuration, "neighbors", 0);
+        return interpolate(data, new Configuration(interval, neighbors));
     }
 
     public static class Configuration extends Algorithm.Configuration {

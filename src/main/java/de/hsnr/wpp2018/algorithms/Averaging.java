@@ -2,15 +2,19 @@ package de.hsnr.wpp2018.algorithms;
 
 import de.hsnr.wpp2018.base.Algorithm;
 import de.hsnr.wpp2018.base.Consumption;
+import de.hsnr.wpp2018.base.ParserException;
+import de.hsnr.wpp2018.base.ParserHelper;
 import de.hsnr.wpp2018.evaluation.Rating;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 
 public class Averaging implements Algorithm<Averaging.Configuration> {
+    public static final String NAME = "averaging";
 
     public TreeMap<LocalDateTime, Consumption> interpolate(TreeMap<LocalDateTime, Consumption> data, Configuration configuration) {
         TreeMap<LocalDateTime, Consumption> results = new TreeMap<>();
@@ -20,6 +24,30 @@ public class Averaging implements Algorithm<Averaging.Configuration> {
             time = time.plusSeconds(configuration.getInterval());
         }
         return results;
+    }
+
+    @Override
+    public String getConfigurationExplanation() {
+        return "interval=<int>;neighbors={<neighbors|int>:<interval|int)>:<neighborsWeighted|boolean>:<weight|double>}[sep=,]";
+    }
+
+    @Override
+    public TreeMap<LocalDateTime, Consumption> interpolate(TreeMap<LocalDateTime, Consumption> data, Map<String, String> configuration) throws ParserException {
+        int interval = ParserHelper.getInteger(configuration, "interval", 0);
+        List<ConfigurationInterval> neighbors = new ArrayList<>();
+        for (String neighbor : ParserHelper.getString(configuration, "neighbors").split("[,]")) {
+            String[] parts = neighbor.split("[:]");
+            if (parts.length != 4) {
+                throw new ParserException("neighbor needs to have four parts");
+            }
+            neighbors.add(new ConfigurationInterval(
+                    ParserHelper.getInteger(parts[0]),
+                    ParserHelper.getInteger(parts[1]),
+                    ParserHelper.getBoolean(parts[2]),
+                    ParserHelper.getDouble(parts[3])
+            ));
+        }
+        return interpolate(data, new Configuration(interval, neighbors));
     }
 
     private double interpolateValue(TreeMap<LocalDateTime, Consumption> data, Configuration configuration, LocalDateTime key) {

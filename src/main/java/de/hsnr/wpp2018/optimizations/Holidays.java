@@ -16,35 +16,29 @@ public class Holidays {
 
     private static ArrayList<LocalDate> holidayArray = new ArrayList<>();
 
-    public static boolean checkHoliday(LocalDate today)
-    {
-        for (LocalDate thisDate : holidayArray)
-        {
-            if (thisDate.getMonth().equals(today.getMonth()) && thisDate.getDayOfMonth() == today.getDayOfMonth())
-            {
+    public static boolean checkHoliday(LocalDate today) {
+        for (LocalDate thisDate : holidayArray) {
+            if (thisDate.getMonth().equals(today.getMonth()) && thisDate.getDayOfMonth() == today.getDayOfMonth()) {
                 return true;
             }
         }
         return false;
     }
 
-
     public static void scanFile(String federalState) {
-
         ClassLoader classloader = Thread.currentThread().getContextClassLoader();
         InputStream inputStream = classloader.getResourceAsStream("feiertage_2019.ics");
 
         /*Feiertage, die auf einen Samstag oder Sonntag fallen, werden sowieso mit Wochenendheuristik bearbeitet
-        * & es werden nur die Feiertage beachtet, die in einigen oder vielen Bundesländern als Feiertag gelten*/
-        String[] publicHolidays = {"Neujahr","Karfreitag", "Ostermontag", "Tag der Arbeit",
+         * & es werden nur die Feiertage beachtet, die in einigen oder vielen Bundesländern als Feiertag gelten*/
+        String[] publicHolidays = {"Neujahr", "Karfreitag", "Ostermontag", "Tag der Arbeit",
                 "Christi Himmelfahrt", "Pfingstmontag", "Tag der Deutschen Einheit", "1. Weihnachtsfeiertag", "2. Weihnachtsfeiertag"};
 
         ArrayList<String> ignoreDates = new ArrayList<>();
         ignoreDates.addAll(Arrays.asList(publicHolidays));
 
         List<String> additionalDays;
-        switch(federalState)
-        {
+        switch (federalState) {
             case "Baden-Württemberg":
                 additionalDays = Arrays.asList("Allerheiligen", "Heilige Drei Könige", "Fronleichnam");
                 ignoreDates.addAll(additionalDays);
@@ -73,9 +67,9 @@ public class Holidays {
             case "Nordrhein-Westfahlen":
             case "NRW": //falls im Aufruf abgekürzt
             case "Rheinland-Pfalz":
-            additionalDays = Arrays.asList("Allerheiligen", "Fronleichnam");
-            ignoreDates.addAll(additionalDays);
-            break;
+                additionalDays = Arrays.asList("Allerheiligen", "Fronleichnam");
+                ignoreDates.addAll(additionalDays);
+                break;
             case "Saarland":
                 additionalDays = Arrays.asList("Allerheiligen", "Fronleichnam", "Mariä Himmelfahrt");
                 ignoreDates.addAll(additionalDays);
@@ -96,14 +90,12 @@ public class Holidays {
                 System.out.println("no match");
         }
 
-
         try (BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))) {
             String line = null;
             boolean noWorkingDay = false;
-            while((line = br.readLine()) != null) {
+            while ((line = br.readLine()) != null) {
 
-                if (line.contains("SUMMARY"))
-                {
+                if (line.contains("SUMMARY")) {
                     noWorkingDay = false;
                     String[] parts1 = line.split("=|\\;|\\:");
                     for (String s : ignoreDates) {
@@ -111,21 +103,16 @@ public class Holidays {
                             noWorkingDay = true;
                         }
                     }
-
                 }
-
-                if (line.contains("DTSTART") && noWorkingDay)
-                {
+                if (line.contains("DTSTART") && noWorkingDay) {
                     String[] parts2 = line.split("=|\\;|\\:");
                     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
                     LocalDate holidayDate = LocalDate.parse(parts2[3], formatter);
                     holidayArray.add(holidayDate);
                 }
             }
-
-          } catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 }
