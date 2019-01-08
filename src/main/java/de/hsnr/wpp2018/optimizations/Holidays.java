@@ -109,7 +109,6 @@ public class Holidays {
                     for (String s : ignoreDates) {
                         if (parts1[1].equals(s)) {
                             noWorkingDay = true;
-                            System.out.println(parts1[1]);
                         }
                     }
 

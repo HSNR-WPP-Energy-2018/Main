@@ -19,8 +19,9 @@ public class PatternRecognition {
 
         double minNightTolerance = meanRange * 4 / 100;
         double maxNightTolerance = minNightTolerance + wastingData.getHeating() + (wastingData.getICT() / 2);
-        double avgNight = minNightTolerance + wastingData.getHeating();
+        //double avgNight = minNightTolerance + wastingData.getHeating();
         double avgDay = wastingData.getHeating() + wastingData.getICT() + wastingData.getIllumination();
+        double peak = avgDay + wastingData.getProcessCooling() + wastingData.getProcessHeating() + wastingData.getWarmWater();
 
 
         //Leichte Abweichungen in % vom Mittelwert betrachten, da kaum ein interpolierter Wert exakt = meanRange sein wird
@@ -31,8 +32,11 @@ public class PatternRecognition {
 
         //Person scheint in dem Zeitintervall zu schlafen oder nicht da zu sein, weil avg-Wert dieses Intervalls merkbar unter dem Verbrauchsdurchschnitt liegt
         if (avgRangeValue < meanRangeLowerBound) {
-            if (currentData.getValue() < minNightTolerance || currentData.getValue() > maxNightTolerance) {
-                result = avgNight;
+            if (currentData.getValue() < minNightTolerance) {
+                result = minNightTolerance;
+            }
+            else if (currentData.getValue() > maxNightTolerance) {
+                result = maxNightTolerance;
             }
         }
         //Person scheint in dem Zeitintervall viele Geräte zu benutzen, weil avg-Wert dieses Intervalls merkbar über dem Verbrauchsdurchschnitt liegt
@@ -40,15 +44,11 @@ public class PatternRecognition {
             if (currentData.getValue() < avgDay) {
                 result = avgDay;
             } else if (currentData.getValue() > meanRange) {
-                result = meanRange;
+                //result = meanRange;
+                result = peak;
             }
         }
-        //Aktueller Intervallwert entspricht ca. globalem Mean Range -> Interpolierter Wert soll auch auf den Wert angepasst werden, sofern nötig
-        else {
-            if (currentData.getValue() > meanRangeUpperBound || currentData.getValue() < meanRangeLowerBound) {
-                result = meanRange;
-            }
-        }
+
 
         if (result == 0.0) {
             result = currentData.getValue();
@@ -57,7 +57,7 @@ public class PatternRecognition {
     }
 
     //Stärke der Heuristik: Geht mehr auf individuelles Profil ein + erkennt zusätzlich nun Wochentage <> Wochenenden
-    public static void checkBehaviour(TreeMap<LocalDateTime, Consumption> data, int range, double rangeTolerance) {
+    public static TreeMap<LocalDateTime, Consumption> checkBehaviour(TreeMap<LocalDateTime, Consumption> data, int range, double rangeTolerance) {
         int decimals = 6; //Nachkommastellen zum Runden
 
         HashMap<TimeInterval, ArrayList<Double>> intervalWastingsWeekday = new HashMap<>();
@@ -159,6 +159,7 @@ public class PatternRecognition {
                 data.get(time).setValue(Helper.roundDouble(data.get(time).getValue(), decimals));
             }
         }
-        data.forEach((time, value) -> System.out.println("Time: " + time + ". Value: " + value.getValue() + ". Interpolated? " + value.isInterpolated()));
+        //data.forEach((time, value) -> System.out.println("Time: " + time + ". Value: " + value.getValue() + ". Interpolated? " + value.isInterpolated()));
+        return data;
     }
 }

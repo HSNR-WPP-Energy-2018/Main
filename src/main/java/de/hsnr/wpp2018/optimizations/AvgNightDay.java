@@ -10,7 +10,7 @@ import java.util.TreeMap;
 
 public class AvgNightDay {
 
-    public static void nightDayWaste(TreeMap<LocalDateTime, Consumption> data, Household household) {
+    public static TreeMap<LocalDateTime, Consumption> nightDayWaste(TreeMap<LocalDateTime, Consumption> data, Household household) {
         double meanDaily = Heuristics.averageWastePerDay(household);
         double meanHourly = meanDaily / 60;
         WastingData wastingData = new WastingData(meanHourly); //stündlicher Verbrauch
@@ -87,5 +87,6 @@ public class AvgNightDay {
         }
 
         //data.forEach((i) -> System.out.println("Time: " + i.getTime() + ". Value: " + i.getValue() + ". Interpolated? " + i.isInterpolated()));
+        return data;
     }
 }

@@ -22,7 +22,6 @@ public class SeasonalDifferences {
 
 
     public static boolean isWinterSeason(Month month) {
-        //Hierfür habe ich bisher keine elegantere Lösung gefunden, die gleichzeitig auch das Jahr ignoriert
         Month[] months = {
                 Month.NOVEMBER,
                 Month.DECEMBER,
@@ -65,7 +64,7 @@ public class SeasonalDifferences {
         return percentageRate;
     }
 
-    public static void adjustSeasons(TreeMap<LocalDateTime, Consumption> data, boolean heuristic) {
+    public static TreeMap<LocalDateTime, Consumption> adjustSeasons(TreeMap<LocalDateTime, Consumption> data, boolean heuristic) {
         double percents;
 
         if (!heuristic) //Reale Consumption-Data verwenden
@@ -94,6 +93,6 @@ public class SeasonalDifferences {
             }
             //System.out.println("Time: " + time + ". Value: " + data.get(time).getValue() + ". Interpolated? " + data.get(time).isInterpolated());
         }
-
+    return data;
     }
 }

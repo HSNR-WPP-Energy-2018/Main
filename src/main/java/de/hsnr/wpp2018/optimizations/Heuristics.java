@@ -74,7 +74,7 @@ public class Heuristics {
         return diff;
     }
 
-    public static TreeMap<LocalDateTime, Consumption> useHeuristics(TreeMap<LocalDateTime, Consumption> newData, Household household) {
+    public static TreeMap<LocalDateTime, Consumption> compareWithYesterday(TreeMap<LocalDateTime, Consumption> newData, Household household) {
         double dailyAvgWaste = averageWastePerDay(household);
         for (LocalDateTime key : newData.keySet()) {
             //Durchschnittlichen nächtlichen Verbrauchswert für alle UNinterpolierten Werte sammeln
