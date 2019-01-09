@@ -8,10 +8,13 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.TreeMap;
 
+import static de.hsnr.wpp2018.Helper.averageWastePerDay;
+import static de.hsnr.wpp2018.Helper.isBusinessDay;
+
 public class AvgNightDay {
 
     public static void nightDayWaste(TreeMap<LocalDateTime, Consumption> data, Household household) {
-        double meanDaily = Heuristics.averageWastePerDay(household);
+        double meanDaily = averageWastePerDay(household);
         double meanHourly = meanDaily / 60;
         WastingData wastingData = new WastingData(meanHourly); //stündlicher Verbrauch
 
@@ -36,7 +39,7 @@ public class AvgNightDay {
 
                 boolean isHoliday = Holidays.checkHoliday(today.toLocalDate());
 
-                if (Heuristics.isBusinessDay(today) && !isHoliday) {
+                if (isBusinessDay(today) && !isHoliday) {
                     //Verbrauch nachts an Werktagen (hier muss ein "oder" hin, weil der Zähler nach 23 wieder auf 00 resettet wird
                     if (today.toLocalTime().isAfter(weekdayNightBegin) || today.toLocalTime().isBefore(weekdayNightEnd)) {
                         if (data.get(today).getValue() < minNightTolerance || data.get(today).getValue() > maxNightTolerance) {

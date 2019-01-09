@@ -42,13 +42,11 @@ public class SeasonalDifferences {
         double winter = 0;
         double summer = 0;
         for (LocalDateTime time : data.keySet()) {
-            if (!data.get(time).isInterpolated()) {
                 if (isWinterSeason(time.getMonth())) {
                     winter += data.get(time).getValue();
                 } else {
                     summer += data.get(time).getValue();
                 }
-            }
         }
 
         double percentageRate = summer / winter * 100;

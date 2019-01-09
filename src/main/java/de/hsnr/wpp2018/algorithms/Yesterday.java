@@ -10,12 +10,12 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class Linear implements Algorithm<Algorithm.Configuration> {
-    public static final String NAME = "linear";
 
-    public static double interpolateValue(double x, double x1, double x2, double y1, double y2) {
-        return y1 + (x - x1) / (x2 - x1) * (y2 - y1);
-    }
+import static de.hsnr.wpp2018.Helper.isBusinessDay;
+
+public class Yesterday implements Algorithm<Algorithm.Configuration> {
+    public static final String NAME = "yesterday";
+
 
     public TreeMap<LocalDateTime, Consumption> interpolate(TreeMap<LocalDateTime, Consumption> data, Configuration configuration) {
         int decimals = 5;
@@ -28,14 +28,33 @@ public class Linear implements Algorithm<Algorithm.Configuration> {
             LocalDateTime two = data.higherKey(entry.getKey());
             counter++;
             if (Helper.getDistance(one, two) > configuration.getInterval()) {
-                //x1<=x<=x2s
-                yLinear = interpolateValue(counter, counter - 1, counter + 1, entry.getValue().getValue(), data.higherEntry(entry.getKey()).getValue().getValue());
-                yLinear = Helper.roundDouble(yLinear, decimals);
-
                 values.put(one, entry.getValue().copyAsOriginal());
-                for (LocalDateTime newDate = one; newDate.isBefore(two); newDate = newDate.plusMinutes(15)) {
-                    values.put(newDate, new Consumption(yLinear, true));
+                for (LocalDateTime newDate = one.plusMinutes(15); newDate.isBefore(two); newDate = newDate.plusMinutes(15)) {
+                    LocalDateTime yesterday = newDate.minusDays(1);
+
+
+                    if (isBusinessDay(newDate) && !isBusinessDay(yesterday)) {
+                        while (!isBusinessDay(yesterday)) {
+                            yesterday = yesterday.minusDays(1);
+                        }
+                    } else if (!isBusinessDay(newDate) && isBusinessDay(yesterday)) {
+                        while (isBusinessDay(yesterday)) {
+                            yesterday = yesterday.minusDays(1);
+                        }
+
+                    }
+
+
+                    if (values.containsKey(yesterday)) {
+                        values.put(newDate, new Consumption(values.get(yesterday).getValue(), true));
+                    } else { //values missing already on the first day in the list -> taking linear instead
+                        yLinear = Linear.interpolateValue(counter, counter - 1, counter + 1, entry.getValue().getValue(), data.higherEntry(entry.getKey()).getValue().getValue());
+                        yLinear = Helper.roundDouble(yLinear, decimals);
+                        values.put(newDate, new Consumption(yLinear, true));
+                    }
+
                 }
+
             } else {
                 values.put(one, entry.getValue());
             }

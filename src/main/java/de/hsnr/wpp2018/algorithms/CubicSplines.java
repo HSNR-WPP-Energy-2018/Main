@@ -87,7 +87,7 @@ public class CubicSplines implements Algorithm<CubicSplines.Configuration> {
 
                 double result = equationSys(xArray, yArray);
                 result = Helper.roundDouble(result, decimals);
-
+                values.put(one, entry.getValue().copyAsOriginal());
                 for (LocalDateTime newDate = one.plusMinutes(15); newDate.isBefore(two); newDate = newDate.plusMinutes(15)) {
                     values.put(newDate, new Consumption(result, true));
                 }
@@ -100,6 +100,7 @@ public class CubicSplines implements Algorithm<CubicSplines.Configuration> {
             }
             entry = data.higherEntry(entry.getKey());
         }
+        //values.forEach((time, value) -> System.out.println("Time: " + time + ". Value: " + value.getValue() + ". Interpolated? " + value.isInterpolated()));
         return values;
     }
 

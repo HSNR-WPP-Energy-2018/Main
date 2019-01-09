@@ -162,7 +162,7 @@ public class Newton implements Algorithm<Newton.Configuration> {
                         values.put(newDate, new Consumption(p, true));
                     }
                 }
-
+                values.put(one, entry.getValue().copyAsOriginal());
                 neighborsDesc.clear();
                 neighborsAsc.clear();
                 neighborsMap.clear();
@@ -178,7 +178,7 @@ public class Newton implements Algorithm<Newton.Configuration> {
             data.put(key, value);
         });
 */
-
+        //values.forEach((time, value) -> System.out.println("Time: " + time + ". Value: " + value.getValue() + ". Interpolated? " + value.isInterpolated()));
         return values;
     }
 

@@ -12,6 +12,8 @@ import java.util.HashMap;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static de.hsnr.wpp2018.Helper.isBusinessDay;
+
 public class PatternRecognition {
 
     public static double calcFromPattern(Consumption currentData, double avgRangeValue, double meanRange, double rangeTolerance) {
@@ -76,7 +78,7 @@ public class PatternRecognition {
 
         for (LocalDateTime time : data.keySet()) {
             if (!data.get(time).isInterpolated()) {
-                if (Heuristics.isBusinessDay(time)) {
+                if (isBusinessDay(time)) {
                     intervalWastingsWeekday.forEach((key, value) -> {
                         if (key.inRange(time.toLocalTime())) {
                             value.add(data.get(time).getValue());
@@ -139,7 +141,7 @@ public class PatternRecognition {
         for (LocalDateTime time : data.keySet()) {
             if (data.get(time).isInterpolated()) {
                 AtomicReference<Double> result = new AtomicReference<>(0.0);
-                if (Heuristics.isBusinessDay(time)) {
+                if (isBusinessDay(time)) {
                     avgWastingsWeekday.forEach((key, avgRangeValue) -> {
                         if (key.inRange(time.toLocalTime())) {
                             result.set(calcFromPattern(data.get(time), avgRangeValue, meanRangeWeekday, rangeTolerance));

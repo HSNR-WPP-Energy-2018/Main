@@ -26,7 +26,7 @@ public class AlgorithmTest extends BaseTest {
 
         switch (algorithmNumber) {
             case 1:
-                Heuristics.compareWithYesterday(result, new Household(PERSONS, SIZE)); //noch umbauen!
+                AvgNightDay.nightDayWaste(result, new Household(PERSONS, SIZE));
                 break;
             case 2:
                 AvgNightDay.nightDayWaste(result, new Household(PERSONS, SIZE));
@@ -34,13 +34,18 @@ public class AlgorithmTest extends BaseTest {
                 break;
             case 3:
                 PatternRecognition.checkBehaviour(result, 4, 0.3);
+                break;
+            case 4:
+                PatternRecognition.checkBehaviour(result, 4, 0.3);
+                SeasonalDifferences.adjustSeasons(result, true);
+                break;
         }
     }
 
     @Test
     public void linear() {
         result = new Linear().interpolate(testData, new Algorithm.Configuration(INTERVAL));
-        applyHeuristics(1);
+        applyHeuristics(3);
     }
 
     @Test
@@ -63,6 +68,12 @@ public class AlgorithmTest extends BaseTest {
         result = new CubicSplines().interpolate(testData, new CubicSplines.Configuration(INTERVAL, 10));
         applyHeuristics(3);
     }
+
+    @Test
+    public void yesterday() {
+        result = new Yesterday().interpolate(testData, new Algorithm.Configuration(INTERVAL));
+    }
+
 
     @Test
     public void database() {
