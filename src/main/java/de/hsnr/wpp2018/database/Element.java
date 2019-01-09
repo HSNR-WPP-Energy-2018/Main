@@ -1,31 +1,96 @@
 package de.hsnr.wpp2018.database;
 
+import de.hsnr.wpp2018.base.Consumption;
+
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
-import java.time.Month;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Element {
-    // just keep a list of values and the interval (minutes) to be independent of actual times
     private int interval;
-    private List<Double> values;
+    private HashMap<ElementKey, DayEntry> values;
 
     private List<Descriptor> descriptors;
 
-    public Element(int interval, List<Double> values, List<Descriptor> descriptors) {
+    public Element(int interval, HashMap<ElementKey, DayEntry> values, List<Descriptor> descriptors) {
         this.interval = interval;
         this.values = values;
         this.descriptors = descriptors;
+    }
+
+    public Element(int interval, ElementKey.Type type, TreeMap<LocalDateTime, Consumption> data, List<Descriptor> descriptors) {
+        this.interval = interval;
+        this.values = new HashMap<>();
+        this.descriptors = descriptors;
+        List<LocalDateTime> borders = getBorders(type, data.firstKey(), data.lastKey());
+        for (int i = 1; i < borders.size(); i++) {
+            LocalDateTime start = borders.get(i - 1);
+            LocalDateTime end = borders.get(i);
+            int keyInterval = ElementKey.getKeyInterval(type, start.toLocalDate());
+            SortedMap<LocalDateTime, Consumption> range = data.subMap(start, end);
+            for (DayOfWeek dayOfWeek : DayOfWeek.values()) {
+                HashMap<LocalDateTime, List<Double>> filtered = new HashMap<>();
+                for (LocalDateTime key : range.keySet()) {
+                    if (key.getDayOfWeek() == dayOfWeek) {
+                        if (!filtered.containsKey(key)) {
+                            filtered.put(key, new ArrayList<>());
+                        }
+                        filtered.get(key).add(range.get(key).getValue());
+                    }
+                }
+                HashMap<DayEntry.Key, Double> values = new HashMap<>();
+                for (LocalDateTime key : filtered.keySet()) {
+                    double average = filtered.get(key).stream().mapToDouble(x -> x).average().orElse(0);
+                    values.put(new DayEntry.Key(key), average);
+                }
+                this.values.put(new ElementKey(type, keyInterval, dayOfWeek), new DayEntry(values));
+            }
+        }
+    }
+
+    private List<LocalDateTime> getBorders(ElementKey.Type type, LocalDateTime start, LocalDateTime end) {
+        List<LocalDateTime> result = new ArrayList<>();
+        result.add(start);
+        LocalDateTime current = LocalDateTime.of(start.toLocalDate(), start.toLocalTime());
+        while (current.isBefore(end)) {
+            switch (type) {
+                case QUARTER:
+                    current = current.plusMonths(3);
+                    break;
+                case MONTH:
+                    current = current.plusMonths(1);
+                    break;
+                case WEEK_OF_YEAR:
+                    current = current.plusWeeks(1);
+                    break;
+                default: // fallback - should never happen
+                    result.add(end);
+                    return result;
+            }
+            if (current.isBefore(end)) {
+                result.add(current);
+            }
+        }
+        result.add(end);
+        return result;
     }
 
     public int getInterval() {
         return interval;
     }
 
-    public List<Double> getValues() {
+    public HashMap<ElementKey, DayEntry> getValues() {
         return values;
+    }
+
+    public double getValue(LocalDateTime time) {
+        for (ElementKey key : values.keySet()) {
+            if (key.matches(time.toLocalDate())) {
+                return values.get(key).getValue(time.toLocalTime());
+            }
+        }
+        return 0;
     }
 
     public List<Descriptor> getDescriptors() {
@@ -48,28 +113,10 @@ public class Element {
         return matchAll;
     }
 
-    public double getValue(Month month, int day, int hour, int minute, int second) {
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime tempStart = LocalDateTime.of(now.getYear(), Month.JANUARY, 1, 0, 0, 0);
-        // TODO: how to handle this?
-        if (!now.toLocalDate().isLeapYear() && month.equals(Month.FEBRUARY) && (day == 29)) {
-            month = Month.MARCH;
-            day = 1;
-        }
-        LocalDateTime tempKey = LocalDateTime.of(now.getYear(), month, day, hour, minute, second);
-        //TODO: how to handle requests for dates in between two keys?
-        int key = (int) Math.floor((tempStart.until(tempKey, ChronoUnit.MINUTES) / (double) this.interval) % this.values.size());
-        return values.get(key);
-    }
-
-    public double getValue(LocalDateTime time) {
-        return getValue(time.getMonth(), time.getDayOfMonth(), time.getHour(), time.getMinute(), time.getSecond());
-    }
-
     @Override
     public String toString() {
         return "interval=" + getInterval() + " seconds" +
                 " - descriptors=" + getDescriptors().stream().map(Object::toString).collect(Collectors.toList()) +
-                " - values=" + getValues().stream().map(Objects::toString).collect(Collectors.toList());
+                " - values=" + getValues().entrySet().stream().map(Objects::toString).collect(Collectors.toList());
     }
 }

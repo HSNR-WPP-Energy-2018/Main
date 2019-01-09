@@ -2,19 +2,12 @@ package de.hsnr.wpp2018.algorithms;
 
 import de.hsnr.wpp2018.base.Algorithm;
 import de.hsnr.wpp2018.base.Household;
-import de.hsnr.wpp2018.database.Database;
-import de.hsnr.wpp2018.database.Descriptor;
-import de.hsnr.wpp2018.database.Element;
-import de.hsnr.wpp2018.database.StringDescriptor;
+import de.hsnr.wpp2018.database.*;
 import de.hsnr.wpp2018.optimizations.*;
 import org.junit.Test;
 
-import java.time.Month;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 public class AlgorithmTest extends BaseTest {
     static final int INTERVAL = 15 * 60;
@@ -78,17 +71,9 @@ public class AlgorithmTest extends BaseTest {
     @Test
     public void database() {
         Database database = new Database();
-        List<Double> values = new ArrayList<>();
-        values.add(0d);
-        values.addAll(original.entrySet().stream()
-                .filter(entry -> !(entry.getKey().getMonth().equals(Month.FEBRUARY) && entry.getKey().getDayOfMonth() == 29))
-                .sorted(Map.Entry.comparingByKey())
-                .map(entry -> entry.getValue().getValue())
-                .collect(Collectors.toList())
-        );
         ArrayList<Descriptor> descriptors = new ArrayList<>();
         descriptors.add(new StringDescriptor("test"));
-        database.addElement(new Element(INTERVAL, values, descriptors));
+        database.addElement(new Element(INTERVAL, ElementKey.Type.WEEK_OF_YEAR, original, descriptors));
         result = new DatabaseInterface().interpolate(testData, new DatabaseInterface.Configuration(INTERVAL, database, descriptors));
     }
 }

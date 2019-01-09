@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 /**
- * @deprecated
+ * @deprecated Needs to be adjusted to the new structure
  */
 public class Parser {
 
@@ -69,7 +69,7 @@ public class Parser {
                 }
             }
         }
-        return new Element(interval, values, descriptors);
+        return null; // new Element(interval, values, descriptors);
     }
 
     public static Element parse(InputStream inputStream) throws ParserException {
