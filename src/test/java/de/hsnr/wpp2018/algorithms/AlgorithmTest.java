@@ -37,7 +37,7 @@ public class AlgorithmTest extends BaseTest {
                 result = SeasonalDifferences.adjustSeasons(result, true);
                 break;
             case 3:
-                result = PatternRecognition.checkBehaviour(result, 3, 0.1);
+                result = PatternRecognition.checkBehaviour(result, 4, 0.3);
         }
     }
 
