@@ -57,7 +57,7 @@ public class PatternRecognition {
     }
 
     //Stärke der Heuristik: Geht mehr auf individuelles Profil ein + erkennt zusätzlich nun Wochentage <> Wochenenden
-    public static TreeMap<LocalDateTime, Consumption> checkBehaviour(TreeMap<LocalDateTime, Consumption> data, int range, double rangeTolerance) {
+    public static void checkBehaviour(TreeMap<LocalDateTime, Consumption> data, int range, double rangeTolerance) {
         int decimals = 6; //Nachkommastellen zum Runden
 
         HashMap<TimeInterval, ArrayList<Double>> intervalWastingsWeekday = new HashMap<>();
@@ -160,6 +160,5 @@ public class PatternRecognition {
             }
         }
         //data.forEach((time, value) -> System.out.println("Time: " + time + ". Value: " + value.getValue() + ". Interpolated? " + value.isInterpolated()));
-        return data;
     }
 }

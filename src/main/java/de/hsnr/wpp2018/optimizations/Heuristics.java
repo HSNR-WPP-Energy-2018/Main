@@ -45,12 +45,31 @@ public class Heuristics {
       Differenzwert aufgefüllt, der nötig wäre, um auf den Verbrauchswert vom Vortag zu kommen (sofern positiv)
     */
     public static double yesterdayDiff(LocalDateTime today, TreeMap<LocalDateTime, Consumption> newData) {
+
+
         LocalDateTime dayStart = today.minusDays(1);
         LocalDateTime yesterdayEnd = dayStart.minusMinutes(15);
+
+
+        if(isBusinessDay(dayStart) && !isBusinessDay(yesterdayEnd))
+        {
+            while (!isBusinessDay(yesterdayEnd))
+            {
+                yesterdayEnd = yesterdayEnd.minusDays(1);
+            }
+        }
+        else if (!isBusinessDay(today) && isBusinessDay(yesterdayEnd))
+        {
+            while (isBusinessDay(yesterdayEnd) || today.getDayOfWeek().equals(yesterdayEnd.getDayOfWeek()))
+            {
+                yesterdayEnd = yesterdayEnd.plusDays(1);
+            }
+        }
+
         LocalDateTime yesterdayStart = yesterdayEnd.minusDays(1);
         double diff = 0;
 
-        if (isBusinessDay(today) && isBusinessDay(dayStart)) {
+        if ((isBusinessDay(today) && isBusinessDay(yesterdayStart)) || (!isBusinessDay(today) && !isBusinessDay(dayStart)) ) {
             double energyYesterday = 0;
             double energyToday = 0;
             for (LocalDateTime key : newData.keySet()) {
@@ -63,31 +82,26 @@ public class Heuristics {
                     energyToday += newData.get(key).getValue();
                 }
             }
-            /*
-            Überlegung (hoffe, dass sie Sinn ergibt):
-            Hier habe ich nicht abs() genommen, denn wenn energyToday auch ohne den zu hohen Peak nennenswert höher ist als der avg-Verbrauch vom gestrigen Tag,
-            ist es mMn sinnlos, anstatt des Peaks eine Differenz draufzurechnen, die auch sehr groß sein kann
-            -> Heuristik wende ich später also nur an, wenn diff>0 (Denn das bedeutet, dass energyYesterday höher als Today ohne Betrachtung des Peaks ist
-            */
+
             diff = energyYesterday - energyToday;
         }
         return diff;
     }
 
-    public static TreeMap<LocalDateTime, Consumption> compareWithYesterday(TreeMap<LocalDateTime, Consumption> newData, Household household) {
+    public static void compareWithYesterday(TreeMap<LocalDateTime, Consumption> newData, Household household) {
         double dailyAvgWaste = averageWastePerDay(household);
         for (LocalDateTime key : newData.keySet()) {
             //Durchschnittlichen nächtlichen Verbrauchswert für alle UNinterpolierten Werte sammeln
 
             if (newData.get(key).getValue() <= 0 && newData.get(key).isInterpolated()) {
                 newData.get(key).setValue(minDailyConsumption(dailyAvgWaste));
-            } else if (newData.get(key).getValue() > dailyAvgWaste && newData.get(key).isInterpolated()) {
+                // } else if (newData.get(key).getValue() > dailyAvgWaste && newData.get(key).isInterpolated()) {
+            }  else if (newData.get(key).isInterpolated()) {
                 double diffFromYesterday = Heuristics.yesterdayDiff(key, newData);
                 if (diffFromYesterday >= 0) {
                     newData.get(key).setValue(diffFromYesterday);
                 }
             }
         }
-        return newData;
     }
 }

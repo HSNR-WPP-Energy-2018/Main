@@ -60,7 +60,7 @@ public class SeasonalDifferences {
         return percentageRate;
     }
 
-    public static TreeMap<LocalDateTime, Consumption> adjustSeasons(TreeMap<LocalDateTime, Consumption> data, boolean heuristic) {
+    public static void adjustSeasons(TreeMap<LocalDateTime, Consumption> data, boolean heuristic) {
         double percents;
 
         if (!heuristic) { //Reale Consumption-Data verwenden
@@ -85,6 +85,5 @@ public class SeasonalDifferences {
             }
             //System.out.println("Time: " + time + ". Value: " + data.get(time).getValue() + ". Interpolated? " + data.get(time).isInterpolated());
         }
-        return data;
     }
 }

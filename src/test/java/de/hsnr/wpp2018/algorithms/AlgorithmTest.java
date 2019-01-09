@@ -1,22 +1,18 @@
 package de.hsnr.wpp2018.algorithms;
 
 import de.hsnr.wpp2018.base.Algorithm;
-import de.hsnr.wpp2018.base.Consumption;
 import de.hsnr.wpp2018.base.Household;
 import de.hsnr.wpp2018.database.Database;
 import de.hsnr.wpp2018.database.Descriptor;
 import de.hsnr.wpp2018.database.Element;
 import de.hsnr.wpp2018.database.StringDescriptor;
-import de.hsnr.wpp2018.evaluation.Rating;
 import de.hsnr.wpp2018.optimizations.*;
 import org.junit.Test;
 
-import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -30,21 +26,21 @@ public class AlgorithmTest extends BaseTest {
 
         switch (algorithmNumber) {
             case 1:
-                result = Heuristics.compareWithYesterday(result, new Household(PERSONS, SIZE)); //noch umbauen!
+                Heuristics.compareWithYesterday(result, new Household(PERSONS, SIZE)); //noch umbauen!
                 break;
             case 2:
-                result = AvgNightDay.nightDayWaste(result, new Household(PERSONS, SIZE));
-                result = SeasonalDifferences.adjustSeasons(result, true);
+                AvgNightDay.nightDayWaste(result, new Household(PERSONS, SIZE));
+                SeasonalDifferences.adjustSeasons(result, true);
                 break;
             case 3:
-                result = PatternRecognition.checkBehaviour(result, 4, 0.3);
+                PatternRecognition.checkBehaviour(result, 4, 0.3);
         }
     }
 
     @Test
     public void linear() {
         result = new Linear().interpolate(testData, new Algorithm.Configuration(INTERVAL));
-        applyHeuristics(3);
+        applyHeuristics(1);
     }
 
     @Test
