@@ -1,5 +1,6 @@
 package de.hsnr.wpp2018.algorithms;
 
+import de.hsnr.wpp2018.Exporter;
 import de.hsnr.wpp2018.Importer;
 import de.hsnr.wpp2018.base.Consumption;
 import de.hsnr.wpp2018.evaluation.Rating;
@@ -9,6 +10,7 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.rules.TestName;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.TreeMap;
@@ -20,6 +22,7 @@ public class BaseTest {
 
     @Rule
     public TestName name = new TestName();
+    public Exporter exporter = new Exporter();
 
     @BeforeClass
     public static void loadTestData() throws IOException {
@@ -32,7 +35,8 @@ public class BaseTest {
     }
 
     @After
-    public void output() {
+    public void output() throws FileNotFoundException {
         System.out.println("   Result: " + result.size() + " elements - difference (original -> interpolated): " + Rating.calculateDifference(original, result) + " for \"" + name.getMethodName() + "\"");
+        exporter.writeFile(result);
     }
 }

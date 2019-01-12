@@ -13,6 +13,7 @@ import java.util.*;
 
 import static java.util.stream.Collectors.toMap;
 
+
 public class CubicSplines implements Algorithm<CubicSplines.Configuration> {
     public static final String NAME = "cubic-splines";
 
