@@ -5,13 +5,13 @@ import de.hsnr.wpp2018.base.Algorithm;
 import de.hsnr.wpp2018.base.Consumption;
 import de.hsnr.wpp2018.base.ParserException;
 import de.hsnr.wpp2018.base.ParserHelper;
-
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.TreeMap;
 
 
 import static de.hsnr.wpp2018.Helper.isBusinessDay;
+
 
 public class Yesterday implements Algorithm<Algorithm.Configuration> {
     public static final String NAME = "yesterday";
@@ -20,14 +20,14 @@ public class Yesterday implements Algorithm<Algorithm.Configuration> {
     public TreeMap<LocalDateTime, Consumption> interpolate(TreeMap<LocalDateTime, Consumption> data, Configuration configuration) {
         int decimals = 5;
         TreeMap<LocalDateTime, Consumption> values = new TreeMap<>();
-        int counter = 1;
-        double yLinear;
         Map.Entry<LocalDateTime, Consumption> entry = data.firstEntry();
         while (data.higherEntry(entry.getKey()) != null) {
+            double neighborVal = entry.getValue().getValue();
             LocalDateTime one = entry.getKey();
             LocalDateTime two = data.higherKey(entry.getKey());
-            counter++;
+
             if (Helper.getDistance(one, two) > configuration.getInterval()) {
+
                 values.put(one, entry.getValue().copyAsOriginal());
                 for (LocalDateTime newDate = one.plusMinutes(15); newDate.isBefore(two); newDate = newDate.plusMinutes(15)) {
                     LocalDateTime yesterday = newDate.minusDays(1);
@@ -47,10 +47,9 @@ public class Yesterday implements Algorithm<Algorithm.Configuration> {
 
                     if (values.containsKey(yesterday)) {
                         values.put(newDate, new Consumption(values.get(yesterday).getValue(), true));
-                    } else { //values missing already on the first day in the list -> taking linear instead
-                        yLinear = Linear.interpolateValue(counter, counter - 1, counter + 1, entry.getValue().getValue(), data.higherEntry(entry.getKey()).getValue().getValue());
-                        yLinear = Helper.roundDouble(yLinear, decimals);
-                        values.put(newDate, new Consumption(yLinear, true));
+                    } else { //taking value from previous entry (which is current time minus 15 minutes) -> we guess that consumption does not change a lot during this time
+                        neighborVal = Helper.roundDouble(neighborVal, decimals);
+                        values.put(newDate, new Consumption(neighborVal, true));
                     }
 
                 }

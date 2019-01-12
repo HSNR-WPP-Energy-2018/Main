@@ -26,10 +26,10 @@ public class AlgorithmTest extends BaseTest {
                 SeasonalDifferences.adjustSeasons(result, true);
                 break;
             case 3:
-                PatternRecognition.checkBehaviour(result, 4, 0.3);
+                PatternRecognition.checkBehaviour(result, 4, 0.05);
                 break;
             case 4:
-                PatternRecognition.checkBehaviour(result, 4, 0.3);
+                PatternRecognition.checkBehaviour(result, 4, 0.1);
                 SeasonalDifferences.adjustSeasons(result, true);
                 break;
         }
@@ -44,7 +44,7 @@ public class AlgorithmTest extends BaseTest {
     @Test
     public void newton() {
         result = new Newton().interpolate(testData, new Newton.Configuration(INTERVAL, 10));
-        applyHeuristics(2);
+        applyHeuristics(3);
     }
 
     @Test
