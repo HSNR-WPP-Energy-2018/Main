@@ -37,6 +37,6 @@ public class BaseTest {
     @After
     public void output() throws FileNotFoundException {
         System.out.println("   Result: " + result.size() + " elements - difference (original -> interpolated): " + Rating.calculateDifference(original, result) + " for \"" + name.getMethodName() + "\"");
-        exporter.writeFile(result);
+        exporter.writeFile(result, "out/interpolated-" + name.getMethodName() + ".csv");
     }
 }

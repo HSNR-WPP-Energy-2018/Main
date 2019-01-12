@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 public class AlgorithmTest extends BaseTest {
-    static final int INTERVAL = 15 * 60;
+    public static final int INTERVAL = 15 * 60;
     private static final int PERSONS = 2;
     private static final double SIZE = 80.0;
 
