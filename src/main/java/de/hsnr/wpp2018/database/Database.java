@@ -46,22 +46,18 @@ public class Database {
     }
 
     public TreeMap<LocalDateTime, Consumption> interpolate(List<Descriptor> descriptors, LocalDateTime start, LocalDateTime end, int interval) {
+        return interpolate(descriptors, start, end, interval, new TreeMap<>());
+    }
+
+    public TreeMap<LocalDateTime, Consumption> interpolate(List<Descriptor> descriptors, LocalDateTime start, LocalDateTime end, int interval, TreeMap<LocalDateTime, Consumption> data) {
         List<Element> elements = getElements(descriptors);
         TreeMap<LocalDateTime, Consumption> res = new TreeMap<>();
         LocalDateTime time = start;
         while (!time.isAfter(end)) {
-            res.put(time, getValue(elements, time));
-            time = time.plusSeconds(interval);
-        }
-        return res;
-    }
-
-    public TreeMap<LocalDateTime, Consumption> interpolate(List<Descriptor> descriptors, TreeMap<LocalDateTime, Consumption> data) {
-        List<Element> elements = getElements(descriptors);
-        TreeMap<LocalDateTime, Consumption> res = new TreeMap<>();
-        for (LocalDateTime time : data.keySet()) {
             //TODO: adjust value according to provided data by defining heuristic
-            res.put(time, getValue(elements, time));
+            res.put(time, data.containsKey(time) ? data.get(time) : getValue(elements, time));
+            System.out.println(time + " - " + data.get(time).getValue() + " : " + res.get(time).getValue() + " | " + Math.abs(data.get(time).getValue() - res.get(time).getValue()));
+            time = time.plusSeconds(interval);
         }
         return res;
     }

@@ -18,7 +18,8 @@ public class Averaging implements Algorithm<Averaging.Configuration> {
 
     public TreeMap<LocalDateTime, Consumption> interpolate(TreeMap<LocalDateTime, Consumption> data, Configuration configuration) {
         TreeMap<LocalDateTime, Consumption> results = new TreeMap<>();
-        LocalDateTime time = data.firstKey(), end = data.lastKey();
+        LocalDateTime time = configuration.hasStart() ? configuration.getStart() : data.firstKey();
+        LocalDateTime end = configuration.hasEnd() ? configuration.getEnd() : data.lastKey();
         while (!time.isAfter(end)) {
             results.put(time, data.getOrDefault(time, new Consumption(interpolateValue(data, configuration, time), true)));
             time = time.plusSeconds(configuration.getInterval());
@@ -28,12 +29,11 @@ public class Averaging implements Algorithm<Averaging.Configuration> {
 
     @Override
     public String getConfigurationExplanation() {
-        return "interval=<int>;neighbors={<neighbors|int>:<interval|int)>:<neighborsWeighted|boolean>:<weight|double>}[sep=,]";
+        return "interval=<int>;{start=<date>;end=<date>;}neighbors={<neighbors|int>:<interval|int)>:<neighborsWeighted|boolean>:<weight|double>}[sep=,]";
     }
 
     @Override
     public TreeMap<LocalDateTime, Consumption> interpolate(TreeMap<LocalDateTime, Consumption> data, Map<String, String> configuration) throws ParserException {
-        int interval = ParserHelper.getInteger(configuration, "interval", 0);
         List<ConfigurationInterval> neighbors = new ArrayList<>();
         for (String neighbor : ParserHelper.getString(configuration, "neighbors").split("[,]")) {
             String[] parts = neighbor.split("[:]");
@@ -47,7 +47,7 @@ public class Averaging implements Algorithm<Averaging.Configuration> {
                     ParserHelper.getDouble(parts[3])
             ));
         }
-        return interpolate(data, new Configuration(interval, neighbors));
+        return interpolate(data, new Configuration(Algorithm.Configuration.parse(configuration), neighbors));
     }
 
     private double interpolateValue(TreeMap<LocalDateTime, Consumption> data, Configuration configuration, LocalDateTime key) {
@@ -150,6 +150,16 @@ public class Averaging implements Algorithm<Averaging.Configuration> {
 
         public Configuration(int interval, List<ConfigurationInterval> neighborIntervals) {
             super(interval);
+            this.neighborIntervals = neighborIntervals;
+        }
+
+        public Configuration(int interval, LocalDateTime start, LocalDateTime end, List<ConfigurationInterval> neighborIntervals) {
+            super(interval, start, end);
+            this.neighborIntervals = neighborIntervals;
+        }
+
+        public Configuration(Algorithm.Configuration base, List<ConfigurationInterval> neighborIntervals) {
+            super(base.getInterval(), base.getStart(), base.getEnd());
             this.neighborIntervals = neighborIntervals;
         }
 

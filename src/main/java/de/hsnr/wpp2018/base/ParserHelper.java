@@ -1,6 +1,9 @@
 package de.hsnr.wpp2018.base;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.TimeZone;
 
 public class ParserHelper {
 
@@ -89,5 +92,36 @@ public class ParserHelper {
             throw new ParserException("invalid interval");
         }
         return val;
+    }
+
+    public static LocalDateTime getDate(String value) throws ParserException {
+        try {
+            // first try timestamp
+            return LocalDateTime.ofInstant(Instant.ofEpochSecond(Integer.parseInt(value)), TimeZone.getDefault().toZoneId());
+        } catch (NumberFormatException ignored) {
+        }
+        String[] parts = value.split("[-]");
+        if (parts.length != 2) {
+            throw new ParserException("date needs to contains two parts separated by \"-\"");
+        }
+        String[] localDateTimeParts = parts[0].split("[.]");
+        String[] timeParts = parts[1].split(":");
+
+        if (localDateTimeParts.length != 3) {
+            throw new ParserException("date part needs to contain three parts separated by \".\"");
+        }
+        if (timeParts.length != 2) {
+            throw new ParserException("time part needs to contain two parts separated by \":\"");
+        }
+
+        String year = localDateTimeParts[2];
+        if (year.length() < 4) {
+            year = "20" + year;
+        }
+        return LocalDateTime.of(Integer.parseInt(year), Integer.parseInt(localDateTimeParts[1]), Integer.parseInt(localDateTimeParts[0]), Integer.parseInt(timeParts[0]), Integer.parseInt(timeParts[1]));
+    }
+
+    public static LocalDateTime getDate(Map<String, String> data, String key) throws ParserException {
+        return getDate(getString(data, key));
     }
 }

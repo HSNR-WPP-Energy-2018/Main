@@ -17,6 +17,7 @@ import static java.util.stream.Collectors.toMap;
 public class CubicSplines implements Algorithm<CubicSplines.Configuration> {
     public static final String NAME = "cubic-splines";
 
+    //TODO: support configured time range
     public double equationSys(ArrayList<Double> xArray, ArrayList<Double> yArray) {
         double[] x = xArray.stream().mapToDouble(Double::doubleValue).toArray();
         double[] y = yArray.stream().mapToDouble(Double::doubleValue).toArray();
@@ -41,6 +42,7 @@ public class CubicSplines implements Algorithm<CubicSplines.Configuration> {
         return neighborsAsc;
     }
 
+    //TODO: support configured time range
     public TreeMap<LocalDateTime, Consumption> interpolate(TreeMap<LocalDateTime, Consumption> data, Configuration configuration) {
         int decimals = 5;
         TreeMap<LocalDateTime, Consumption> values = new TreeMap<>();
@@ -108,14 +110,13 @@ public class CubicSplines implements Algorithm<CubicSplines.Configuration> {
 
     @Override
     public String getConfigurationExplanation() {
-        return "interval=<int>;neighbors=<int>";
+        return "interval=<int>;{start=<date>;end=<date>;}neighbors=<int>";
     }
 
     @Override
     public TreeMap<LocalDateTime, Consumption> interpolate(TreeMap<LocalDateTime, Consumption> data, Map<String, String> configuration) throws ParserException {
-        int interval = ParserHelper.getInteger(configuration, "interval", 0);
         int neighbors = ParserHelper.getInteger(configuration, "neighbors", 0);
-        return interpolate(data, new Configuration(interval, neighbors));
+        return interpolate(data, new Configuration(Algorithm.Configuration.parse(configuration), neighbors));
     }
 
     public static class Configuration extends Algorithm.Configuration {
@@ -123,6 +124,16 @@ public class CubicSplines implements Algorithm<CubicSplines.Configuration> {
 
         public Configuration(int interval, int neighbors) {
             super(interval);
+            this.neighbors = neighbors;
+        }
+
+        public Configuration(Algorithm.Configuration base, int neighbors) {
+            super(base.getInterval(), base.getStart(), base.getEnd());
+            this.neighbors = neighbors;
+        }
+
+        public Configuration(int interval, LocalDateTime start, LocalDateTime end, int neighbors) {
+            super(interval, start, end);
             this.neighbors = neighbors;
         }
 
