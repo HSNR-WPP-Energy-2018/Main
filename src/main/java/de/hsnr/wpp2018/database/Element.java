@@ -30,19 +30,20 @@ public class Element {
             int keyInterval = ElementKey.getKeyInterval(type, start.toLocalDate());
             SortedMap<LocalDateTime, Consumption> range = data.subMap(start, end);
             for (DayOfWeek dayOfWeek : DayOfWeek.values()) {
-                HashMap<LocalDateTime, List<Double>> filtered = new HashMap<>();
-                for (LocalDateTime key : range.keySet()) {
-                    if (key.getDayOfWeek() == dayOfWeek) {
+                HashMap<DayEntry.Key, List<Double>> filtered = new HashMap<>();
+                for (LocalDateTime time : range.keySet()) {
+                    DayEntry.Key key = new DayEntry.Key(time);
+                    if (time.getDayOfWeek() == dayOfWeek) {
                         if (!filtered.containsKey(key)) {
                             filtered.put(key, new ArrayList<>());
                         }
-                        filtered.get(key).add(range.get(key).getValue());
+                        filtered.get(key).add(range.get(time).getValue());
                     }
                 }
                 HashMap<DayEntry.Key, Double> values = new HashMap<>();
-                for (LocalDateTime key : filtered.keySet()) {
+                for (DayEntry.Key key : filtered.keySet()) {
                     double average = filtered.get(key).stream().mapToDouble(x -> x).average().orElse(0);
-                    values.put(new DayEntry.Key(key), average);
+                    values.put(key, average);
                 }
                 this.values.put(new ElementKey(type, keyInterval, dayOfWeek), new DayEntry(values));
             }
