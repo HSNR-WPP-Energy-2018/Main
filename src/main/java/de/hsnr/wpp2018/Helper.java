@@ -10,10 +10,7 @@ import java.util.TreeMap;
 
 public class Helper {
 
-    public static TreeMap<LocalDateTime, Consumption> mergeTreeMaps(TreeMap<LocalDateTime, Consumption> map1, TreeMap<LocalDateTime, Consumption> map2) {
-        map2.putAll(map1);
-        return map2;
-    }
+
 
     public static double averageWastePerDay(Household household) {
         int persons = household.getNumberOfPersons();

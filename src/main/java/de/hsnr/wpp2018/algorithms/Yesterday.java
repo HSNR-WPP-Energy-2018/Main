@@ -15,12 +15,24 @@ import static de.hsnr.wpp2018.Helper.isBusinessDay;
 public class Yesterday implements Algorithm<Algorithm.Configuration> {
     public static final String NAME = "yesterday";
 
-    //TODO: support configured time range
+    //TODO: support configured time range: OK
     public TreeMap<LocalDateTime, Consumption> interpolate(TreeMap<LocalDateTime, Consumption> data, Configuration configuration) {
         int decimals = 5;
         TreeMap<LocalDateTime, Consumption> values = new TreeMap<>();
-        Map.Entry<LocalDateTime, Consumption> entry = data.firstEntry();
-        while (data.higherEntry(entry.getKey()) != null) {
+
+
+        LocalDateTime startDate = configuration.hasStart() ? configuration.getStart() : data.firstKey();
+        LocalDateTime endDate = configuration.hasEnd() ? configuration.getEnd() : data.lastKey();
+
+        Map.Entry<LocalDateTime, Consumption> entry = null;
+        for (Map.Entry<LocalDateTime, Consumption> localEntry : data.entrySet()) {
+            if (localEntry.getKey().equals(startDate))
+            {
+                entry = localEntry;
+            }
+        }
+
+        while (!entry.getKey().isAfter(endDate) && data.higherEntry(entry.getKey()) != null) {
             double neighborVal = entry.getValue().getValue();
             LocalDateTime one = entry.getKey();
             LocalDateTime two = data.higherKey(entry.getKey());

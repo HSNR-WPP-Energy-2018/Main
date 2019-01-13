@@ -82,16 +82,26 @@ public class Newton implements Algorithm<Newton.Configuration> {
         return p;
     }
 
-    //TODO: support configured time range
+    //TODO: support configured time range: OK
     public TreeMap<LocalDateTime, Consumption> interpolate(TreeMap<LocalDateTime, Consumption> data, Configuration configuration) {
         double p;
         TreeMap<LocalDateTime, Double> resultMap = new TreeMap<>();
         TreeMap<LocalDateTime, Consumption> neighborsMap = new TreeMap<>();
         Map<LocalDateTime, Consumption> neighborsAsc = new LinkedHashMap<>();
-        Map.Entry<LocalDateTime, Consumption> entry = data.firstEntry();
         TreeMap<LocalDateTime, Consumption> values = new TreeMap<>();
 
-        while (data.higherEntry(entry.getKey()) != null) {
+        LocalDateTime startDate = configuration.hasStart() ? configuration.getStart() : data.firstKey();
+        LocalDateTime endDate = configuration.hasEnd() ? configuration.getEnd() : data.lastKey();
+
+        Map.Entry<LocalDateTime, Consumption> entry = null;
+        for (Map.Entry<LocalDateTime, Consumption> localEntry : data.entrySet()) {
+            if (localEntry.getKey().equals(startDate))
+            {
+                entry = localEntry;
+            }
+        }
+
+        while (entry.getKey().isBefore(endDate) && data.higherEntry(entry.getKey()) != null) { //hat to use isBefore instead of !isAfter
             neighborsMap.put(entry.getKey(), entry.getValue());
             LocalDateTime one = entry.getKey();
             LocalDateTime two = data.higherKey(entry.getKey());

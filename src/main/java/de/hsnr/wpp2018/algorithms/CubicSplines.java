@@ -10,6 +10,7 @@ import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toMap;
 
@@ -42,14 +43,24 @@ public class CubicSplines implements Algorithm<CubicSplines.Configuration> {
         return neighborsAsc;
     }
 
-    //TODO: support configured time range
+    //TODO: support configured time range: OK
     public TreeMap<LocalDateTime, Consumption> interpolate(TreeMap<LocalDateTime, Consumption> data, Configuration configuration) {
         int decimals = 5;
         TreeMap<LocalDateTime, Consumption> values = new TreeMap<>();
         TreeMap<LocalDateTime, Double> neighborsMap = new TreeMap<>();
 
-        Map.Entry<LocalDateTime, Consumption> entry = data.firstEntry();
-        while (data.higherEntry(entry.getKey()) != null) {
+        LocalDateTime startDate = configuration.hasStart() ? configuration.getStart() : data.firstKey();
+        LocalDateTime endDate = configuration.hasEnd() ? configuration.getEnd() : data.lastKey();
+
+        Map.Entry<LocalDateTime, Consumption> entry = null;
+        for (Map.Entry<LocalDateTime, Consumption> localEntry : data.entrySet()) {
+            if (localEntry.getKey().equals(startDate))
+            {
+                entry = localEntry;
+            }
+        }
+
+        while (!entry.getKey().isAfter(endDate) && data.higherEntry(entry.getKey()) != null) {
             neighborsMap.put(entry.getKey(), entry.getValue().getValue());
             LocalDateTime one = entry.getKey();
             LocalDateTime two = data.higherKey(entry.getKey());

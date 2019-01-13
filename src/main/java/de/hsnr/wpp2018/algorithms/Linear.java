@@ -16,14 +16,25 @@ public class Linear implements Algorithm<Algorithm.Configuration> {
         return y1 + (x - x1) / (x2 - x1) * (y2 - y1);
     }
 
-    //TODO: support configured time range
+    //TODO: support configured time range: OK
     public TreeMap<LocalDateTime, Consumption> interpolate(TreeMap<LocalDateTime, Consumption> data, Configuration configuration) {
         int decimals = 5;
         TreeMap<LocalDateTime, Consumption> values = new TreeMap<>();
         int counter = 1;
         double yLinear;
-        Map.Entry<LocalDateTime, Consumption> entry = data.firstEntry();
-        while (data.higherEntry(entry.getKey()) != null) {
+
+        LocalDateTime startDate = configuration.hasStart() ? configuration.getStart() : data.firstKey();
+        LocalDateTime endDate = configuration.hasEnd() ? configuration.getEnd() : data.lastKey();
+
+        Map.Entry<LocalDateTime, Consumption> entry = null;
+        for (Map.Entry<LocalDateTime, Consumption> localEntry : data.entrySet()) {
+            if (localEntry.getKey().equals(startDate))
+            {
+                entry = localEntry;
+            }
+        }
+
+        while (!entry.getKey().isAfter(endDate) && data.higherEntry(entry.getKey()) != null) {
             LocalDateTime one = entry.getKey();
             LocalDateTime two = data.higherKey(entry.getKey());
             counter++;

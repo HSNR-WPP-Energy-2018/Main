@@ -77,7 +77,7 @@ public class Router {
     private TreeMap<LocalDateTime, Consumption> readData(String path) throws ParserException {
         File input = new File(path);
         if (!input.exists()) {
-            throw new ParserException("input file does not exists");
+            throw new ParserException("input file does not exist");
         }
         Importer importer = new Importer();
         try {
