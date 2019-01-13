@@ -72,7 +72,10 @@ public class Yesterday implements Algorithm<Algorithm.Configuration> {
                 }
 
             } else {
-                values.put(one, entry.getValue());
+                if(!values.containsKey(one))
+                {
+                    values.put(one, entry.getValue().copyAsOriginal());
+                }
             }
             entry = data.higherEntry(entry.getKey());
         }

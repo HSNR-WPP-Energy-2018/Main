@@ -106,7 +106,7 @@ public class Newton implements Algorithm<Newton.Configuration> {
             data.put(endDate.plusMinutes(15), new Consumption(0.0, true));
         }
 
-        while (entry.getKey().isBefore(endDate) || data.higherEntry(entry.getKey()) != null) { //had to use isBefore instead of !isAfter
+        while (entry.getKey().isBefore(endDate) && data.higherEntry(entry.getKey()) != null) { //had to use isBefore instead of !isAfter
             neighborsMap.put(entry.getKey(), entry.getValue());
             LocalDateTime one = entry.getKey();
             LocalDateTime two = data.higherKey(entry.getKey());
@@ -163,7 +163,7 @@ public class Newton implements Algorithm<Newton.Configuration> {
 
                 if (xAmount >= 2) {
 
-                    for (int i = 1; i < xAmount; i++) {
+                    for (int i = 1; i <= xAmount; i++) {
                         ArrayList<Consumption> temp = new ArrayList<>();
                         temp.add(new Consumption(p));
                         for (int j = 1; j < fValues.size(); j++) {
@@ -185,7 +185,10 @@ public class Newton implements Algorithm<Newton.Configuration> {
                 neighborsAsc.clear();
                 neighborsMap.clear();
             } else {
-                values.put(entry.getKey(), entry.getValue().copyAsOriginal());;
+                if(!values.containsKey(one))
+                {
+                    values.put(entry.getKey(), entry.getValue().copyAsOriginal());
+                }
                 entry = data.higherEntry(entry.getKey());
             }
         }
