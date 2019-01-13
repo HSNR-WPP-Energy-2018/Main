@@ -101,7 +101,7 @@ public class Newton implements Algorithm<Newton.Configuration> {
             }
         }
 
-        while (entry.getKey().isBefore(endDate) && data.higherEntry(entry.getKey()) != null) { //hat to use isBefore instead of !isAfter
+        while (entry.getKey().isBefore(endDate) && data.higherEntry(entry.getKey()) != null) { //had to use isBefore instead of !isAfter
             neighborsMap.put(entry.getKey(), entry.getValue());
             LocalDateTime one = entry.getKey();
             LocalDateTime two = data.higherKey(entry.getKey());

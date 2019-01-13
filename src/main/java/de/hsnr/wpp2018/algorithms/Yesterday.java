@@ -34,7 +34,6 @@ public class Yesterday implements Algorithm<Algorithm.Configuration> {
 
         if(endDate.isAfter(data.lastKey()))
         {
-
             data.put(endDate.plusMinutes(15), new Consumption(0.0, true));
         }
 
@@ -44,10 +43,9 @@ public class Yesterday implements Algorithm<Algorithm.Configuration> {
             LocalDateTime one = entry.getKey();
             LocalDateTime two = data.higherKey(entry.getKey());
 
-            if (Helper.getDistance(one, two) > configuration.getInterval()) {
-
+            if ((Helper.getDistance(one, two)/60) > configuration.getInterval()) {
                 values.put(one, entry.getValue().copyAsOriginal());
-                for (LocalDateTime newDate = one.plusMinutes(15); newDate.isBefore(two); newDate = newDate.plusMinutes(15)) {
+                for (LocalDateTime newDate = one.plusMinutes(configuration.getInterval()); newDate.isBefore(two); newDate = newDate.plusMinutes(configuration.getInterval())) {
                     LocalDateTime yesterday = newDate.minusDays(1);
 
 
@@ -78,7 +76,7 @@ public class Yesterday implements Algorithm<Algorithm.Configuration> {
             }
             entry = data.higherEntry(entry.getKey());
         }
-        //values.forEach((time, value) -> System.out.println("Time: " + time + ". Value: " + value.getValue() + ". Interpolated? " + value.isInterpolated()));
+        values.forEach((time, value) -> System.out.println("Time: " + time + ". Value: " + value.getValue() + ". Interpolated? " + value.isInterpolated()));
         return values;
     }
 

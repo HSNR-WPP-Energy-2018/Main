@@ -33,6 +33,11 @@ public class Linear implements Algorithm<Algorithm.Configuration> {
             }
         }
 
+        //under constuction
+        for (LocalDateTime newDate = data.lastKey(); newDate.isBefore(endDate.plusMinutes(15)); newDate = newDate.plusMinutes(15)) {
+            data.put(endDate.plusMinutes(15), new Consumption(0.0, true));
+        }
+
         while (!entry.getKey().isAfter(endDate) && data.higherEntry(entry.getKey()) != null) {
             LocalDateTime one = entry.getKey();
             LocalDateTime two = data.higherKey(entry.getKey());
@@ -42,10 +47,23 @@ public class Linear implements Algorithm<Algorithm.Configuration> {
                 yLinear = interpolateValue(counter, counter - 1, counter + 1, entry.getValue().getValue(), data.higherEntry(entry.getKey()).getValue().getValue());
                 yLinear = Helper.roundDouble(yLinear, decimals);
 
-                values.put(one, entry.getValue().copyAsOriginal());
+                //values.put(one, entry.getValue().copyAsOriginal());
+
+                if(!values.containsKey(one)) {
+                    values.put(one, entry.getValue().copyAsOriginal());
+                }
+                values.put(one.plusMinutes(15), new Consumption(yLinear,true));
+
+                if(!data.containsKey(one.plusMinutes(15)))
+                {
+                    data.put(one.plusMinutes(15), new Consumption(yLinear,true));
+                }
+
+                /*
                 for (LocalDateTime newDate = one; newDate.isBefore(two); newDate = newDate.plusMinutes(15)) {
                     values.put(newDate, new Consumption(yLinear, true));
                 }
+                */
             } else {
                 values.put(one, entry.getValue());
             }

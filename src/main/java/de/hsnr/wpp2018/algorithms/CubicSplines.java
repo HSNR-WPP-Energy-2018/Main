@@ -58,7 +58,14 @@ public class CubicSplines implements Algorithm<CubicSplines.Configuration> {
             }
         }
 
+
+        if(endDate.isAfter(data.lastKey()))
+        {
+                data.put(endDate.plusMinutes(15), new Consumption(0.0, true));
+        }
+
         while (!entry.getKey().isAfter(endDate) && data.higherEntry(entry.getKey()) != null) {
+
             neighborsMap.put(entry.getKey(), entry.getValue().getValue());
             LocalDateTime one = entry.getKey();
             LocalDateTime two = data.higherKey(entry.getKey());
@@ -99,11 +106,22 @@ public class CubicSplines implements Algorithm<CubicSplines.Configuration> {
 
                 double result = equationSys(xArray, yArray);
                 result = Helper.roundDouble(result, decimals);
-                values.put(one, entry.getValue().copyAsOriginal());
-                for (LocalDateTime newDate = one.plusMinutes(15); newDate.isBefore(two); newDate = newDate.plusMinutes(15)) {
-                    values.put(newDate, new Consumption(result, true));
+
+               if(values.containsKey(one)) {
+                   System.out.println(one + " + " + two);
+                    //values.put(one, entry.getValue().copyAsOriginal());
+                }
+                values.put(one.plusMinutes(15), new Consumption(result,true));
+
+                if(!data.containsKey(one.plusMinutes(15)))
+                {
+                    data.put(one.plusMinutes(15), new Consumption(result,true));
                 }
 
+
+                //for (LocalDateTime newDate = one.plusMinutes(15); newDate.isBefore(two); newDate = newDate.plusMinutes(15)) {
+                //    values.put(newDate, new Consumption(result, true));
+                //}
                 neighborsDesc.clear();
                 neighborsAsc.clear();
                 neighborsMap.clear();
