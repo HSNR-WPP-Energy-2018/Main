@@ -8,10 +8,9 @@ import java.io.PrintWriter;
 import java.time.LocalDateTime;
 import java.util.TreeMap;
 
-
 public class Exporter {
 
-    public void writeConsumption(TreeMap<LocalDateTime, Consumption> result, String path) throws FileNotFoundException {
+    public static void writeConsumption(TreeMap<LocalDateTime, Consumption> result, String path) throws FileNotFoundException {
         String fileHeader = "Datum;Uhrzeit;Wert [kWh]";
         String colSeparator = ";";
         String rowSeparator = "\n";

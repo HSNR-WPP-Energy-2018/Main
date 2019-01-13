@@ -22,7 +22,6 @@ public class BaseTest {
 
     @Rule
     public TestName name = new TestName();
-    public Exporter exporter = new Exporter();
 
     @BeforeClass
     public static void loadTestData() throws IOException {
@@ -37,6 +36,6 @@ public class BaseTest {
     @After
     public void output() throws FileNotFoundException {
         System.out.println("   Result: " + result.size() + " elements - difference (original -> interpolated): " + Rating.calculateDifference(original, result) + " for \"" + name.getMethodName() + "\"");
-        exporter.writeConsumption(result, "out/interpolated-" + name.getMethodName() + ".csv");
+        Exporter.writeConsumption(result, "out/interpolated-" + name.getMethodName() + ".csv");
     }
 }

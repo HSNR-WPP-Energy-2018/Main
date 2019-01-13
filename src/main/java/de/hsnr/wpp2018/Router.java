@@ -7,9 +7,11 @@ import de.hsnr.wpp2018.base.Consumption;
 import de.hsnr.wpp2018.base.ParserException;
 import de.hsnr.wpp2018.base.ParserHelper;
 import de.hsnr.wpp2018.evaluation.Analyser;
+import de.hsnr.wpp2018.io.Exporter;
 import de.hsnr.wpp2018.io.Importer;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -124,6 +126,11 @@ public class Router {
         TreeMap<LocalDateTime, Consumption> result = algorithm.interpolate(data, configurationData);
         System.out.println("Original: " + data.size());
         System.out.println("Interpolated: " + result.size());
+        try {
+            Exporter.writeConsumption(result, outputFile);
+        } catch (FileNotFoundException e) {
+            System.out.println("could not write output file");
+        }
     }
 
     private void printRecommendation(String inputFile, int interval, @Nullable LocalDateTime from, @Nullable LocalDateTime to) throws ParserException {
