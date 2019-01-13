@@ -101,7 +101,12 @@ public class Newton implements Algorithm<Newton.Configuration> {
             }
         }
 
-        while (entry.getKey().isBefore(endDate) && data.higherEntry(entry.getKey()) != null) { //had to use isBefore instead of !isAfter
+        if(endDate.isAfter(data.lastKey()))
+        {
+            data.put(endDate.plusMinutes(15), new Consumption(0.0, true));
+        }
+
+        while (entry.getKey().isBefore(endDate) || data.higherEntry(entry.getKey()) != null) { //had to use isBefore instead of !isAfter
             neighborsMap.put(entry.getKey(), entry.getValue());
             LocalDateTime one = entry.getKey();
             LocalDateTime two = data.higherKey(entry.getKey());
@@ -115,7 +120,7 @@ public class Newton implements Algorithm<Newton.Configuration> {
             //damit die k nächsten Nachbarn nicht später von der falschen Seite abgeschnitten werden
 
 
-            if (Helper.getDistance(one, two) > configuration.getInterval()) {
+            if ((Helper.getDistance(one, two)/60) > configuration.getInterval()) {
                 int counter = 0;
                 for (Iterator<Map.Entry<LocalDateTime, Consumption>> it = neighborsDesc.entrySet().iterator(); it.hasNext(); ) {
                     Map.Entry<LocalDateTime, Consumption> entry2 = it.next();
@@ -132,9 +137,10 @@ public class Newton implements Algorithm<Newton.Configuration> {
 
 
                 int xAmount = 0;
-                for (LocalDateTime newDate = one.plusMinutes(15); newDate.isBefore(two); newDate = newDate.plusMinutes(15)) {
+                for (LocalDateTime newDate = one.plusMinutes(configuration.getInterval()); newDate.isBefore(two); newDate = newDate.plusMinutes(configuration.getInterval())) {
                     xAmount++;
                 }
+
 
                 Map<LocalDateTime, ArrayList<Consumption>> fValues = fValuesCreation(neighborsAsc);
 
@@ -144,7 +150,7 @@ public class Newton implements Algorithm<Newton.Configuration> {
                 List<Map.Entry<LocalDateTime, ArrayList<Consumption>>> entryList = new ArrayList<>(fValues.entrySet());
                 LocalDateTime lastDate = entryList.get(entryList.size() - 1).getKey();
 
-                LocalDateTime newDate = lastDate.plusMinutes(15);
+                LocalDateTime newDate = lastDate.plusMinutes(configuration.getInterval());
                 p = createNewtonPolynoms(fValues, x, newDate, lastDate);
                 values.put(newDate, new Consumption(p, true));
                 resultMap.put(newDate, p);
@@ -170,16 +176,18 @@ public class Newton implements Algorithm<Newton.Configuration> {
                         p = createNewtonPolynoms(fValues, x, newDate, lastDate); //Bei p kommt dann der interpolierte Wert für's neue aktuelle x raus
                         resultMap.put(newDate, p);
                         values.put(newDate, new Consumption(p, true));
+                        newDate = newDate.plusMinutes(configuration.getInterval());
                     }
                 }
                 values.put(one, entry.getValue().copyAsOriginal());
+                entry = data.higherEntry(one);
                 neighborsDesc.clear();
                 neighborsAsc.clear();
                 neighborsMap.clear();
             } else {
-                values.put(entry.getKey(), entry.getValue().copyAsOriginal());
+                values.put(entry.getKey(), entry.getValue().copyAsOriginal());;
+                entry = data.higherEntry(entry.getKey());
             }
-            entry = data.higherEntry(entry.getKey());
         }
 /*
         resultMap.forEach((key, value) ->

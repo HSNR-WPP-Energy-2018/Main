@@ -22,6 +22,7 @@ public class Linear implements Algorithm<Algorithm.Configuration> {
         int counter = 1;
         double yLinear;
 
+
         LocalDateTime startDate = configuration.hasStart() ? configuration.getStart() : data.firstKey();
         LocalDateTime endDate = configuration.hasEnd() ? configuration.getEnd() : data.lastKey();
 
@@ -33,41 +34,40 @@ public class Linear implements Algorithm<Algorithm.Configuration> {
             }
         }
 
-        //under constuction
-        for (LocalDateTime newDate = data.lastKey(); newDate.isBefore(endDate.plusMinutes(15)); newDate = newDate.plusMinutes(15)) {
-            data.put(endDate.plusMinutes(15), new Consumption(0.0, true));
+        if(endDate.isAfter(data.lastKey()))
+        {
+            data.put(endDate.plusMinutes(15), new Consumption(-100.0, true));
         }
+
 
         while (!entry.getKey().isAfter(endDate) && data.higherEntry(entry.getKey()) != null) {
             LocalDateTime one = entry.getKey();
             LocalDateTime two = data.higherKey(entry.getKey());
             counter++;
-            if (Helper.getDistance(one, two) > configuration.getInterval()) {
+            if ((Helper.getDistance(one, two)/60) > configuration.getInterval()) {
+                if (data.get(two).getValue() != (-100.0)){
+
                 //x1<=x<=x2s
                 yLinear = interpolateValue(counter, counter - 1, counter + 1, entry.getValue().getValue(), data.higherEntry(entry.getKey()).getValue().getValue());
                 yLinear = Helper.roundDouble(yLinear, decimals);
 
-                //values.put(one, entry.getValue().copyAsOriginal());
-
-                if(!values.containsKey(one)) {
+                if (!values.containsKey(one)) {
                     values.put(one, entry.getValue().copyAsOriginal());
                 }
-                values.put(one.plusMinutes(15), new Consumption(yLinear,true));
 
-                if(!data.containsKey(one.plusMinutes(15)))
+                values.put(one.plusMinutes(configuration.getInterval()), new Consumption(yLinear, true));
+                data.put(one.plusMinutes(configuration.getInterval()), new Consumption(yLinear, true));
+                entry = data.higherEntry(one);
+            }
+            else
                 {
-                    data.put(one.plusMinutes(15), new Consumption(yLinear,true));
+                    System.out.println("Linear Interpolation cannot be used for predictions because if tries to find a curve within two known data points. Please use another interpolation algorithm.");
+                    break;
                 }
-
-                /*
-                for (LocalDateTime newDate = one; newDate.isBefore(two); newDate = newDate.plusMinutes(15)) {
-                    values.put(newDate, new Consumption(yLinear, true));
-                }
-                */
             } else {
                 values.put(one, entry.getValue());
+                entry = data.higherEntry(entry.getKey());
             }
-            entry = data.higherEntry(entry.getKey());
         }
         //values.forEach((time, value) -> System.out.println("Time: " + time + ". Value: " + value.getValue() + ". Interpolated? " + value.isInterpolated()));
         return values;
