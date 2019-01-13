@@ -38,7 +38,7 @@ public class Yesterday implements Algorithm<Algorithm.Configuration> {
         }
 
 
-        while (!entry.getKey().isAfter(endDate) || data.higherEntry(entry.getKey()) != null) {
+        while (!entry.getKey().isAfter(endDate) && data.higherEntry(entry.getKey()) != null) {
             double neighborVal = entry.getValue().getValue();
             LocalDateTime one = entry.getKey();
             LocalDateTime two = data.higherKey(entry.getKey());
@@ -76,7 +76,7 @@ public class Yesterday implements Algorithm<Algorithm.Configuration> {
             }
             entry = data.higherEntry(entry.getKey());
         }
-        values.forEach((time, value) -> System.out.println("Time: " + time + ". Value: " + value.getValue() + ". Interpolated? " + value.isInterpolated()));
+        //values.forEach((time, value) -> System.out.println("Time: " + time + ". Value: " + value.getValue() + ". Interpolated? " + value.isInterpolated()));
         return values;
     }
 

@@ -52,19 +52,17 @@ public class CubicSplines implements Algorithm<CubicSplines.Configuration> {
 
         Map.Entry<LocalDateTime, Consumption> entry = null;
         for (Map.Entry<LocalDateTime, Consumption> localEntry : data.entrySet()) {
-            if (localEntry.getKey().equals(startDate))
-            {
+            if (localEntry.getKey().equals(startDate)) {
                 entry = localEntry;
             }
         }
 
 
-        if(endDate.isAfter(data.lastKey()))
-        {
+        if (endDate.isAfter(data.lastKey())) {
             data.put(endDate.plusMinutes(15), new Consumption(-100.0, true));
         }
 
-        while (!entry.getKey().isAfter(endDate) || data.higherEntry(entry.getKey()) != null) {
+        while (!entry.getKey().isAfter(endDate) && data.higherEntry(entry.getKey()) != null) {
 
             neighborsMap.put(entry.getKey(), entry.getValue().getValue());
             LocalDateTime one = entry.getKey();
@@ -75,9 +73,9 @@ public class CubicSplines implements Algorithm<CubicSplines.Configuration> {
                     .sorted(Map.Entry.<LocalDateTime, Double>comparingByKey().reversed())
                     .collect(toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
 
-            if ((Helper.getDistance(one, two)/60) > configuration.getInterval()) {
+            if ((Helper.getDistance(one, two) / 60) > configuration.getInterval()) {
 
-                if (data.get(two).getValue() != (-100.0)){
+                if (data.get(two).getValue() != (-100.0)) {
 
                     synchronized (neighborsDesc) {
                         int counter = 0;
@@ -90,49 +88,58 @@ public class CubicSplines implements Algorithm<CubicSplines.Configuration> {
                         }
                     }
 
-                double nextVal = data.get(two).getValue();
-                TreeMap<LocalDateTime, Double> neighborsAsc = removingValues(neighborsDesc);
+                    double nextVal = data.get(two).getValue();
+                    TreeMap<LocalDateTime, Double> neighborsAsc = removingValues(neighborsDesc);
 
-                ArrayList<Double> xArray = new ArrayList<>();
-                ArrayList<Double> yArray = new ArrayList<>();
+                    ArrayList<Double> xArray = new ArrayList<>();
+                    ArrayList<Double> yArray = new ArrayList<>();
 
-                for (int i = 0; i < neighborsAsc.size() + 1; i++) {
-                    if (i != neighborsAsc.size()) {
-                        xArray.add(i + 1d);
-                    } else {
-                        xArray.add(i + 2d);
+                    for (int i = 0; i < neighborsAsc.size() + 1; i++) {
+                        if (i != neighborsAsc.size()) {
+                            xArray.add(i + 1d);
+                        } else {
+                            xArray.add(i + 2d);
+                        }
                     }
-                }
 
-                neighborsAsc.forEach((key, value) -> yArray.add(value));
-                yArray.add(nextVal);
+                    neighborsAsc.forEach((key, value) -> yArray.add(value));
+                    yArray.add(nextVal);
 
-                double result = equationSys(xArray, yArray);
-                result = Helper.roundDouble(result, decimals);
+                    double result = equationSys(xArray, yArray);
+                    result = Helper.roundDouble(result, decimals);
 
 
-                //for (LocalDateTime newDate = one.plusMinutes(15); newDate.isBefore(two); newDate = newDate.plusMinutes(15)) {
-                //    values.put(newDate, new Consumption(result, true));
-                //}
-                values.put(one.plusMinutes(configuration.getInterval()), new Consumption(result, true));
-                data.put(one.plusMinutes(configuration.getInterval()), new Consumption(result, true));
-                entry = data.higherEntry(one);
-                neighborsDesc.clear();
-                neighborsAsc.clear();
-                neighborsMap.clear();
-            }
-            else
-                {
+                    //for (LocalDateTime newDate = one.plusMinutes(15); newDate.isBefore(two); newDate = newDate.plusMinutes(15)) {
+                    //    values.put(newDate, new Consumption(result, true));
+                    //}
+                    if (!values.containsKey(one)) {
+                        values.put(one, entry.getValue().copyAsOriginal());
+                    }
+
+
+                    values.put(one.plusMinutes(configuration.getInterval()), new Consumption(result, true));
+                    data.put(one.plusMinutes(configuration.getInterval()), new Consumption(result, true));
+                    entry = data.higherEntry(one);
+                    neighborsDesc.clear();
+                    neighborsAsc.clear();
+                    neighborsMap.clear();
+                } else {
                     System.out.println("Cubic Splines cannot be used for predictions because their goal is to find supporting points between given values. Please use another interpolation algorithm.");
                     break;
                 }
             } else {
-                values.put(one, entry.getValue().copyAsOriginal());
+                if(!values.containsKey(one))
+                {
+                    values.put(one, entry.getValue().copyAsOriginal());
+                }
                 entry = data.higherEntry(entry.getKey());
             }
 
         }
-        //values.forEach((time, value) -> System.out.println("Time: " + time + ". Value: " + value.getValue() + ". Interpolated? " + value.isInterpolated()));
+        values.forEach((time, value) -> System.out.println("Time: " + time + ". Value: " + value.getValue() + ". Interpolated? " + value.isInterpolated()));
+        values.forEach((time, value) -> System.out.println("Time: " + time + ". Value: " + value.getValue() + ". Interpolated? " + value.isInterpolated()));
+        values.forEach((time, value) -> System.out.println("Time: " + time + ". Value: " + value.getValue() + ". Interpolated? " + value.isInterpolated()));
+        values.forEach((time, value) -> System.out.println("Time: " + time + ". Value: " + value.getValue() + ". Interpolated? " + value.isInterpolated()));
         return values;
 
     }
