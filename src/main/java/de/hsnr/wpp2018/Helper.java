@@ -1,16 +1,12 @@
 package de.hsnr.wpp2018;
 
-import de.hsnr.wpp2018.base.Consumption;
 import de.hsnr.wpp2018.base.Household;
 
 import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.TreeMap;
 
 public class Helper {
-
-
 
     public static double averageWastePerDay(Household household) {
         int persons = household.getNumberOfPersons();

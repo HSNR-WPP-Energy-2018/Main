@@ -18,7 +18,6 @@ import static java.util.stream.Collectors.toMap;
 public class CubicSplines implements Algorithm<CubicSplines.Configuration> {
     public static final String NAME = "cubic-splines";
 
-    //TODO: support configured time range
     public double equationSys(ArrayList<Double> xArray, ArrayList<Double> yArray) {
         double[] x = xArray.stream().mapToDouble(Double::doubleValue).toArray();
         double[] y = yArray.stream().mapToDouble(Double::doubleValue).toArray();
@@ -43,7 +42,6 @@ public class CubicSplines implements Algorithm<CubicSplines.Configuration> {
         return neighborsAsc;
     }
 
-    //TODO: support configured time range: OK
     public TreeMap<LocalDateTime, Consumption> interpolate(TreeMap<LocalDateTime, Consumption> data, Configuration configuration) {
         int decimals = 5;
         TreeMap<LocalDateTime, Consumption> values = new TreeMap<>();
