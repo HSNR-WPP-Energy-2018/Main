@@ -2,22 +2,20 @@ package de.hsnr.wpp2018;
 
 import com.sun.istack.internal.Nullable;
 import de.hsnr.wpp2018.algorithms.*;
-import de.hsnr.wpp2018.base.Algorithm;
-import de.hsnr.wpp2018.base.Consumption;
-import de.hsnr.wpp2018.base.ParserException;
-import de.hsnr.wpp2018.base.ParserHelper;
+import de.hsnr.wpp2018.base.*;
 import de.hsnr.wpp2018.evaluation.Analyser;
 import de.hsnr.wpp2018.io.Exporter;
 import de.hsnr.wpp2018.io.Importer;
+import de.hsnr.wpp2018.optimizations.AvgNightDay;
+import de.hsnr.wpp2018.optimizations.Heuristics;
+import de.hsnr.wpp2018.optimizations.PatternRecognition;
+import de.hsnr.wpp2018.optimizations.SeasonalDifferences;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 public class Router {
 
@@ -36,7 +34,22 @@ public class Router {
         String command = (args.length > 0) ? args[0].toLowerCase() : "";
         try {
             switch (command) {
-                case "run":
+                case "recommend":
+                    if (args.length < 2) {
+                        throw new ParserException("missing input file location");
+                    }
+                    if (args.length < 3) {
+                        throw new ParserException("missing interval");
+                    }
+                    int interval = ParserHelper.getInteger(args[2]);
+                    LocalDateTime from = null, to = null;
+                    if (args.length > 4) {
+                        from = ParserHelper.getDate(args[3]);
+                        to = ParserHelper.getDate(args[4]);
+                    }
+                    printRecommendation(args[1], interval, from, to);
+                    break;
+                case "interpolate":
                     if (args.length < 2) {
                         throw new ParserException("missing algorithm name");
                     }
@@ -49,22 +62,22 @@ public class Router {
                     if (args.length < 5) {
                         throw new ParserException("missing configuration string");
                     }
-                    runAlgorithm(args[1], args[2], args[3], args[4]);
+                    interpolate(args[1], args[2], args[3], args[4]);
                     break;
-                case "recommend":
+                case "heuristics":
                     if (args.length < 2) {
+                        throw new ParserException("missing heuristics name");
+                    }
+                    Heuristics heuristics = Heuristics.get(args[1]);
+                    if (args.length < 3) {
                         throw new ParserException("missing input file location");
                     }
-                    if (args.length < 3) {
-                        throw new ParserException("missing interval");
+                    if (args.length < 4) {
+                        throw new ParserException("missing output file location");
                     }
-                    int inteval = ParserHelper.getInteger(args[2]);
-                    LocalDateTime from = null, to = null;
-                    if (args.length > 4) {
-                        from = ParserHelper.getDate(args[3]);
-                        to = ParserHelper.getDate(args[4]);
-                    }
-                    printRecommendation(args[1], inteval, from, to);
+                    String[] options = (args.length < 5) ? new String[]{} : Arrays.copyOfRange(args, 5, args.length);
+                    applyHeuristic(heuristics, args[2], args[3], options);
+                    break;
                 default:
                     printHelp();
                     break;
@@ -88,7 +101,13 @@ public class Router {
         return importer.getData();
     }
 
-    private void runAlgorithm(String name, String inputFile, String outputFile, String configurationString) throws ParserException {
+    private void printRecommendation(String inputFile, int interval, @Nullable LocalDateTime from, @Nullable LocalDateTime to) throws ParserException {
+        TreeMap<LocalDateTime, Consumption> data = readData(inputFile);
+        List<String> recommendations = (from == null) ? Analyser.recommendAlgorithm(data, interval) : Analyser.recommendAlgorithm(data, from, to, interval);
+        System.out.println("Recommended algorithms: " + String.join(", ", recommendations));
+    }
+
+    private void interpolate(String name, String inputFile, String outputFile, String configurationString) throws ParserException {
         Algorithm algorithm;
         switch (name.toLowerCase()) {
             case Averaging.NAME:
@@ -110,7 +129,7 @@ public class Router {
                 algorithm = new Yesterday();
                 break;
             default:
-                String[] algorithms = { Averaging.NAME, CubicSplines.NAME, DatabaseInterface.NAME, Linear.NAME, Newton.NAME };
+                String[] algorithms = {Averaging.NAME, CubicSplines.NAME, DatabaseInterface.NAME, Linear.NAME, Newton.NAME};
                 throw new ParserException("unrecognized algorithm. Available options: " + String.join(", ", algorithms));
         }
         TreeMap<LocalDateTime, Consumption> data = readData(inputFile);
@@ -133,17 +152,43 @@ public class Router {
         }
     }
 
-    private void printRecommendation(String inputFile, int interval, @Nullable LocalDateTime from, @Nullable LocalDateTime to) throws ParserException {
+    private void applyHeuristic(Heuristics heuristics, String inputFile, String outputFile, String[] options) throws ParserException {
         TreeMap<LocalDateTime, Consumption> data = readData(inputFile);
-        List<String> recommendations = (from == null) ? Analyser.recommendAlgorithm(data, interval) : Analyser.recommendAlgorithm(data, from, to, interval);
-        System.out.println("Recommended algorithms: " + String.join(", ", recommendations));
+        switch (heuristics) {
+            case NIGHT_DAY:
+                if (options.length != 2) {
+                    throw new ParserException("required options: <numberOfPersons|int> <livingSpace|double>");
+                }
+                AvgNightDay.nightDayWaste(data, new Household(ParserHelper.getInteger(args[0]), ParserHelper.getDouble(args[1])));
+                break;
+            case PATTERN:
+                if (options.length != 2) {
+                    throw new ParserException("required options: <range|int> <rangeTolerance|double>");
+                }
+                PatternRecognition.checkBehaviour(data, ParserHelper.getInteger(args[0]), ParserHelper.getDouble(args[1]));
+                break;
+            case SEASON:
+                if (options.length != 2) {
+                    throw new ParserException("required options: <heuristic|bool>");
+                }
+                SeasonalDifferences.adjustSeasons(data, ParserHelper.getBoolean(args[0]));
+                break;
+            default:
+                throw new ParserException("heuristic not yet supported");
+        }
+        try {
+            Exporter.writeConsumption(data, outputFile);
+        } catch (FileNotFoundException e) {
+            System.out.println("could not write output file");
+        }
     }
 
     private void printHelp() {
         System.out.println("======= Available commands =======");
         System.out.println("General syntax: <required parameter> [optional parameter]");
         System.out.println("> help - print this help");
-        System.out.println("> run <algorithm> <input-file> <output-file> <configuration> - run a specified algorithm with the provided configuration");
         System.out.println("> recommend <input-file> <interval> [from-date to-date] - recommend algorithm");
+        System.out.println("> interpolate <algorithm> <input-file> <output-file> <configuration> - run a specified algorithm with the provided configuration");
+        System.out.println("> heuristic <input-file> <output-file> <name> [options...] - apply a heuristic to an file (different heuristics require different options, calling them without options will print out the option format)");
     }
 }
