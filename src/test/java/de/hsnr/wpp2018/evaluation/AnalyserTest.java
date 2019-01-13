@@ -1,6 +1,6 @@
 package de.hsnr.wpp2018.evaluation;
 
-import de.hsnr.wpp2018.Importer;
+import de.hsnr.wpp2018.io.Importer;
 import de.hsnr.wpp2018.algorithms.AlgorithmTest;
 import de.hsnr.wpp2018.base.Consumption;
 import org.junit.BeforeClass;

@@ -1,4 +1,4 @@
-package de.hsnr.wpp2018;
+package de.hsnr.wpp2018.io;
 
 import de.hsnr.wpp2018.base.Consumption;
 

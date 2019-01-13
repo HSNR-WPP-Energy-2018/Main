@@ -1,6 +1,11 @@
 package de.hsnr.wpp2018.database;
 
 public class StringDescriptor implements Descriptor {
+    public static final String TYPE = "string";
+
+    public static StringDescriptor fromString(String string) {
+        return new StringDescriptor(string);
+    }
 
     private String value;
 
@@ -18,6 +23,11 @@ public class StringDescriptor implements Descriptor {
             return ((StringDescriptor) descriptor).getValue().equals(getValue());
         }
         return false;
+    }
+
+    @Override
+    public String output() {
+        return TYPE + "|" + getValue();
     }
 
     @Override

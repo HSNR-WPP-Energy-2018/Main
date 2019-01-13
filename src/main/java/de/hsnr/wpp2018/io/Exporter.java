@@ -1,4 +1,4 @@
-package de.hsnr.wpp2018;
+package de.hsnr.wpp2018.io;
 
 import de.hsnr.wpp2018.base.Consumption;
 
@@ -11,14 +11,12 @@ import java.util.TreeMap;
 
 public class Exporter {
 
-    public void writeFile(TreeMap<LocalDateTime, Consumption> result, String path) throws FileNotFoundException {
+    public void writeConsumption(TreeMap<LocalDateTime, Consumption> result, String path) throws FileNotFoundException {
         String fileHeader = "Datum;Uhrzeit;Wert [kWh]";
         String colSeparator = ";";
         String rowSeparator = "\n";
 
-        PrintWriter printWriter = new PrintWriter(new File(path));
         StringBuilder stringBuilder = new StringBuilder();
-
         stringBuilder.append(fileHeader);
         stringBuilder.append(rowSeparator);
 
@@ -31,6 +29,7 @@ public class Exporter {
             stringBuilder.append(rowSeparator);
         });
 
+        PrintWriter printWriter = new PrintWriter(new File(path));
         printWriter.write(stringBuilder.toString());
         printWriter.close();
     }

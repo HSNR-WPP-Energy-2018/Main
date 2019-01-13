@@ -1,7 +1,7 @@
-package de.hsnr.wpp2018;
+package de.hsnr.wpp2018.evaluation;
 
 import de.hsnr.wpp2018.base.Consumption;
-import de.hsnr.wpp2018.evaluation.TestDataGenerator;
+import de.hsnr.wpp2018.io.Importer;
 import org.junit.Assert;
 import org.junit.Test;
 

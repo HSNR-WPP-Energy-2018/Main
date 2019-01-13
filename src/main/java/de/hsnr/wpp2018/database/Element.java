@@ -9,20 +9,19 @@ import java.util.stream.Collectors;
 
 public class Element {
     private int interval;
-    private HashMap<ElementKey, DayEntry> values;
-
     private List<Descriptor> descriptors;
+    private Map<ElementKey, DayEntry> values;
 
-    public Element(int interval, HashMap<ElementKey, DayEntry> values, List<Descriptor> descriptors) {
+    public Element(int interval, List<Descriptor> descriptors, Map<ElementKey, DayEntry> entries) {
         this.interval = interval;
-        this.values = values;
         this.descriptors = descriptors;
+        this.values = entries;
     }
 
-    public Element(int interval, ElementKey.Type type, TreeMap<LocalDateTime, Consumption> data, List<Descriptor> descriptors) {
+    public Element(int interval, List<Descriptor> descriptors, ElementKey.Type type, TreeMap<LocalDateTime, Consumption> data) {
         this.interval = interval;
-        this.values = new HashMap<>();
         this.descriptors = descriptors;
+        this.values = new HashMap<>();
         List<LocalDateTime> borders = getBorders(type, data.firstKey(), data.lastKey());
         for (int i = 1; i < borders.size(); i++) {
             LocalDateTime start = borders.get(i - 1);
@@ -81,7 +80,7 @@ public class Element {
         return interval;
     }
 
-    public HashMap<ElementKey, DayEntry> getValues() {
+    public Map<ElementKey, DayEntry> getValues() {
         return values;
     }
 
@@ -118,6 +117,6 @@ public class Element {
     public String toString() {
         return "interval=" + getInterval() + " seconds" +
                 " - descriptors=" + getDescriptors().stream().map(Object::toString).collect(Collectors.toList()) +
-                " - values=" + getValues().entrySet().stream().map(Objects::toString).collect(Collectors.toList());
+                " - entries=" + getValues().entrySet().stream().map(entry -> entry.getKey().toString()).collect(Collectors.toList());
     }
 }

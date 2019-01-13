@@ -7,6 +7,7 @@ import de.hsnr.wpp2018.base.Consumption;
 import de.hsnr.wpp2018.base.ParserException;
 import de.hsnr.wpp2018.base.ParserHelper;
 import de.hsnr.wpp2018.evaluation.Analyser;
+import de.hsnr.wpp2018.io.Importer;
 
 import java.io.File;
 import java.io.IOException;

@@ -73,7 +73,7 @@ public class AlgorithmTest extends BaseTest {
         Database database = new Database();
         ArrayList<Descriptor> descriptors = new ArrayList<>();
         descriptors.add(new StringDescriptor("test"));
-        database.addElement(new Element(INTERVAL, ElementKey.Type.WEEK_OF_YEAR, original, descriptors));
+        database.addElement(new Element(INTERVAL, descriptors, ElementKey.Type.WEEK_OF_YEAR, original));
         result = new DatabaseInterface().interpolate(testData, new DatabaseInterface.Configuration(INTERVAL, database, descriptors));
     }
 }

@@ -1,7 +1,7 @@
 package de.hsnr.wpp2018.algorithms;
 
-import de.hsnr.wpp2018.Exporter;
-import de.hsnr.wpp2018.Importer;
+import de.hsnr.wpp2018.io.Exporter;
+import de.hsnr.wpp2018.io.Importer;
 import de.hsnr.wpp2018.base.Consumption;
 import de.hsnr.wpp2018.evaluation.Rating;
 import de.hsnr.wpp2018.evaluation.TestDataGenerator;
@@ -37,6 +37,6 @@ public class BaseTest {
     @After
     public void output() throws FileNotFoundException {
         System.out.println("   Result: " + result.size() + " elements - difference (original -> interpolated): " + Rating.calculateDifference(original, result) + " for \"" + name.getMethodName() + "\"");
-        exporter.writeFile(result, "out/interpolated-" + name.getMethodName() + ".csv");
+        exporter.writeConsumption(result, "out/interpolated-" + name.getMethodName() + ".csv");
     }
 }

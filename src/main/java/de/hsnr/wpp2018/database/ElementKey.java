@@ -72,4 +72,9 @@ public class ElementKey {
     public int hashCode() {
         return Objects.hash(getKeyType(), getInterval(), getDayOfWeek());
     }
+
+    @Override
+    public String toString() {
+        return getKeyType() + ":" + getInterval() + ":" + getDayOfWeek();
+    }
 }
