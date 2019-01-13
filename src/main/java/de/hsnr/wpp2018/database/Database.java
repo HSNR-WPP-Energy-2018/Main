@@ -4,8 +4,8 @@ import de.hsnr.wpp2018.base.Consumption;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.TreeMap;
 import java.util.List;
+import java.util.TreeMap;
 
 public class Database {
 
@@ -56,7 +56,7 @@ public class Database {
         while (!time.isAfter(end)) {
             //TODO: adjust value according to provided data by defining heuristic
             res.put(time, data.containsKey(time) ? data.get(time) : getValue(elements, time));
-            System.out.println(time + " - " + data.get(time).getValue() + " : " + res.get(time).getValue() + " | " + Math.abs(data.get(time).getValue() - res.get(time).getValue()));
+            // System.out.println(time + " - " + res.get(time).getValue() + " : " + res.get(time).getValue() + " | " + Math.abs(res.get(time).getValue() - res.get(time).getValue()));
             time = time.plusSeconds(interval);
         }
         return res;
