@@ -32,7 +32,14 @@ public class Yesterday implements Algorithm<Algorithm.Configuration> {
             }
         }
 
-        while (!entry.getKey().isAfter(endDate) && data.higherEntry(entry.getKey()) != null) {
+        if(endDate.isAfter(data.lastKey()))
+        {
+
+            data.put(endDate.plusMinutes(15), new Consumption(0.0, true));
+        }
+
+
+        while (!entry.getKey().isAfter(endDate) || data.higherEntry(entry.getKey()) != null) {
             double neighborVal = entry.getValue().getValue();
             LocalDateTime one = entry.getKey();
             LocalDateTime two = data.higherKey(entry.getKey());
@@ -62,6 +69,7 @@ public class Yesterday implements Algorithm<Algorithm.Configuration> {
                         neighborVal = Helper.roundDouble(neighborVal, decimals);
                         values.put(newDate, new Consumption(neighborVal, true));
                     }
+
 
                 }
 
