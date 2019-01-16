@@ -4,6 +4,7 @@ import de.hsnr.wpp2018.Helper;
 import de.hsnr.wpp2018.base.Algorithm;
 import de.hsnr.wpp2018.base.Consumption;
 import de.hsnr.wpp2018.base.ParserException;
+
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.TreeMap;
@@ -11,11 +12,9 @@ import java.util.TreeMap;
 
 import static de.hsnr.wpp2018.Helper.isBusinessDay;
 
-
 public class Yesterday implements Algorithm<Algorithm.Configuration> {
     public static final String NAME = "yesterday";
 
-    //TODO: support configured time range: OK
     public TreeMap<LocalDateTime, Consumption> interpolate(TreeMap<LocalDateTime, Consumption> data, Configuration configuration) {
         int decimals = 5;
         TreeMap<LocalDateTime, Consumption> values = new TreeMap<>();
@@ -26,14 +25,12 @@ public class Yesterday implements Algorithm<Algorithm.Configuration> {
 
         Map.Entry<LocalDateTime, Consumption> entry = null;
         for (Map.Entry<LocalDateTime, Consumption> localEntry : data.entrySet()) {
-            if (localEntry.getKey().equals(startDate))
-            {
+            if (localEntry.getKey().equals(startDate)) {
                 entry = localEntry;
             }
         }
 
-        if(endDate.isAfter(data.lastKey()))
-        {
+        if (endDate.isAfter(data.lastKey())) {
             data.put(endDate.plusMinutes(15), new Consumption(0.0, true));
         }
 
@@ -43,7 +40,7 @@ public class Yesterday implements Algorithm<Algorithm.Configuration> {
             LocalDateTime one = entry.getKey();
             LocalDateTime two = data.higherKey(entry.getKey());
 
-            if ((Helper.getDistance(one, two)/60) > configuration.getInterval()) {
+            if ((Helper.getDistance(one, two) / 60) > configuration.getInterval()) {
                 values.put(one, entry.getValue().copyAsOriginal());
                 for (LocalDateTime newDate = one.plusMinutes(configuration.getInterval()); newDate.isBefore(two); newDate = newDate.plusMinutes(configuration.getInterval())) {
                     LocalDateTime yesterday = newDate.minusDays(1);
@@ -72,8 +69,7 @@ public class Yesterday implements Algorithm<Algorithm.Configuration> {
                 }
 
             } else {
-                if(!values.containsKey(one))
-                {
+                if (!values.containsKey(one)) {
                     values.put(one, entry.getValue().copyAsOriginal());
                 }
             }

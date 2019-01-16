@@ -12,7 +12,7 @@ public class EvaluationTest extends BaseTest {
         ArrayList<Integer> adjusters = new ArrayList<>();
         adjusters.add(Math.toIntExact(TimeUnit.DAYS.toSeconds(7)));
         adjusters.add(Math.toIntExact(TimeUnit.DAYS.toSeconds(1)));
-        Averaging.Configuration configuration = new Averaging.Optimizer(AlgorithmTest.INTERVAL, adjusters, 1, 10, 1, 10, 0.1).optimize(original, testData);
+        Averaging.Configuration configuration = new Averaging.Optimizer(AlgorithmTest.INTERVAL, adjusters, 1, 10, 1, 10, 1).optimize(original, testData);
         System.out.println("Configuration for best score: " + configuration);
         result = new Averaging().interpolate(testData, configuration);
     }

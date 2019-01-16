@@ -1,7 +1,5 @@
 package de.hsnr.wpp2018.base;
 
-import com.sun.istack.internal.Nullable;
-
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.TreeMap;
@@ -24,8 +22,8 @@ public interface Algorithm<T extends Algorithm.Configuration> {
         }
 
         private int interval;
-        @Nullable private LocalDateTime start;
-        @Nullable private LocalDateTime end;
+        private LocalDateTime start;
+        private LocalDateTime end;
 
         public Configuration(int interval) {
             this.interval = interval;
@@ -45,7 +43,6 @@ public interface Algorithm<T extends Algorithm.Configuration> {
             return start != null;
         }
 
-        @Nullable
         public LocalDateTime getStart() {
             return start;
         }
@@ -54,7 +51,6 @@ public interface Algorithm<T extends Algorithm.Configuration> {
             return end != null;
         }
 
-        @Nullable
         public LocalDateTime getEnd() {
             return end;
         }

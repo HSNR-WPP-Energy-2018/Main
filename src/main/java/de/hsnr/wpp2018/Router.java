@@ -1,6 +1,5 @@
 package de.hsnr.wpp2018;
 
-import com.sun.istack.internal.Nullable;
 import de.hsnr.wpp2018.algorithms.*;
 import de.hsnr.wpp2018.base.*;
 import de.hsnr.wpp2018.evaluation.Analyser;
@@ -101,7 +100,7 @@ public class Router {
         return importer.getData();
     }
 
-    private void printRecommendation(String inputFile, int interval, @Nullable LocalDateTime from, @Nullable LocalDateTime to) throws ParserException {
+    private void printRecommendation(String inputFile, int interval, LocalDateTime from, LocalDateTime to) throws ParserException {
         TreeMap<LocalDateTime, Consumption> data = readData(inputFile);
         List<String> recommendations = (from == null) ? Analyser.recommendAlgorithm(data, interval) : Analyser.recommendAlgorithm(data, from, to, interval);
         System.out.println("Recommended algorithms: " + String.join(", ", recommendations));
@@ -142,7 +141,13 @@ public class Router {
             }
             configurationData.put(elements[0], elements[1]);
         }
-        TreeMap<LocalDateTime, Consumption> result = algorithm.interpolate(data, configurationData);
+        TreeMap<LocalDateTime, Consumption> result;
+        try {
+            result = algorithm.interpolate(data, configurationData);
+        } catch (ParserException ignored) {
+            System.out.println("options format for this algorithm: " + algorithm.getConfigurationExplanation());
+            return;
+        }
         System.out.println("Original: " + data.size());
         System.out.println("Interpolated: " + result.size());
         try {

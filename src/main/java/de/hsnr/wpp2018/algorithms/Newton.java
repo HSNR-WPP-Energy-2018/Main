@@ -82,7 +82,6 @@ public class Newton implements Algorithm<Newton.Configuration> {
         return p;
     }
 
-    //TODO: support configured time range: OK
     public TreeMap<LocalDateTime, Consumption> interpolate(TreeMap<LocalDateTime, Consumption> data, Configuration configuration) {
         double p;
         TreeMap<LocalDateTime, Double> resultMap = new TreeMap<>();
