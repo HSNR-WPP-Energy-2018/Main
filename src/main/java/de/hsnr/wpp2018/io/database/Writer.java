@@ -22,7 +22,7 @@ public class Writer {
         }
         List<Element> elements = database.getElements();
         for (int i = 0; i < elements.size(); i++) {
-            write(elements.get(i), folder.getPath() + "/" + i + ".dbe");
+            write(elements.get(i), folder.getPath() + "/" + i + "." + Element.EXTENSION);
         }
     }
 

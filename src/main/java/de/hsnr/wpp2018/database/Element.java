@@ -8,6 +8,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class Element {
+    public static final String EXTENSION = "dbe";
+
     private int interval;
     private List<Descriptor> descriptors;
     private Map<ElementKey, DayEntry> values;

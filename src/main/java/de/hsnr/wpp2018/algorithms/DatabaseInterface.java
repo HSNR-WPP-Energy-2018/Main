@@ -3,14 +3,16 @@ package de.hsnr.wpp2018.algorithms;
 import de.hsnr.wpp2018.base.Algorithm;
 import de.hsnr.wpp2018.base.Consumption;
 import de.hsnr.wpp2018.base.ParserException;
+import de.hsnr.wpp2018.base.ParserHelper;
 import de.hsnr.wpp2018.database.Database;
 import de.hsnr.wpp2018.database.Descriptor;
+import de.hsnr.wpp2018.database.Element;
+import de.hsnr.wpp2018.io.database.Parser;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 public class DatabaseInterface implements Algorithm<DatabaseInterface.Configuration> {
     public static final String NAME = "database";
@@ -24,15 +26,27 @@ public class DatabaseInterface implements Algorithm<DatabaseInterface.Configurat
 
     @Override
     public String getConfigurationExplanation() {
-        return "interval=<int>;{start=<date>;end=<date>;}database=<folder path|string>;descriptors=";
+        return "interval=<int>;{start=<date>;end=<date>;}database=<folder path|string>;descriptors=<descriptor strings, connected by \"/\">";
     }
 
     @Override
     public TreeMap<LocalDateTime, Consumption> interpolate(TreeMap<LocalDateTime, Consumption> data, Map<String, String> configuration) throws ParserException {
         Database database = new Database();
-        // TODO: read database
+        File folder = new File(ParserHelper.getString(configuration, "database"));
+        if (!folder.exists() || !folder.isDirectory()) {
+            throw new ParserException("database path not found or is not a folder");
+        }
+        for (File file : Objects.requireNonNull(folder.listFiles())) {
+            if (file.isFile() && file.getName().endsWith("." + Element.EXTENSION)) {
+                try {
+                    database.addElement(Parser.parse(file));
+                } catch (FileNotFoundException ignored) {}
+            }
+        }
         List<Descriptor> descriptors = new ArrayList<>();
-        // TODO: fill descriptors
+        for (String descriptor : ParserHelper.getString(configuration, "descriptors").split("[/]")) {
+            descriptors.add(Descriptor.parse(descriptor));
+        }
         return interpolate(data, new Configuration(Algorithm.Configuration.parse(configuration), database, descriptors));
     }
 

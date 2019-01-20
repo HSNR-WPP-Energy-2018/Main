@@ -7,7 +7,7 @@ public class NumberDescriptor implements Descriptor {
     public static final String TYPE = "number";
 
     public static NumberDescriptor fromString(String string) throws ParserException {
-        String[] parts = string.split("[=]");
+        String[] parts = string.split("[-]");
         if (parts.length != 2) {
             throw new ParserException("number-descriptor needs to contain one \"=\"");
         }
@@ -57,11 +57,11 @@ public class NumberDescriptor implements Descriptor {
 
     @Override
     public String output() {
-        return TYPE + "|" + getKey() + "=" + getValue() + ":" + getTolerance();
+        return TYPE + "|" + getKey() + "-" + getValue() + ":" + getTolerance();
     }
 
     @Override
     public String toString() {
-        return getKey() + "=" + getValue() + ":" + getTolerance();
+        return getKey() + "-" + getValue() + ":" + getTolerance();
     }
 }

@@ -4,6 +4,7 @@ import de.hsnr.wpp2018.algorithms.*;
 import de.hsnr.wpp2018.base.Consumption;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -55,6 +56,13 @@ public class Analyser {
 
     // TODO: improve recommendations (maybe based on rating with randomly removed data)
     public static List<String> recommendAlgorithm(TreeMap<LocalDateTime, Consumption> data, LocalDateTime start, LocalDateTime end, int interval) {
+        // only the database approach can handle interpolation of data before the start or after the end
+        if (start.until(data.firstKey(), ChronoUnit.MINUTES) > 0) {
+            return Collections.singletonList(DatabaseInterface.NAME);
+        }
+        if (data.lastKey().until(end, ChronoUnit.MINUTES) > 0) {
+            return Collections.singletonList(DatabaseInterface.NAME);
+        }
         MissingRangesStatistics statistics = getMissingRangeStatistics(data, start, end, interval);
         // more than one month missing => only recommend database
         if (statistics.hasHigherRange(Math.toIntExact(TimeUnit.DAYS.toSeconds(30) / interval))) {

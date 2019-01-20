@@ -53,20 +53,7 @@ public class Parser {
         for (int i = 1; i < lines.length; i++) {
             String line = lines[i];
             if (line.contains("|")) { // descriptor
-                String[] parts = line.split("[|]");
-                if (parts.length != 2) {
-                    throw new ParserException("descriptor line needs to contain two parts separated by \"|\"");
-                }
-                switch (parts[0].toLowerCase()) {
-                    case StringDescriptor.TYPE:
-                        descriptors.add(StringDescriptor.fromString(parts[1]));
-                        break;
-                    case NumberDescriptor.TYPE:
-                        descriptors.add(NumberDescriptor.fromString(parts[1]));
-                        break;
-                    default:
-                        throw new ParserException("unrecognized descriptor at line " + i + ": " + parts[0].toLowerCase());
-                }
+                descriptors.add(Descriptor.parse(line));
             } else if (line.contains("-")) { // value
                 String[] parts = line.split("[-]");
                 if (parts.length != 2) {

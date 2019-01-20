@@ -12,7 +12,6 @@ public class Rating {
         Set<LocalDateTime> keys = source.keySet();
         double sum = 0;
         for (LocalDateTime key : keys) {
-            //TODO: rethink default value
             sum += Math.pow(source.get(key).getValue() - interpolation.getOrDefault(key, new Consumption(0)).getValue(), 2);
         }
         return sum / keys.size();
