@@ -15,7 +15,7 @@ public class AlgorithmTest extends BaseTest {
     private static final double SIZE = 80.0;
 
     private void applyHeuristics(int algorithmNumber) {
-        Holidays.scanFile("Thüringen");
+        Holidays.scanFile();
 
         switch (algorithmNumber) {
             case 1:
