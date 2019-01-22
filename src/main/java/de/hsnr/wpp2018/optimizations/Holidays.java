@@ -23,6 +23,7 @@ public class Holidays {
         return false;
     }
 
+    //TODO: refactor - let others deal with determining which day is a public holiday and just use distinct files
     public static void scanFile(String federalState) {
         ClassLoader classloader = Thread.currentThread().getContextClassLoader();
         InputStream inputStream = classloader.getResourceAsStream("feiertage_2019.ics");
