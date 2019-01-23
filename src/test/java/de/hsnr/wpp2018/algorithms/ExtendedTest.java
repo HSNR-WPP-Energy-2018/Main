@@ -110,9 +110,9 @@ public class ExtendedTest {
             results.put(heuristic, new ArrayList<>());
         }
 
-        for (float weekCut = 0.1f; weekCut <= 0.1f; weekCut += 0.1f) {
-            for (float dayCut = 0.1f; dayCut <= 0.1f; dayCut += 0.1f) {
-                for (float hourCut = 0.1f; hourCut <= 0.1f; hourCut += 0.1f) {
+        for (float weekCut = 0.1f; weekCut <= 0.5f; weekCut += 0.1f) {
+            for (float dayCut = 0.1f; dayCut <= 0.5f; dayCut += 0.1f) {
+                for (float hourCut = 0.1f; hourCut <= 0.5f; hourCut += 0.1f) {
                     for (float elementCut = 0.1f; elementCut <= 0.5f; elementCut += 0.1f) {
                         System.out.println("Testing with weekCut=" + weekCut + ", dayCut=" + dayCut + ", hourCut=" + hourCut + ", elementCut=" + elementCut);
                         TreeMap<LocalDateTime, Consumption> testData, temp;
