@@ -1,13 +1,17 @@
 package de.hsnr.wpp2018.algorithms;
 
 import de.hsnr.wpp2018.base.Consumption;
+import de.hsnr.wpp2018.base.Household;
 import de.hsnr.wpp2018.database.*;
 import de.hsnr.wpp2018.evaluation.Rating;
 import de.hsnr.wpp2018.evaluation.TestDataGenerator;
 import de.hsnr.wpp2018.io.Importer;
+import de.hsnr.wpp2018.optimizations.*;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.time.LocalDateTime;
@@ -17,13 +21,17 @@ import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
 public class ExtendedTest {
+    private static TreeMap<LocalDateTime, Consumption> original;
+
+    @BeforeClass
+    public static void readTestData() throws IOException {
+        Importer importer = new Importer();
+        importer.readFile("2016.csv");
+        original = importer.getData();
+    }
 
     @Test
     public void testRanges() throws IOException {
-        Importer importer = new Importer();
-        importer.readFile("2016.csv");
-        TreeMap<LocalDateTime, Consumption> original = importer.getData();
-
         Averaging averaging = new Averaging();
         ArrayList<Averaging.ConfigurationInterval> intervals = new ArrayList<>();
         intervals.add(new Averaging.ConfigurationInterval(5, Math.toIntExact(TimeUnit.DAYS.toSeconds(7)), true, 5));
@@ -81,6 +89,59 @@ public class ExtendedTest {
                 builder.append(result.toCSV()).append("\n");
             }
             PrintWriter printWriter = new PrintWriter(new File("out/evaluation-" + algorithm + ".csv"));
+            printWriter.write(builder.toString());
+            printWriter.close();
+        }
+    }
+
+    @Test
+    public void testHeuristics() throws FileNotFoundException {
+        Newton newton = new Newton();
+        Newton.Configuration newtonConfiguration = new Newton.Configuration(AlgorithmTest.INTERVAL, 10);
+
+        HashMap<String, ArrayList<Result>> results = new HashMap<>();
+        String[] heuristics = new String[]{
+                "heuristics_base",
+                Heuristics.NIGHT_DAY.toString(),
+                Heuristics.PATTERN.toString(),
+                Heuristics.SEASON.toString(),
+        };
+        for (String heuristic : heuristics) {
+            results.put(heuristic, new ArrayList<>());
+        }
+
+        for (float weekCut = 0.1f; weekCut <= 0.1f; weekCut += 0.1f) {
+            for (float dayCut = 0.1f; dayCut <= 0.1f; dayCut += 0.1f) {
+                for (float hourCut = 0.1f; hourCut <= 0.1f; hourCut += 0.1f) {
+                    for (float elementCut = 0.1f; elementCut <= 0.5f; elementCut += 0.1f) {
+                        System.out.println("Testing with weekCut=" + weekCut + ", dayCut=" + dayCut + ", hourCut=" + hourCut + ", elementCut=" + elementCut);
+                        TreeMap<LocalDateTime, Consumption> testData, temp;
+                        testData = newton.interpolate(new TestDataGenerator(original).cutRanges(weekCut, dayCut, hourCut, elementCut), newtonConfiguration);
+                        results.get("heuristics_base").add(new Result(weekCut, dayCut, hourCut, elementCut, Rating.calculateDifference(original, testData)));
+
+                        temp = new TreeMap<>(testData);
+                        AvgNightDay.nightDayWaste(temp, new Household(1, 150));
+                        results.get(Heuristics.NIGHT_DAY.toString()).add(new Result(weekCut, dayCut, hourCut, elementCut, Rating.calculateDifference(original, temp)));
+
+                        temp = new TreeMap<>(testData);
+                        PatternRecognition.checkBehaviour(temp, 4, 0.1);
+                        results.get(Heuristics.PATTERN.toString()).add(new Result(weekCut, dayCut, hourCut, elementCut, Rating.calculateDifference(original, temp)));
+
+                        temp = new TreeMap<>(testData);
+                        SeasonalDifferences.adjustSeasons(temp, true);
+                        results.get(Heuristics.SEASON.toString()).add(new Result(weekCut, dayCut, hourCut, elementCut, Rating.calculateDifference(original, temp)));
+                    }
+                }
+            }
+        }
+
+        for (String heuristic : heuristics) {
+            StringBuilder builder = new StringBuilder();
+            builder.append(Result.HEADER).append("\n");
+            for (Result result : results.get(heuristic)) {
+                builder.append(result.toCSV()).append("\n");
+            }
+            PrintWriter printWriter = new PrintWriter(new File("out/evaluation-" + heuristic + ".csv"));
             printWriter.write(builder.toString());
             printWriter.close();
         }
