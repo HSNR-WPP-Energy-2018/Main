@@ -158,8 +158,12 @@ public class ExtendedTest {
 
     @Test
     public void testHeuristics() throws FileNotFoundException {
-        Newton newton = new Newton();
-        Newton.Configuration newtonConfiguration = new Newton.Configuration(AlgorithmTest.INTERVAL, 10);
+        Averaging averaging = new Averaging();
+        ArrayList<Averaging.ConfigurationInterval> intervals = new ArrayList<>();
+        intervals.add(new Averaging.ConfigurationInterval(5, Math.toIntExact(TimeUnit.DAYS.toSeconds(7)), true, 5));
+        intervals.add(new Averaging.ConfigurationInterval(7, Math.toIntExact(TimeUnit.DAYS.toSeconds(1)), true, 3));
+        intervals.add(new Averaging.ConfigurationInterval(15, AlgorithmTest.INTERVAL));
+        Averaging.Configuration averagingConfiguration = new Averaging.Configuration(AlgorithmTest.INTERVAL, intervals);
 
         ArrayList<Result> results = new ArrayList<>();
         String[] heuristics = new String[]{
@@ -175,7 +179,7 @@ public class ExtendedTest {
                     for (float elementCut = 0.0f; elementCut <= 0.5f; elementCut += 0.1f) {
                         System.out.println("Testing with weekCut=" + weekCut + ", dayCut=" + dayCut + ", hourCut=" + hourCut + ", elementCut=" + elementCut);
                         TreeMap<LocalDateTime, Consumption> testData, temp;
-                        testData = newton.interpolate(new TestDataGenerator(original).cutRanges(weekCut, dayCut, hourCut, elementCut), newtonConfiguration);
+                        testData = averaging.interpolate(new TestDataGenerator(original).cutRanges(weekCut, dayCut, hourCut, elementCut), averagingConfiguration);
                         HashMap<String, Double> differences = new HashMap<>();
 
                         differences.put("heuristics_base", Rating.calculateDifference(original, testData));
