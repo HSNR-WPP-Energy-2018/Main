@@ -98,6 +98,65 @@ public class ExtendedTest {
     }
 
     @Test
+    public void testSmallRanges() throws IOException {
+        Averaging averaging = new Averaging();
+        ArrayList<Averaging.ConfigurationInterval> intervals = new ArrayList<>();
+        intervals.add(new Averaging.ConfigurationInterval(5, Math.toIntExact(TimeUnit.DAYS.toSeconds(7)), true, 5));
+        intervals.add(new Averaging.ConfigurationInterval(7, Math.toIntExact(TimeUnit.DAYS.toSeconds(1)), true, 3));
+        intervals.add(new Averaging.ConfigurationInterval(15, AlgorithmTest.INTERVAL));
+        Averaging.Configuration averagingConfiguration = new Averaging.Configuration(AlgorithmTest.INTERVAL, intervals);
+
+        CubicSplines cubicSplines = new CubicSplines();
+        CubicSplines.Configuration cubicSplinesConfiguration = new CubicSplines.Configuration(AlgorithmTest.INTERVAL, 10);
+
+        DatabaseInterface databaseInterface = new DatabaseInterface();
+        Database database = new Database();
+        ArrayList<Descriptor> descriptors = new ArrayList<>();
+        descriptors.add(new StringDescriptor("test"));
+        database.addElement(new Element(AlgorithmTest.INTERVAL, descriptors, ElementKey.Type.WEEK_OF_YEAR, original));
+        DatabaseInterface.Configuration databaseConfiguration = new DatabaseInterface.Configuration(AlgorithmTest.INTERVAL, database, descriptors);
+
+        Linear linear = new Linear();
+        Linear.Configuration linearConfiguration = new Linear.Configuration(AlgorithmTest.INTERVAL);
+
+        Newton newton = new Newton();
+        Newton.Configuration newtonConfiguration = new Newton.Configuration(AlgorithmTest.INTERVAL, 10);
+
+        Yesterday yesterday = new Yesterday();
+        Yesterday.Configuration yesterdayConfiguration = new Yesterday.Configuration(AlgorithmTest.INTERVAL);
+
+        ArrayList<Result> results = new ArrayList<>();
+        String[] algorithms = new String[]{Averaging.NAME, CubicSplines.NAME, DatabaseInterface.NAME, Linear.NAME, Newton.NAME, Yesterday.NAME};
+
+        float weekCut = 0;
+        float dayCut = 0;
+        float hourCut = 0;
+        for (float elementCut = 0.0f; elementCut <= 0.25f; elementCut += 0.01f) {
+            System.out.println("Testing with weekCut=" + weekCut + ", dayCut=" + dayCut + ", hourCut=" + hourCut + ", elementCut=" + elementCut);
+            TreeMap<LocalDateTime, Consumption> testData = new TestDataGenerator(original).cutRanges(weekCut, dayCut, hourCut, elementCut);
+            HashMap<String, Double> differences = new HashMap<>();
+
+            differences.put(Averaging.NAME, Rating.calculateDifference(original, averaging.interpolate(new TreeMap<>(testData), averagingConfiguration)));
+            differences.put(CubicSplines.NAME, Rating.calculateDifference(original, cubicSplines.interpolate(new TreeMap<>(testData), cubicSplinesConfiguration)));
+            differences.put(DatabaseInterface.NAME, Rating.calculateDifference(original, databaseInterface.interpolate(new TreeMap<>(testData), databaseConfiguration)));
+            differences.put(Linear.NAME, Rating.calculateDifference(original, linear.interpolate(new TreeMap<>(testData), linearConfiguration)));
+            differences.put(Newton.NAME, Rating.calculateDifference(original, newton.interpolate(new TreeMap<>(testData), newtonConfiguration)));
+            differences.put(Yesterday.NAME, Rating.calculateDifference(original, yesterday.interpolate(new TreeMap<>(testData), yesterdayConfiguration)));
+
+            results.add(new Result(weekCut, dayCut, hourCut, elementCut, differences));
+        }
+
+        StringBuilder builder = new StringBuilder();
+        builder.append(Result.buildHeader(algorithms)).append("\n");
+        for (Result result : results) {
+            builder.append(result.toCSV(algorithms)).append("\n");
+        }
+        PrintWriter printWriter = new PrintWriter(new File("out/evaluation-algorithms-small.csv"));
+        printWriter.write(builder.toString());
+        printWriter.close();
+    }
+
+    @Test
     public void testHeuristics() throws FileNotFoundException {
         Newton newton = new Newton();
         Newton.Configuration newtonConfiguration = new Newton.Configuration(AlgorithmTest.INTERVAL, 10);
