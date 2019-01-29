@@ -10,13 +10,12 @@ import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toMap;
 
 
-public class CubicSplines implements Algorithm<CubicSplines.Configuration> {
-    public static final String NAME = "cubic-splines";
+public class Splines implements Algorithm<Splines.Configuration> {
+    public static final String NAME = "splines";
 
     public double equationSys(ArrayList<Double> xArray, ArrayList<Double> yArray) {
         double[] x = xArray.stream().mapToDouble(Double::doubleValue).toArray();

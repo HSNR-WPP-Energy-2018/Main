@@ -58,7 +58,7 @@ public class AlgorithmTest extends BaseTest {
 
     @Test
     public void splines() {
-        result = new CubicSplines().interpolate(testData, new CubicSplines.Configuration(INTERVAL, 10));
+        result = new Splines().interpolate(testData, new Splines.Configuration(INTERVAL, 10));
         applyHeuristics(3);
     }
 

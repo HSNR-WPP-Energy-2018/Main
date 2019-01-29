@@ -70,9 +70,9 @@ public class Analyser {
         }
         // no more than three days missing => recommend
         if (!statistics.hasHigherRange(Math.toIntExact(TimeUnit.DAYS.toSeconds(3) / interval))) {
-            return Arrays.asList(Averaging.NAME, CubicSplines.NAME, Linear.NAME, Newton.NAME, Yesterday.NAME);
+            return Arrays.asList(Averaging.NAME, Splines.NAME, Linear.NAME, Newton.NAME, Yesterday.NAME);
         }
-        return Arrays.asList(Averaging.NAME, CubicSplines.NAME, DatabaseInterface.NAME, Linear.NAME, Newton.NAME, Yesterday.NAME);
+        return Arrays.asList(Averaging.NAME, Splines.NAME, DatabaseInterface.NAME, Linear.NAME, Newton.NAME, Yesterday.NAME);
     }
 
     public static List<String> recommendAlgorithm(TreeMap<LocalDateTime, Consumption> data, int interval) {

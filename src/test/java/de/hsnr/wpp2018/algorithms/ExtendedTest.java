@@ -42,8 +42,8 @@ public class ExtendedTest {
         intervals.add(new Averaging.ConfigurationInterval(15, AlgorithmTest.INTERVAL));
         Averaging.Configuration averagingConfiguration = new Averaging.Configuration(AlgorithmTest.INTERVAL, intervals);
 
-        CubicSplines cubicSplines = new CubicSplines();
-        CubicSplines.Configuration cubicSplinesConfiguration = new CubicSplines.Configuration(AlgorithmTest.INTERVAL, 10);
+        Splines splines = new Splines();
+        Splines.Configuration cubicSplinesConfiguration = new Splines.Configuration(AlgorithmTest.INTERVAL, 10);
 
         DatabaseInterface databaseInterface = new DatabaseInterface();
         Database database = new Database();
@@ -62,7 +62,7 @@ public class ExtendedTest {
         Yesterday.Configuration yesterdayConfiguration = new Yesterday.Configuration(AlgorithmTest.INTERVAL);
 
         ArrayList<Result> results = new ArrayList<>();
-        String[] algorithms = new String[]{Averaging.NAME, CubicSplines.NAME, DatabaseInterface.NAME, Linear.NAME, Newton.NAME, Yesterday.NAME};
+        String[] algorithms = new String[]{Averaging.NAME, Splines.NAME, DatabaseInterface.NAME, Linear.NAME, Newton.NAME, Yesterday.NAME};
 
         for (float weekCut = 0.0f; weekCut <= 0.5f; weekCut += 0.1f) {
             for (float dayCut = 0.0f; dayCut <= 0.5f; dayCut += 0.1f) {
@@ -73,7 +73,7 @@ public class ExtendedTest {
                         HashMap<String, Double> differences = new HashMap<>();
 
                         differences.put(Averaging.NAME, Rating.calculateDifference(original, averaging.interpolate(new TreeMap<>(testData), averagingConfiguration)));
-                        differences.put(CubicSplines.NAME, Rating.calculateDifference(original, cubicSplines.interpolate(new TreeMap<>(testData), cubicSplinesConfiguration)));
+                        differences.put(Splines.NAME, Rating.calculateDifference(original, splines.interpolate(new TreeMap<>(testData), cubicSplinesConfiguration)));
                         differences.put(DatabaseInterface.NAME, Rating.calculateDifference(original, databaseInterface.interpolate(new TreeMap<>(testData), databaseConfiguration)));
                         differences.put(Linear.NAME, Rating.calculateDifference(original, linear.interpolate(new TreeMap<>(testData), linearConfiguration)));
                         differences.put(Newton.NAME, Rating.calculateDifference(original, newton.interpolate(new TreeMap<>(testData), newtonConfiguration)));
@@ -106,8 +106,8 @@ public class ExtendedTest {
         intervals.add(new Averaging.ConfigurationInterval(15, AlgorithmTest.INTERVAL));
         Averaging.Configuration averagingConfiguration = new Averaging.Configuration(AlgorithmTest.INTERVAL, intervals);
 
-        CubicSplines cubicSplines = new CubicSplines();
-        CubicSplines.Configuration cubicSplinesConfiguration = new CubicSplines.Configuration(AlgorithmTest.INTERVAL, 10);
+        Splines splines = new Splines();
+        Splines.Configuration cubicSplinesConfiguration = new Splines.Configuration(AlgorithmTest.INTERVAL, 10);
 
         DatabaseInterface databaseInterface = new DatabaseInterface();
         Database database = new Database();
@@ -126,7 +126,7 @@ public class ExtendedTest {
         Yesterday.Configuration yesterdayConfiguration = new Yesterday.Configuration(AlgorithmTest.INTERVAL);
 
         ArrayList<Result> results = new ArrayList<>();
-        String[] algorithms = new String[]{Averaging.NAME, CubicSplines.NAME, DatabaseInterface.NAME, Linear.NAME, Newton.NAME, Yesterday.NAME};
+        String[] algorithms = new String[]{Averaging.NAME, Splines.NAME, DatabaseInterface.NAME, Linear.NAME, Newton.NAME, Yesterday.NAME};
 
         float weekCut = 0;
         float dayCut = 0;
@@ -137,7 +137,7 @@ public class ExtendedTest {
             HashMap<String, Double> differences = new HashMap<>();
 
             differences.put(Averaging.NAME, Rating.calculateDifference(original, averaging.interpolate(new TreeMap<>(testData), averagingConfiguration)));
-            differences.put(CubicSplines.NAME, Rating.calculateDifference(original, cubicSplines.interpolate(new TreeMap<>(testData), cubicSplinesConfiguration)));
+            differences.put(Splines.NAME, Rating.calculateDifference(original, splines.interpolate(new TreeMap<>(testData), cubicSplinesConfiguration)));
             differences.put(DatabaseInterface.NAME, Rating.calculateDifference(original, databaseInterface.interpolate(new TreeMap<>(testData), databaseConfiguration)));
             differences.put(Linear.NAME, Rating.calculateDifference(original, linear.interpolate(new TreeMap<>(testData), linearConfiguration)));
             differences.put(Newton.NAME, Rating.calculateDifference(original, newton.interpolate(new TreeMap<>(testData), newtonConfiguration)));

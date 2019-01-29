@@ -112,8 +112,8 @@ public class Router {
             case Averaging.NAME:
                 algorithm = new Averaging();
                 break;
-            case CubicSplines.NAME:
-                algorithm = new CubicSplines();
+            case Splines.NAME:
+                algorithm = new Splines();
                 break;
             case DatabaseInterface.NAME:
                 algorithm = new DatabaseInterface();
@@ -128,7 +128,7 @@ public class Router {
                 algorithm = new Yesterday();
                 break;
             default:
-                String[] algorithms = {Averaging.NAME, CubicSplines.NAME, DatabaseInterface.NAME, Linear.NAME, Newton.NAME};
+                String[] algorithms = {Averaging.NAME, Splines.NAME, DatabaseInterface.NAME, Linear.NAME, Newton.NAME};
                 throw new ParserException("unrecognized algorithm. Available options: " + String.join(", ", algorithms));
         }
         TreeMap<LocalDateTime, Consumption> data = readData(inputFile);
