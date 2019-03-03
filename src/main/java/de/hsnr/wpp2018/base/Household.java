@@ -1,5 +1,8 @@
 package de.hsnr.wpp2018.base;
 
+/**
+ * Household data model
+ */
 public class Household {
     private int numberOfPersons;
     private double livingSpace;

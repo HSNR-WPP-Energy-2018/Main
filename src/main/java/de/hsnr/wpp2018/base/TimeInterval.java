@@ -2,10 +2,12 @@ package de.hsnr.wpp2018.base;
 
 import java.time.LocalTime;
 
+/**
+ * time interval data model
+ */
 public class TimeInterval {
-
-    public static TimeInterval createRange(LocalTime starttime, LocalTime endtime) {
-        return new TimeInterval(starttime, endtime);
+    public static TimeInterval createRange(LocalTime startTime, LocalTime endTime) {
+        return new TimeInterval(startTime, endTime);
     }
 
     private LocalTime startTime;

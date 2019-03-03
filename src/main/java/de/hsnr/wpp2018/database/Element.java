@@ -7,6 +7,10 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Database element data model containing the interval, list of descriptors and values.
+ * See the paper for detailed explanation of the data structure
+ */
 public class Element {
     public static final String EXTENSION = "dbe";
 
@@ -14,12 +18,27 @@ public class Element {
     private List<Descriptor> descriptors;
     private Map<ElementKey, DayEntry> values;
 
+    /**
+     * Default constructor using the own data model
+     *
+     * @param interval    interval in second
+     * @param descriptors list of descriptors
+     * @param entries     value entries
+     */
     public Element(int interval, List<Descriptor> descriptors, Map<ElementKey, DayEntry> entries) {
         this.interval = interval;
         this.descriptors = descriptors;
         this.values = entries;
     }
 
+    /**
+     * Advanced constructor used when building the element from an recorded dataset instead of the own data format
+     *
+     * @param interval    interval in second
+     * @param descriptors list of descriptors
+     * @param type        key type for the elements
+     * @param data        recorded data
+     */
     public Element(int interval, List<Descriptor> descriptors, ElementKey.Type type, TreeMap<LocalDateTime, Consumption> data) {
         this.interval = interval;
         this.descriptors = descriptors;
@@ -51,6 +70,14 @@ public class Element {
         }
     }
 
+    /**
+     * get the border times for the provided key type between start and end
+     *
+     * @param type  key type
+     * @param start start time
+     * @param end   end time
+     * @return list of times
+     */
     private List<LocalDateTime> getBorders(ElementKey.Type type, LocalDateTime start, LocalDateTime end) {
         List<LocalDateTime> result = new ArrayList<>();
         result.add(start);
@@ -86,6 +113,12 @@ public class Element {
         return values;
     }
 
+    /**
+     * Get the saved / calculated value for a given time
+     *
+     * @param time time key
+     * @return saved / calculated value
+     */
     public double getValue(LocalDateTime time) {
         for (ElementKey key : values.keySet()) {
             if (key.matches(time.toLocalDate())) {
@@ -99,6 +132,13 @@ public class Element {
         return descriptors;
     }
 
+    /**
+     * Determine if elements matches the descriptors provided
+     *
+     * @param descriptors list of descriptors
+     * @param matchAll    match all or at least one
+     * @return boolean result
+     */
     public boolean matchesDescriptors(List<Descriptor> descriptors, boolean matchAll) {
         for (Descriptor queryDescriptor : descriptors) {
             boolean matched = false;

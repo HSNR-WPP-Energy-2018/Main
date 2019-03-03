@@ -11,6 +11,11 @@ import java.util.TreeMap;
 
 public class TestDataTest {
 
+    /**
+     * Simple test of the test data generator functionality
+     *
+     * @throws IOException io error
+     */
     @Test
     public void simpleTest() throws IOException {
         Importer importer = new Importer();

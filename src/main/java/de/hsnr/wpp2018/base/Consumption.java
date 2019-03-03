@@ -2,6 +2,10 @@ package de.hsnr.wpp2018.base;
 
 import java.util.Objects;
 
+/**
+ * Entry data model containing the recorded or interpolated value.
+ * If the values was interpolated this is denoted by setting the attribute {@link Consumption#isInterpolated} to true.
+ */
 public class Consumption {
     private double value;
     private boolean isInterpolated;

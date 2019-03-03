@@ -11,6 +11,9 @@ import java.util.*;
 
 import static java.util.stream.Collectors.toMap;
 
+/**
+ * Newton algorithm
+ */
 public class Newton implements Algorithm<Newton.Configuration> {
     public static final String NAME = "newton";
 

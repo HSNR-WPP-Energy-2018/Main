@@ -9,19 +9,30 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Generator for building test data based on a fully provided dataset
+ */
 public class TestDataGenerator {
 
+    /**
+     * remove a subset range of a {@link TreeMap}
+     *
+     * @param data data map
+     * @param from cut range start
+     * @param to   cut range end
+     */
     public static void cutRange(TreeMap<LocalDateTime, Consumption> data, LocalDateTime from, LocalDateTime to) {
         data.subMap(from, to).keySet().removeAll(data.subMap(from, to).keySet());
     }
 
-    private TreeMap<LocalDateTime, Consumption> data;
-
-    public TestDataGenerator(TreeMap<LocalDateTime, Consumption> data) {
-        this.data = data;
-    }
-
-    private void cutRange(TreeMap<LocalDateTime, Consumption> data, int interval, float threshold) {
+    /**
+     * Cut single elements from the data
+     *
+     * @param data      input data
+     * @param interval  data point interval
+     * @param threshold threshold for removing an element (percentage between [0;1])
+     */
+    private static void cutRange(TreeMap<LocalDateTime, Consumption> data, int interval, float threshold) {
         Random random = new Random();
         LocalDateTime start = data.firstKey();
         while (start.isBefore(data.lastKey())) {
@@ -31,6 +42,12 @@ public class TestDataGenerator {
             }
             start = end;
         }
+    }
+
+    private TreeMap<LocalDateTime, Consumption> data;
+
+    public TestDataGenerator(TreeMap<LocalDateTime, Consumption> data) {
+        this.data = data;
     }
 
     /**

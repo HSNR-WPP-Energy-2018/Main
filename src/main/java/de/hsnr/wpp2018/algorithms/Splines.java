@@ -13,7 +13,9 @@ import java.util.*;
 
 import static java.util.stream.Collectors.toMap;
 
-
+/**
+ * Splines algorithm
+ */
 public class Splines implements Algorithm<Splines.Configuration> {
     public static final String NAME = "splines";
 
@@ -62,7 +64,6 @@ public class Splines implements Algorithm<Splines.Configuration> {
         }
 
         while (!entry.getKey().isAfter(endDate) && data.higherEntry(entry.getKey()) != null) {
-
             neighborsMap.put(entry.getKey(), entry.getValue().getValue());
             LocalDateTime one = entry.getKey();
             LocalDateTime two = data.higherKey(entry.getKey());
@@ -73,9 +74,7 @@ public class Splines implements Algorithm<Splines.Configuration> {
                     .collect(toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
 
             if ((Helper.getDistance(one, two) / 60) > configuration.getInterval()) {
-
                 if (data.get(two).getValue() != (-100.0)) {
-
                     synchronized (neighborsDesc) {
                         int counter = 0;
                         for (Iterator<Map.Entry<LocalDateTime, Double>> it = neighborsDesc.entrySet().iterator(); it.hasNext(); ) {
@@ -107,14 +106,12 @@ public class Splines implements Algorithm<Splines.Configuration> {
                     double result = equationSys(xArray, yArray);
                     result = Helper.roundDouble(result, decimals);
 
-
                     //for (LocalDateTime newDate = one.plusMinutes(15); newDate.isBefore(two); newDate = newDate.plusMinutes(15)) {
                     //    values.put(newDate, new Consumption(result, true));
                     //}
                     if (!values.containsKey(one)) {
                         values.put(one, entry.getValue().copyAsOriginal());
                     }
-
 
                     values.put(one.plusMinutes(configuration.getInterval()), new Consumption(result, true));
                     data.put(one.plusMinutes(configuration.getInterval()), new Consumption(result, true));
@@ -133,11 +130,9 @@ public class Splines implements Algorithm<Splines.Configuration> {
                 }
                 entry = data.higherEntry(entry.getKey());
             }
-
         }
         //values.forEach((time, value) -> System.out.println("Time: " + time + ". Value: " + value.getValue() + ". Interpolated? " + value.isInterpolated()));
         return values;
-
     }
 
     @Override

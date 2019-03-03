@@ -6,14 +6,27 @@ import java.time.temporal.WeekFields;
 import java.util.Locale;
 import java.util.Objects;
 
+/**
+ * Element key data model
+ */
 public class ElementKey {
 
+    /**
+     * Key types enum
+     */
     public enum Type {
         QUARTER,
         MONTH,
         WEEK_OF_YEAR
     }
 
+    /**
+     * Determine interval number for given time
+     *
+     * @param keyType key type enum
+     * @param time    key time
+     * @return interval number
+     */
     public static int getKeyInterval(Type keyType, LocalDate time) {
         switch (keyType) {
             case QUARTER:
@@ -50,6 +63,12 @@ public class ElementKey {
         return dayOfWeek;
     }
 
+    /**
+     * Determine if othe time matches this keys time
+     *
+     * @param date key date
+     * @return boolean result
+     */
     public boolean matches(LocalDate date) {
         if (getKeyInterval(keyType, date) != this.interval) {
             return false;

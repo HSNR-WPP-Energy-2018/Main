@@ -11,6 +11,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.TreeMap;
 
+/**
+ * Simple test class for the analyser
+ */
 public class AnalyserTest {
 
     private static TreeMap<LocalDateTime, Consumption> data;

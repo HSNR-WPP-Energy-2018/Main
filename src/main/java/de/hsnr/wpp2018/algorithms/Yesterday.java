@@ -9,9 +9,11 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.TreeMap;
 
-
 import static de.hsnr.wpp2018.base.Helper.isBusinessDay;
 
+/**
+ * Yesterday algorithm
+ */
 public class Yesterday implements Algorithm<Algorithm.Configuration> {
     public static final String NAME = "yesterday";
 

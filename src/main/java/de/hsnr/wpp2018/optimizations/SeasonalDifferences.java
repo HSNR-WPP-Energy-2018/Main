@@ -7,6 +7,9 @@ import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.TreeMap;
 
+/**
+ * Seasonal differences heuristics
+ */
 public class SeasonalDifferences {
     /*
     Quelle: Geographie Innsbruck Tirol Atlas (Projekt vom Europäischen Fonds für regionale Entwicklung (EFRE))

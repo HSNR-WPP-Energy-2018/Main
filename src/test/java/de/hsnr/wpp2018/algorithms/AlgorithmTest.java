@@ -9,6 +9,9 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * algorithm tester
+ */
 public class AlgorithmTest extends BaseTest {
     public static final int INTERVAL = 15 * 60;
     private static final int PERSONS = 2;
@@ -35,18 +38,27 @@ public class AlgorithmTest extends BaseTest {
         }
     }
 
+    /**
+     * Test the {@link Linear} algorithm
+     */
     @Test
     public void linear() {
         result = new Linear().interpolate(testData, new Algorithm.Configuration(INTERVAL));
         applyHeuristics(3);
     }
 
+    /**
+     * Test the {@link Newton} algorithm
+     */
     @Test
     public void newton() {
         result = new Newton().interpolate(testData, new Newton.Configuration(INTERVAL, 10));
         applyHeuristics(3);
     }
 
+    /**
+     * Test the {@link Averaging} algorithm
+     */
     @Test
     public void averaging() {
         ArrayList<Averaging.ConfigurationInterval> intervals = new ArrayList<>();
@@ -56,18 +68,26 @@ public class AlgorithmTest extends BaseTest {
         result = new Averaging().interpolate(testData, new Averaging.Configuration(INTERVAL, intervals));
     }
 
+    /**
+     * Test the {@link Splines} algorithm
+     */
     @Test
     public void splines() {
         result = new Splines().interpolate(testData, new Splines.Configuration(INTERVAL, 10));
         applyHeuristics(3);
     }
 
+    /**
+     * Test the {@link Yesterday} algorithm
+     */
     @Test
     public void yesterday() {
         result = new Yesterday().interpolate(testData, new Algorithm.Configuration(INTERVAL));
     }
 
-
+    /**
+     * Test the {@link Database} algorithm
+     */
     @Test
     public void database() {
         Database database = new Database();

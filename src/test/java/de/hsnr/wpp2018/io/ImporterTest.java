@@ -7,8 +7,16 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.TreeMap;
 
+/**
+ * Test class for the importer
+ */
 public class ImporterTest {
 
+    /**
+     * Simple reader test
+     *
+     * @throws IOException io error
+     */
     @Test
     public void excelFormat() throws IOException {
         Importer importer = new Importer();
@@ -18,6 +26,11 @@ public class ImporterTest {
         }
     }
 
+    /**
+     * Tester for reading and retrieving subset
+     *
+     * @throws Exception io error
+     */
     @Test
     public void rangeTest() throws Exception {
         Importer importer = new Importer();

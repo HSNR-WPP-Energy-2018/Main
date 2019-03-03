@@ -14,6 +14,9 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static de.hsnr.wpp2018.base.Helper.isBusinessDay;
 
+/**
+ * Patter recognition heuristics
+ */
 public class PatternRecognition {
 
     public static double calcFromPattern(Consumption currentData, double avgRangeValue, double meanRange, double rangeTolerance) {
@@ -24,7 +27,6 @@ public class PatternRecognition {
         //double avgNight = minNightTolerance + wastingData.getHeating();
         double avgDay = wastingData.getHeating() + wastingData.getICT() + wastingData.getIllumination();
         double peak = avgDay + wastingData.getProcessCooling() + wastingData.getProcessHeating() + wastingData.getWarmWater();
-
 
         //Leichte Abweichungen in % vom Mittelwert betrachten, da kaum ein interpolierter Wert exakt = meanRange sein wird
         double meanRangeUpperBound = meanRange + (rangeTolerance * meanRange);
@@ -50,7 +52,6 @@ public class PatternRecognition {
                 result = peak;
             }
         }
-
 
         if (result == 0.0) {
             result = currentData.getValue();

@@ -5,6 +5,9 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Simple test for the averaging evaluation implemented in {@link Averaging.Optimizer}
+ */
 public class EvaluationTest extends BaseTest {
 
     @Test

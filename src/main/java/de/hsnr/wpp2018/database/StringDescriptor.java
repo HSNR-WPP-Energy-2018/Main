@@ -1,8 +1,17 @@
 package de.hsnr.wpp2018.database;
 
+/**
+ * String descriptor. Equality is defined by identical values
+ */
 public class StringDescriptor implements Descriptor {
     public static final String TYPE = "string";
 
+    /**
+     * Parse the descriptor from the string representation without the type prefix
+     *
+     * @param string string representation
+     * @return instantiated descriptor
+     */
     public static StringDescriptor fromString(String string) {
         return new StringDescriptor(string);
     }
@@ -17,6 +26,9 @@ public class StringDescriptor implements Descriptor {
         return value;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean matches(Descriptor descriptor) {
         if (descriptor instanceof StringDescriptor) {
@@ -25,6 +37,9 @@ public class StringDescriptor implements Descriptor {
         return false;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String output() {
         return TYPE + "|" + getValue();

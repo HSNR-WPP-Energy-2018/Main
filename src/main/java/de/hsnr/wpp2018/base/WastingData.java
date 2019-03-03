@@ -1,5 +1,8 @@
 package de.hsnr.wpp2018.base;
 
+/**
+ * wasting data model
+ */
 public class WastingData {
     private double processHeating;
     private double processCooling;

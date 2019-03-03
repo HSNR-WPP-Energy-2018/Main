@@ -12,9 +12,20 @@ import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.List;
 
+/**
+ * Write an entire database or one database element to the file system. One element is saved into one file
+ */
 public class Writer {
     private static final String SEPARATOR = "\n";
 
+    /**
+     * Write an entire database into a folder
+     *
+     * @param database   database to be written
+     * @param folderPath output directory path
+     * @throws ParserException on parser exception
+     * @throws FileNotFoundException on IO error
+     */
     public static void write(Database database, String folderPath) throws ParserException, FileNotFoundException {
         File folder = new File(folderPath);
         if (!folder.exists() || !folder.isDirectory()) {
@@ -26,6 +37,13 @@ public class Writer {
         }
     }
 
+    /**
+     * Write an element to a single file
+     *
+     * @param element  element to be written
+     * @param filePath output file path
+     * @throws FileNotFoundException on io error
+     */
     public static void write(Element element, String filePath) throws FileNotFoundException {
         StringBuilder builder = new StringBuilder();
         builder.append(element.getInterval());

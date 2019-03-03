@@ -8,8 +8,18 @@ import java.io.PrintWriter;
 import java.time.LocalDateTime;
 import java.util.TreeMap;
 
+/**
+ * CSV writer for a dataset
+ */
 public class Exporter {
 
+    /**
+     * Write the provided consumption to a file
+     *
+     * @param result data to be written
+     * @param path   output file location
+     * @throws FileNotFoundException io error
+     */
     public static void writeConsumption(TreeMap<LocalDateTime, Consumption> result, String path) throws FileNotFoundException {
         String fileHeader = "Datum;Uhrzeit;Wert [kWh]";
         String colSeparator = ";";

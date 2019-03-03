@@ -8,8 +8,21 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Analyser for recommending the best suitable algorithm for a provided dataset
+ * Some algorithms have limitations on their usability depending on the desired start / end time and the max size of missing ranges
+ */
 public class Analyser {
 
+    /**
+     * determine the missing ranges of the provided dataset
+     *
+     * @param data     source dataset
+     * @param start    start time
+     * @param end      end time
+     * @param interval data interval in seconds
+     * @return list of missing interval ranges data
+     */
     public static List<MissingDataInterval> getMissingRanges(TreeMap<LocalDateTime, Consumption> data, LocalDateTime start, LocalDateTime end, int interval) {
         List<MissingDataInterval> result = new ArrayList<>();
         boolean inMissing = false;
@@ -34,10 +47,26 @@ public class Analyser {
         return result;
     }
 
+    /**
+     * determine the missing ranges of the provided dataset
+     *
+     * @param data     source dataset
+     * @param interval data interval in seconds
+     * @return list of missing interval ranges data
+     */
     public static List<MissingDataInterval> getMissingRanges(TreeMap<LocalDateTime, Consumption> data, int interval) {
         return getMissingRanges(data, data.firstKey(), data.lastKey(), interval);
     }
 
+    /**
+     * provide statistics of the missing ranges for the provided dataset
+     *
+     * @param data     source dataset
+     * @param start    start time
+     * @param end      end time
+     * @param interval data interval in seconds
+     * @return information about the missing ranges length and the counts for every distinct length
+     */
     public static MissingRangesStatistics getMissingRangeStatistics(TreeMap<LocalDateTime, Consumption> data, LocalDateTime start, LocalDateTime end, int interval) {
         TreeMap<Integer, Integer> result = new TreeMap<>();
         for (MissingDataInterval entry : getMissingRanges(data, start, end, interval)) {
@@ -50,12 +79,28 @@ public class Analyser {
         return new MissingRangesStatistics(result);
     }
 
+    /**
+     * provide statistics of the missing ranges for the provided dataset
+     *
+     * @param data     source dataset
+     * @param interval data interval in seconds
+     * @return information about the missing ranges length and the counts for every distinct length
+     */
     public static MissingRangesStatistics getMissingRangeStatistics(TreeMap<LocalDateTime, Consumption> data, int interval) {
         return getMissingRangeStatistics(data, data.firstKey(), data.lastKey(), interval);
     }
 
-    // TODO: improve recommendations (maybe based on rating with randomly removed data)
+    /**
+     * Provide a list of recommendations for the given dataset
+     *
+     * @param data     source dataset
+     * @param start    start time
+     * @param end      end time
+     * @param interval data interval in seconds
+     * @return list of recommended algorithms
+     */
     public static List<String> recommendAlgorithm(TreeMap<LocalDateTime, Consumption> data, LocalDateTime start, LocalDateTime end, int interval) {
+        // TODO: improve recommendations (maybe based on rating with randomly removed data)
         // only the database approach can handle interpolation of data before the start or after the end
         if (start.until(data.firstKey(), ChronoUnit.MINUTES) > 0) {
             return Collections.singletonList(DatabaseInterface.NAME);
@@ -75,6 +120,13 @@ public class Analyser {
         return Arrays.asList(Averaging.NAME, Splines.NAME, DatabaseInterface.NAME, Linear.NAME, Newton.NAME, Yesterday.NAME);
     }
 
+    /**
+     * Provide a list of recommendations for the given dataset
+     *
+     * @param data     source dataset
+     * @param interval data interval in seconds
+     * @return list of recommended algorithms
+     */
     public static List<String> recommendAlgorithm(TreeMap<LocalDateTime, Consumption> data, int interval) {
         return recommendAlgorithm(data, data.firstKey(), data.lastKey(), interval);
     }

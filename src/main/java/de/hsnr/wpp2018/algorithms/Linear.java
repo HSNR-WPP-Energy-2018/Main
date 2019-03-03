@@ -9,6 +9,9 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.TreeMap;
 
+/**
+ * Linear algorithm
+ */
 public class Linear implements Algorithm<Algorithm.Configuration> {
     public static final String NAME = "linear";
 

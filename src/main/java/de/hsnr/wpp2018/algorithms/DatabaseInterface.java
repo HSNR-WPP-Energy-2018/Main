@@ -14,9 +14,15 @@ import java.io.FileNotFoundException;
 import java.time.LocalDateTime;
 import java.util.*;
 
+/**
+ * Database interpolation algorithm interface
+ */
 public class DatabaseInterface implements Algorithm<DatabaseInterface.Configuration> {
     public static final String NAME = "database";
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public TreeMap<LocalDateTime, Consumption> interpolate(TreeMap<LocalDateTime, Consumption> data, Configuration configuration) {
         LocalDateTime start = configuration.hasStart() ? configuration.getStart() : data.firstKey();
@@ -24,11 +30,17 @@ public class DatabaseInterface implements Algorithm<DatabaseInterface.Configurat
         return configuration.getDatabase().interpolate(configuration.getDescriptors(), start, end, configuration.getInterval(), data);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getConfigurationExplanation() {
         return "interval=<int>;{start=<date>;end=<date>;}database=<folder path|string>;descriptors=<descriptor strings, connected by \"/\">";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public TreeMap<LocalDateTime, Consumption> interpolate(TreeMap<LocalDateTime, Consumption> data, Map<String, String> configuration) throws ParserException {
         Database database = new Database();
@@ -50,8 +62,10 @@ public class DatabaseInterface implements Algorithm<DatabaseInterface.Configurat
         return interpolate(data, new Configuration(Algorithm.Configuration.parse(configuration), database, descriptors));
     }
 
+    /**
+     * Extended database configuration containing a reference to the database and a list of descriptors for the dataset to be interpolated
+     */
     public static class Configuration extends Algorithm.Configuration {
-
         private Database database;
         private List<Descriptor> descriptors;
 

@@ -3,9 +3,19 @@ package de.hsnr.wpp2018.database;
 import de.hsnr.wpp2018.base.ParserException;
 import de.hsnr.wpp2018.base.ParserHelper;
 
+/**
+ * Number descriptor. Contains the string value as well as a number representation and optionally a tolerance.
+ * Equality is defined by the same key and a value within the positive and negative tolerance from the value
+ */
 public class NumberDescriptor implements Descriptor {
     public static final String TYPE = "number";
 
+    /**
+     * Parse the descriptor from the string representation without the type prefix
+     *
+     * @param string string representation
+     * @return instantiated descriptor
+     */
     public static NumberDescriptor fromString(String string) throws ParserException {
         String[] parts = string.split("[-]");
         if (parts.length != 2) {
@@ -45,6 +55,9 @@ public class NumberDescriptor implements Descriptor {
         return tolerance;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean matches(Descriptor descriptor) {
         if (descriptor instanceof NumberDescriptor) {
@@ -55,6 +68,9 @@ public class NumberDescriptor implements Descriptor {
         return false;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String output() {
         return TYPE + "|" + getKey() + "-" + getValue() + ":" + getTolerance();

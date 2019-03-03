@@ -16,8 +16,18 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 
+/**
+ * The router provides access to the project functionality from outside of Java.
+ * By utilising the command line other processes can access every algorithm and heuristic.
+ * The required parameters are parsed from the command line arguments.
+ */
 public class Router {
 
+    /**
+     * Main entry point for the application.
+     *
+     * @param args String[] program arguments
+     */
     public static void main(String[] args) {
         System.out.println(String.join(", ", args));
         new Router(args).run();
@@ -29,6 +39,9 @@ public class Router {
         this.args = args;
     }
 
+    /**
+     * Main controller that routes the requested action to the specific class and parses the provided input parameters
+     */
     private void run() {
         String command = (args.length > 0) ? args[0].toLowerCase() : "";
         try {
@@ -86,6 +99,13 @@ public class Router {
         }
     }
 
+    /**
+     * Read an input CSV file
+     *
+     * @param path Input file path
+     * @return read data
+     * @throws ParserException on parsing error
+     */
     private TreeMap<LocalDateTime, Consumption> readData(String path) throws ParserException {
         File input = new File(path);
         if (!input.exists()) {
@@ -100,12 +120,30 @@ public class Router {
         return importer.getData();
     }
 
+    /**
+     * Evaluating the given dataset and printing the most promising algorithm(s)
+     *
+     * @param inputFile input file location
+     * @param interval  data point interval
+     * @param from      start time
+     * @param to        end time
+     * @throws ParserException on parsing error
+     */
     private void printRecommendation(String inputFile, int interval, LocalDateTime from, LocalDateTime to) throws ParserException {
         TreeMap<LocalDateTime, Consumption> data = readData(inputFile);
         List<String> recommendations = (from == null) ? Analyser.recommendAlgorithm(data, interval) : Analyser.recommendAlgorithm(data, from, to, interval);
         System.out.println("Recommended algorithms: " + String.join(", ", recommendations));
     }
 
+    /**
+     * Apply an algorithm to the data defined in the input file and write it to the output file
+     *
+     * @param name                algorithm name
+     * @param inputFile           input file path
+     * @param outputFile          output file path
+     * @param configurationString configuration input
+     * @throws ParserException on parsing error
+     */
     private void interpolate(String name, String inputFile, String outputFile, String configurationString) throws ParserException {
         Algorithm algorithm;
         switch (name.toLowerCase()) {
@@ -157,6 +195,15 @@ public class Router {
         }
     }
 
+    /**
+     * Apply a heuristics to the given input file and write it to the output file
+     *
+     * @param heuristics heuristics reference
+     * @param inputFile  input file location
+     * @param outputFile output file location
+     * @param options    options data read from the input arguments
+     * @throws ParserException on parsing error
+     */
     private void applyHeuristic(Heuristics heuristics, String inputFile, String outputFile, String[] options) throws ParserException {
         TreeMap<LocalDateTime, Consumption> data = readData(inputFile);
         switch (heuristics) {
@@ -188,6 +235,9 @@ public class Router {
         }
     }
 
+    /**
+     * Printing the usage of the functionality provided by this class
+     */
     private void printHelp() {
         System.out.println("======= Available commands =======");
         System.out.println("General syntax: <required parameter> [optional parameter]");

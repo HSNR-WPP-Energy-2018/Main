@@ -5,8 +5,19 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.TimeZone;
 
+/**
+ * Helper functionality for parsing input data (directly retrieved as string or already separated)
+ */
 public class ParserHelper {
 
+    /**
+     * Get a string from the provided key-value data
+     *
+     * @param data key-value data
+     * @param key  key of the string
+     * @return data for the given key
+     * @throws ParserException on parse error
+     */
     public static String getString(Map<String, String> data, String key) throws ParserException {
         if (!data.containsKey(key)) {
             throw new ParserException("parameter " + key + " missing");
@@ -14,6 +25,15 @@ public class ParserHelper {
         return data.get(key);
     }
 
+    /**
+     *  Get a string from the provided key-value data. Check for a minimum text length
+     *
+     * @param data      key-value data
+     * @param key       key of the string
+     * @param minLength minimum text length
+     * @return data for the given key
+     * @throws ParserException on parse error
+     */
     public static String getString(Map<String, String> data, String key, int minLength) throws ParserException {
         String value = getString(data, key);
         if (value.length() < minLength) {
@@ -22,14 +42,35 @@ public class ParserHelper {
         return value;
     }
 
-    public static boolean getBoolean(String value) throws ParserException {
+    /**
+     * Get the boolean value of a string
+     *
+     * @param value input string
+     * @return boolean value
+     */
+    public static boolean getBoolean(String value) {
         return value.equalsIgnoreCase("true") || value.equalsIgnoreCase("1");
     }
 
+    /**
+     * Get a boolean form the provided key-value data
+     *
+     * @param data key-value data
+     * @param key  key of the boolean
+     * @return data for the given key
+     * @throws ParserException on parse error
+     */
     public static boolean getBoolean(Map<String, String> data, String key) throws ParserException {
         return getBoolean(getString(data, key));
     }
 
+    /**
+     * Get the integer value of a string
+     *
+     * @param value input string
+     * @return integer value
+     * @throws ParserException on parse error
+     */
     public static int getInteger(String value) throws ParserException {
         try {
             return Integer.parseInt(value);
@@ -38,6 +79,14 @@ public class ParserHelper {
         }
     }
 
+    /**
+     * Get a integer from the provided key-value data
+     *
+     * @param data key-value data
+     * @param key  key of the integer
+     * @return data for the given key
+     * @throws ParserException on parse error
+     */
     public static int getInteger(Map<String, String> data, String key) throws ParserException {
         try {
             return Integer.parseInt(getString(data, key));
@@ -46,6 +95,14 @@ public class ParserHelper {
         }
     }
 
+    /**
+     * Get the integer value of a string and check for min value
+     *
+     * @param value input string
+     * @param min   min integer value
+     * @return integer value
+     * @throws ParserException on parse error
+     */
     public static int getInteger(String value, int min) throws ParserException {
         int val = getInteger(value);
         if (val < min) {
@@ -54,6 +111,15 @@ public class ParserHelper {
         return val;
     }
 
+    /**
+     * Get a integer from the provided key-value data and check for min value
+     *
+     * @param data key-value data
+     * @param key  key of the integer
+     * @param min  min integer value
+     * @return integer value
+     * @throws ParserException on parse error
+     */
     public static int getInteger(Map<String, String> data, String key, int min) throws ParserException {
         int val = getInteger(data, key);
         if (val < min) {
@@ -62,6 +128,13 @@ public class ParserHelper {
         return val;
     }
 
+    /**
+     * Get the double value of a string
+     *
+     * @param value input string
+     * @return double value
+     * @throws ParserException on parse error
+     */
     public static double getDouble(String value) throws ParserException {
         try {
             return Double.parseDouble(value);
@@ -70,6 +143,14 @@ public class ParserHelper {
         }
     }
 
+    /**
+     * Get a double from the provided key-value data
+     *
+     * @param data key-value data
+     * @param key  key of the double
+     * @return double value
+     * @throws ParserException on parse error
+     */
     public static double getDouble(Map<String, String> data, String key) throws ParserException {
         try {
             return Double.parseDouble(getString(data, key));
@@ -78,6 +159,14 @@ public class ParserHelper {
         }
     }
 
+    /**
+     * Get the double value of a string and check for min value
+     *
+     * @param value input string
+     * @param min   min double value
+     * @return double value
+     * @throws ParserException on parse error
+     */
     public static double getDouble(String value, double min) throws ParserException {
         double val = getDouble(value);
         if (val < min) {
@@ -86,6 +175,15 @@ public class ParserHelper {
         return val;
     }
 
+    /**
+     * Get a double from the provided key-value data and check for min value
+     *
+     * @param data key-value data
+     * @param key  key of the integer
+     * @param min  min double value
+     * @return double value
+     * @throws ParserException on parse error
+     */
     public static double getDouble(Map<String, String> data, String key, double min) throws ParserException {
         double val = getDouble(data, key);
         if (val < min) {
@@ -94,6 +192,13 @@ public class ParserHelper {
         return val;
     }
 
+    /**
+     * Get the {@link LocalDateTime} represented by a string of the format YYYY.MM.DD-HH:MM
+     *
+     * @param value input string
+     * @return {@link LocalDateTime} value
+     * @throws ParserException on parse error
+     */
     public static LocalDateTime getDate(String value) throws ParserException {
         try {
             // first try timestamp
@@ -121,6 +226,14 @@ public class ParserHelper {
         return LocalDateTime.of(Integer.parseInt(year), Integer.parseInt(localDateTimeParts[1]), Integer.parseInt(localDateTimeParts[0]), Integer.parseInt(timeParts[0]), Integer.parseInt(timeParts[1]));
     }
 
+    /**
+     * Get a {@link LocalDateTime} represented by a string of the format YYYY.MM.DD-HH:MM form the provided key-value data
+     *
+     * @param data key-value data
+     * @param key  key of the date
+     * @return {@link LocalDateTime} value
+     * @throws ParserException on parse error
+     */
     public static LocalDateTime getDate(Map<String, String> data, String key) throws ParserException {
         return getDate(getString(data, key));
     }

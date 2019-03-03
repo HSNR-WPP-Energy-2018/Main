@@ -11,6 +11,9 @@ import java.util.TreeMap;
 import static de.hsnr.wpp2018.base.Helper.averageWastePerDay;
 import static de.hsnr.wpp2018.base.Helper.isBusinessDay;
 
+/**
+ * AvgNightDay heuristics
+ */
 public class AvgNightDay {
 
     public static void nightDayWaste(TreeMap<LocalDateTime, Consumption> data, Household household) {

@@ -14,8 +14,16 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.TreeMap;
 
+/**
+ * Simple database test
+ */
 public class DatabaseTest {
 
+    /**
+     * Parser test
+     *
+     * @throws ParserException on parse error
+     */
     @Test
     public void parserString() throws ParserException {
         String data = "900\n" +
@@ -27,6 +35,12 @@ public class DatabaseTest {
         Assert.assertEquals(element.getValues().size(), 1);
     }
 
+    /**
+     * Writer tester
+     *
+     * @throws IOException on IO error
+     * @throws ParserException on parse error
+     */
     @Test
     public void writer() throws IOException, ParserException {
         Importer importer = new Importer();
