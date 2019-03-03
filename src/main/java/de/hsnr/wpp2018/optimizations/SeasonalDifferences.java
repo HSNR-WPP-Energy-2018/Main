@@ -1,6 +1,6 @@
 package de.hsnr.wpp2018.optimizations;
 
-import de.hsnr.wpp2018.Helper;
+import de.hsnr.wpp2018.base.Helper;
 import de.hsnr.wpp2018.base.Consumption;
 
 import java.time.LocalDateTime;

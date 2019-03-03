@@ -8,8 +8,8 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.TreeMap;
 
-import static de.hsnr.wpp2018.Helper.averageWastePerDay;
-import static de.hsnr.wpp2018.Helper.isBusinessDay;
+import static de.hsnr.wpp2018.base.Helper.averageWastePerDay;
+import static de.hsnr.wpp2018.base.Helper.isBusinessDay;
 
 public class AvgNightDay {
 

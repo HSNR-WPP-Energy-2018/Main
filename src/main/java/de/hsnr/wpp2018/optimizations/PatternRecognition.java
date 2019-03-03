@@ -1,6 +1,6 @@
 package de.hsnr.wpp2018.optimizations;
 
-import de.hsnr.wpp2018.Helper;
+import de.hsnr.wpp2018.base.Helper;
 import de.hsnr.wpp2018.base.Consumption;
 import de.hsnr.wpp2018.base.TimeInterval;
 import de.hsnr.wpp2018.base.WastingData;
@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static de.hsnr.wpp2018.Helper.isBusinessDay;
+import static de.hsnr.wpp2018.base.Helper.isBusinessDay;
 
 public class PatternRecognition {
 

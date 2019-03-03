@@ -1,6 +1,4 @@
-package de.hsnr.wpp2018;
-
-import de.hsnr.wpp2018.base.Household;
+package de.hsnr.wpp2018.base;
 
 import java.time.DayOfWeek;
 import java.time.Duration;

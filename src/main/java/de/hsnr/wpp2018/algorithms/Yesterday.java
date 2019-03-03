@@ -1,6 +1,6 @@
 package de.hsnr.wpp2018.algorithms;
 
-import de.hsnr.wpp2018.Helper;
+import de.hsnr.wpp2018.base.Helper;
 import de.hsnr.wpp2018.base.Algorithm;
 import de.hsnr.wpp2018.base.Consumption;
 import de.hsnr.wpp2018.base.ParserException;
@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 
-import static de.hsnr.wpp2018.Helper.isBusinessDay;
+import static de.hsnr.wpp2018.base.Helper.isBusinessDay;
 
 public class Yesterday implements Algorithm<Algorithm.Configuration> {
     public static final String NAME = "yesterday";

@@ -190,7 +190,7 @@ public class Averaging implements Algorithm<Averaging.Configuration> {
 
     public static class ConfigurationInterval {
         private int neighbors; // for every direction
-        private boolean neighborsWeighted; // weight neighbors by distance (eg. 0.24 - 0.33 - 0.5 - ELEMENT - 0.5 - 0.33 - 0.25)
+        private boolean neighborsWeighted; // weight neighbors by distance (eg. 0.25 - 0.33 - 0.5 - ELEMENT - 0.5 - 0.33 - 0.25)
         private int interval; // interval in seconds
         private double weight; // weight for this value
 
