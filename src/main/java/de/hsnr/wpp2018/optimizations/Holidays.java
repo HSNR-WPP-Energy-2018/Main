@@ -15,6 +15,10 @@ public class Holidays {
 
     private static ArrayList<LocalDate> holidayArray = new ArrayList<>();
 
+    /**
+     * This method is called from other algorithms in order to verify if the actual date is a holiday
+     */
+
     public static boolean checkHoliday(LocalDate today) {
         for (LocalDate thisDate : holidayArray) {
             if (thisDate.getMonth().equals(today.getMonth()) && thisDate.getDayOfMonth() == today.getDayOfMonth()) {
@@ -24,7 +28,11 @@ public class Holidays {
         return false;
     }
 
-    //TODO: refactor - let others deal with determining which day is a public holiday and just use distinct files
+    /**
+     * Scans input file from the directory (\Main\src\main\resources) and determines the holidays contained in the calendar
+     * Required format: iCal
+     */
+
     public static void scanFile() {
         ClassLoader classloader = Thread.currentThread().getContextClassLoader();
         InputStream inputStream = classloader.getResourceAsStream("feiertage_nordrhein-westfalen_2019.ics");
