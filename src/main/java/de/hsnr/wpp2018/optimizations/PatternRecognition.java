@@ -15,11 +15,25 @@ import java.util.concurrent.atomic.AtomicReference;
 import static de.hsnr.wpp2018.base.Helper.isBusinessDay;
 
 /**
- * Patter recognition heuristics
+ * Pattern recognition heuristics
  */
 public class PatternRecognition {
 
+
     public static double calcFromPattern(Consumption currentData, double avgRangeValue, double meanRange, double rangeTolerance) {
+
+        /**
+         * @param minNightTolerance minimum amount of energy consumed at night -> is applied if the interpolated data is much too small
+         * @param maxNightTolerance maximum amount of energy consumed at night -> is applied if when the interpolated data is much too big
+         * @param avgNight average consumption at night -> not used in this configuration, but it can be applied as an alternative parameter
+         *                 of minNightTolerance and maxNightTolerance in order to look for more realistic results
+         * @param avgDay average consumption at day
+         * @param peak identifies a high consumption of energy
+         * @param meanRangeUpperBound tolerance interval -> maximum tolerance limit which is defined with parameters for realistic energy consumption
+         *                            -> if interpolated data > UpperBound, then it has to be corrected
+         * @param meanRangeLowerBound same function as meanRangeUpperBound for lower values
+         */
+
         WastingData wastingData = new WastingData(meanRange);
 
         double minNightTolerance = meanRange * 4 / 100;
@@ -28,13 +42,19 @@ public class PatternRecognition {
         double avgDay = wastingData.getHeating() + wastingData.getICT() + wastingData.getIllumination();
         double peak = avgDay + wastingData.getProcessCooling() + wastingData.getProcessHeating() + wastingData.getWarmWater();
 
-        //Leichte Abweichungen in % vom Mittelwert betrachten, da kaum ein interpolierter Wert exakt = meanRange sein wird
+        /**
+         * Consider slight deviations in + or - % from the mean value, since hardly any interpolated value will be exact = meanRange.
+         */
+
         double meanRangeUpperBound = meanRange + (rangeTolerance * meanRange);
         double meanRangeLowerBound = meanRange - (rangeTolerance * meanRange);
 
         double result = 0.0;
 
-        //Person scheint in dem Zeitintervall zu schlafen oder nicht da zu sein, weil avg-Wert dieses Intervalls merkbar unter dem Verbrauchsdurchschnitt liegt
+        /**
+         *This time interval seems to indicate the person's sleeping time (or that the person normally is not at home during this time interval),
+         * because avg value of this interval is noticeably below the consumption average.
+         */
         if (avgRangeValue < meanRangeLowerBound) {
             if (currentData.getValue() < minNightTolerance) {
                 result = minNightTolerance;
@@ -43,12 +63,22 @@ public class PatternRecognition {
                 result = maxNightTolerance;
             }
         }
-        //Person scheint in dem Zeitintervall viele Geräte zu benutzen, weil avg-Wert dieses Intervalls merkbar über dem Verbrauchsdurchschnitt liegt
+
+        /**
+         * The person seems to use many devices in the time interval, because avg-value of this interval is noticeably above the consumption average
+         */
         else if (avgRangeValue > meanRangeUpperBound) {
             if (currentData.getValue() < avgDay) {
+                /**
+                 * Interpolated data is smaller than the avg consumption during this interval. In this config, it is considered an interpolation error
+                 * and it is set to the average daily waste.
+                 */
                 result = avgDay;
             } else if (currentData.getValue() > meanRange) {
                 //result = meanRange;
+                /**
+                 * If the interpolated data is very high, there might be a peak, but the consumption has to be set to a more realistic value
+                 */
                 result = peak;
             }
         }
@@ -59,15 +89,25 @@ public class PatternRecognition {
         return result;
     }
 
-    //Stärke der Heuristik: Geht mehr auf individuelles Profil ein + erkennt zusätzlich nun Wochentage <> Wochenenden
+
     public static void checkBehaviour(TreeMap<LocalDateTime, Consumption> data, int range, double rangeTolerance) {
-        int decimals = 6; //Nachkommastellen zum Runden
+
+        /**
+         * @param range Amount of hours in an interval, e.g. 4: [00:00-03:59], [04:00-07:59]...
+         * @param rangeTolerance Determines the deviation from the interval in % at which the interpolated value is regarded as an error and has to be reassigned
+         * @param decimals number of decimal places
+         */
+
+        int decimals = 6;
 
         HashMap<TimeInterval, ArrayList<Double>> intervalWastingsWeekday = new HashMap<>();
         HashMap<TimeInterval, ArrayList<Double>> intervalWastingsWeekend = new HashMap<>();
         HashMap<TimeInterval, Double> avgWastingsWeekday = new HashMap<>();
         HashMap<TimeInterval, Double> avgWastingsWeekend = new HashMap<>();
 
+        /**
+         * create empty intervals
+         */
         for (int i = 0; i < (24 / range); i++) {
             TimeInterval temp = TimeInterval.createRange(LocalTime.of((i * range), 0), LocalTime.of((i * range), 0).plusHours(2).plusMinutes(59));
             TimeInterval temp2 = TimeInterval.createRange(LocalTime.of((i * range), 0), LocalTime.of((i * range), 0).plusHours(2).plusMinutes(59));
@@ -76,6 +116,10 @@ public class PatternRecognition {
             intervalWastingsWeekday.put(temp, tempList);
             intervalWastingsWeekend.put(temp2, tempList);
         }
+
+        /**
+         * time intervals are filled with data -> distinguish between consumption during weekdays and weekends/holidays -> output: two sets of time intervals
+         */
 
         for (LocalDateTime time : data.keySet()) {
             if (!data.get(time).isInterpolated()) {
@@ -97,7 +141,9 @@ public class PatternRecognition {
             }
         }
 
-        //Avg Energy Consumption für das jeweilige TimeInterval finden
+        /**
+         * find avg energy consumption for the respective time interval
+         */
         intervalWastingsWeekday.forEach((key, values) -> {
             double sum = 0.0;
             int counter = 0;
@@ -127,7 +173,11 @@ public class PatternRecognition {
             }
         });
 
-        //Ermittelt durchschnittlichen Tagesverbrauch OHNE Haushalts-Heuristik von den Stadtwerken
+
+        /**
+         * Determines the global average daily consumption (not indidivually for the intervals)
+         * By comparing the average daily consumption to the average consumption of each interval, some behavior patterns concerning the daily routine can be identicated
+         */
         double meanDailyWeekday = 0.0;
         for (double value : avgWastingsWeekday.values()) {
             meanDailyWeekday += value;
@@ -138,6 +188,10 @@ public class PatternRecognition {
             meanDailyWeekend += value;
         }
         double meanRangeWeekend = meanDailyWeekend / (24d / range);
+
+        /**
+         * Run through the interpolated values and call the calcFromPattern method if necessary
+         */
 
         for (LocalDateTime time : data.keySet()) {
             if (data.get(time).isInterpolated()) {
