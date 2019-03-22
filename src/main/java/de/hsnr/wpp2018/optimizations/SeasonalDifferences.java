@@ -9,18 +9,20 @@ import java.util.TreeMap;
 
 /**
  * Seasonal differences heuristics
+ *
+ *This method is only suitable for very incomplete data or for rough consumption estimates.
+ * Preferably, it is switched behind the AvgNightDay-method in order to create a more realistic "standard" consumption
  */
 public class SeasonalDifferences {
-    /*
-    Quelle: Geographie Innsbruck Tirol Atlas (Projekt vom Europäischen Fonds für regionale Entwicklung (EFRE))
-    http://tirolatlas.uibk.ac.at/maps/thema/query.py/text?lang=de;id=1099
-    Winterhalbjahr: Dauer vom 1. November bis zum 30. April des Folgejahres [verbraucht mehr Heizung und Licht]
-    Sommerhalbjahr mit der Dauer vom 1. Mai bis zum 31. Oktober
-
-    Quelle: Strom-Magazin https://www.strom-magazin.de/strommarkt/stromverbrauch-im-jahresverlauf-der-winter-ist-stromsaison_51786.html
-    Die Stromverbrauchskurve im Sommer liegt in Deutschland etwa zehn Prozentpunkte unter der Verbrauchskurve im Winter
-    (Stand ist jedoch 2002)
-    */
+    /**
+     * source: Geographie Innsbruck Tirol Atlas (Projekt vom Europäischen Fonds für regionale Entwicklung (EFRE))
+     * http://tirolatlas.uibk.ac.at/maps/thema/query.py/text?lang=de;id=1099
+     * Winter season: Duration from 1 November to 30 April of the following year [consumes more heating and light].
+     * Summer season with the duration from 1 May to 31 October
+     *
+     * source: Strom-Magazin https://www.strom-magazin.de/strommarkt/stromverbrauch-im-jahresverlauf-der-winter-ist-stromsaison_51786.html
+     * During summer, the electricity consumption curve is about ten percentage points below the consumption curve in winter in summer (however, this statistic is from 2002)
+     */
 
     public static boolean isWinterSeason(Month month) {
         Month[] months = {
@@ -39,7 +41,9 @@ public class SeasonalDifferences {
         return false;
     }
 
-
+    /**
+     * calculates mean consumption in winter and summer
+     */
     public static double percentageFromConsumption(TreeMap<LocalDateTime, Consumption> data) {
         double winter = 0;
         double summer = 0;
@@ -54,30 +58,43 @@ public class SeasonalDifferences {
         double percentageRate = summer / winter * 100;
 
         if (percentageRate >= 100) {
-            System.out.println("Calculated higher consumption values in summer. Maybe check for correctness. Taking 10%-Heuristic instead.");
+            System.out.println("Calculated higher consumption values in summer. Please check for correctness. Taking 10%-Heuristic instead.");
             percentageRate = 10;
         }
         return percentageRate;
     }
 
-    public static void adjustSeasons(TreeMap<LocalDateTime, Consumption> data, boolean heuristic) {
-        double percents;
 
-        if (!heuristic) { //Reale Consumption-Data verwenden
+
+    public static void adjustSeasons(TreeMap<LocalDateTime, Consumption> data, boolean heuristic) {
+        /**
+         * @param heuristic tries to generate an individual percentage for the difference between winter and summer on the basis of the interpolated data
+         * @param decimals decimal places (for rounding)
+         */
+        double percents;
+        int decimals = 6;
+
+        if (!heuristic) {
             percents = percentageFromConsumption(data);
-        } else { //Wähle Heuristik vom EFRE
+        } else {
+            /**
+             * choose heuristic from EFRE
+             */
             percents = 10;
         }
 
-        int decimals = 6; //Nachkommastellen zum Runden
         for (LocalDateTime time : data.keySet()) {
             if (data.get(time).isInterpolated()) {
-                //WinterSaison -> (+10%) Grundumsatz oder (+ermittelter Prozentwert%) Grundumsatz
+                /**
+                 * winter season -> (+10%) basic consumption or (+measured percentage%) basic consumption
+                 */
                 if (isWinterSeason(time.getMonth())) {
                     data.get(time).setValue(data.get(time).getValue() + (percents / 100) * data.get(time).getValue());
                     data.get(time).setValue(Helper.roundDouble(data.get(time).getValue(), decimals));
                 }
-                //SommerSaison -> (-10%) Grundumsatz oder (-ermittelter Prozentwert%) Grundumsatz
+                /**
+                 * summer season -> (-10%) basic consumption or (-measured percentage%) basic consumption
+                 */
                 else {
                     data.get(time).setValue(data.get(time).getValue() - (percents / 100) * data.get(time).getValue());
                     data.get(time).setValue(Helper.roundDouble(data.get(time).getValue(), decimals));
