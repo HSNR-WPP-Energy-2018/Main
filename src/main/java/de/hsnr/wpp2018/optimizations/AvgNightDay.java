@@ -17,21 +17,38 @@ import static de.hsnr.wpp2018.base.Helper.isBusinessDay;
 public class AvgNightDay {
 
     public static void nightDayWaste(TreeMap<LocalDateTime, Consumption> data, Household household) {
+
+        /**
+         * @param meanDaily determines the daily energy consumption on the basis of the amount of people living in the household
+         * @param meanHourly determines the hourly energy consumption
+         */
         double meanDaily = averageWastePerDay(household);
         double meanHourly = meanDaily / 60;
-        WastingData wastingData = new WastingData(meanHourly); //stündlicher Verbrauch
+        WastingData wastingData = new WastingData(meanHourly);
 
-        /*
-         (Quelle: VDE) Es wird geschätzt, dass ein solcher „Standby-Verbrauch“ rund 4 % der Bruttostromnachfrage
-         in Deutschland (Betrachtungszeitraum: 2004 bis 2006) betrug
-        */
-        double minNightTolerance = meanHourly*4/100; //im Bestcase so ziemlich kein Verbrauch -> fängt interpolierte Werte gleich oder unter Null ab
+
+        /**
+         * (Source: VDE) It is estimated that there is a "standby consumption" for around 4 % of gross electricity demand
+         * in Germany (observation period: 2004 to 2006)
+         */
+
+        /**
+         * @param minNightTolerance nearly no consumption at night -> the variable catches interpolated (unrealistic) values equal or below zero
+         * @param maxNightTolerance some devices are switched on
+         * @param avgNight estimated average consumption at night
+         * @param avgMorning estimated average consumption in the morning
+         * @param avgDay estimated average consumption during the day (normally in the evening when the person is at home)
+         */
+        double minNightTolerance = meanHourly*4/100;
         double maxNightTolerance = minNightTolerance + wastingData.getHeating() + (wastingData.getICT() / 2);
         double avgNight = minNightTolerance + wastingData.getHeating();
-        double avgMorning = avgNight + wastingData.getIllumination() + (wastingData.getWarmWater() / 6); //Licht + 10 min Duschen
+        double avgMorning = avgNight + wastingData.getIllumination() + (wastingData.getWarmWater() / 6);
         double avgDay = wastingData.getHeating() + wastingData.getICT() + wastingData.getIllumination();
 
-        LocalTime weekdayNightBegin = LocalTime.of(23, 0); //evtl aufpassen, falls Heuristik auf 23 Uhr gestellt wird -> betrachtet anderen Tag
+        /**
+         * In this configuration, LocalTime weekdayNightBegin the variable considers a different day than weekdayNightEnd
+         */
+        LocalTime weekdayNightBegin = LocalTime.of(23, 0);
         LocalTime weekdayNightEnd = LocalTime.of(7, 0);
         LocalTime weekendNightBegin = LocalTime.of(0, 0);
         LocalTime weekendNightEnd = LocalTime.of(9, 0);
@@ -43,47 +60,74 @@ public class AvgNightDay {
                 boolean isHoliday = Holidays.checkHoliday(today.toLocalDate());
 
                 if (isBusinessDay(today) && !isHoliday) {
-                    //Verbrauch nachts an Werktagen (hier muss ein "oder" hin, weil der Zähler nach 23 wieder auf 00 resettet wird
+                    /**
+                     * Consumption at night on working days
+                     */
                     if (today.toLocalTime().isAfter(weekdayNightBegin) || today.toLocalTime().isBefore(weekdayNightEnd)) {
                         if (data.get(today).getValue() < minNightTolerance || data.get(today).getValue() > maxNightTolerance) {
                             data.get(today).setValue(avgNight);
                         }
                     }
-                    //Verbrauch morgens nach dem Aufstehen [ca. eine halbe Stunde zwischen Aufstehen und Haus-Verlassen]
+                    /**
+                     * Consumption in the morning on working days (30 minutes)
+                     */
                     else if (today.toLocalTime().isAfter(weekdayNightEnd.minusMinutes(15)) && today.toLocalTime().isBefore(weekdayNightEnd.plusMinutes(45))) {
-                        //Morgendl.Verbrauch > als maxNightTolerance
+                        /**
+                         * identifies unrealistically high or low values
+                         */
                         if (data.get(today).getValue() < minNightTolerance || data.get(today).getValue() > avgMorning) {
                             data.get(today).setValue(avgMorning);
                         }
                     }
-                    //Verbrauch an Werktagen, während Person außer Haus ist (sofern sie zur Schule/FH/Arbeit geht)
+                    /**
+                     * Consumption on working days while person is away from home (going to school/university/work)
+                     */
                     else if (today.toLocalTime().isAfter(weekdayNightEnd.plusMinutes(30)) && today.toLocalTime().isBefore(workingTimeEnd)) {
-                        //idR sind nur die gleichen Geräte wie nachts an, ggf. ist zusätzlich Heizung aus
+                        /**
+                         * normally, only the same devices as at night are switched on (heating might be turned off)
+                         */
                         if (data.get(today).getValue() < minNightTolerance || data.get(today).getValue() > maxNightTolerance) {
                             data.get(today).setValue(avgNight);
                         }
                     }
-                    //Verbrauch nach Feierabend, ist grds. schwerer einzuschätzen, da hier meist mehr Peaks entstehen (nachträglich genauere Heuristiken einbauen)
+                    /**
+                     * Consumption after work (it is generally more difficult to estimate the consumption after work
+                     * because more peaks may occur here -> more accurate heuristics might be useful)
+                     */
                     else {
-                        //Hier wird davon ausgegangen, dass die Person nach Feierabend immer da ist
+                        /**
+                         * It is assumed that the person is always at home after work
+                         */
                         if (data.get(today).getValue() < avgDay) {
                             data.get(today).setValue(avgDay);
-                        } else if (data.get(today).getValue() > meanHourly) //Hier könnte ein Peak sein
+                        }
+                        /**
+                         * identifies unrealistically high values (but there also might be a peak)
+                         */
+                        else if (data.get(today).getValue() > meanHourly)
                         {
                             data.get(today).setValue(meanHourly);
                         }
                     }
                 } else {
-                    //Verbrauch nachts an Wochenenden
+                    /**
+                     * consumption at weekends
+                     */
                     if (today.toLocalTime().isAfter(weekendNightBegin) && today.toLocalTime().isBefore(weekendNightEnd)) {
                         if (data.get(today).getValue() < minNightTolerance || data.get(today).getValue() > maxNightTolerance) {
                             data.get(today).setValue(avgNight);
                         }
                     } else {
-                        //Hier wird davon ausgegangen, dass die Person am Wochenende auch mal weg ist (ähnl. Verbrauch wie nachts)
+                        /**
+                         * Here it is assumed that the person is sometimes not at home at the weekend (consumption is similar to consumption at night).
+                         */
                         if (data.get(today).getValue() < minNightTolerance) {
                             data.get(today).setValue(minNightTolerance);
-                        } else if (data.get(today).getValue() > meanHourly) //Hier könnte ein Peak sein
+                        }
+                        /**
+                         * identifies unrealistically high values (but there also might be a peak)
+                         */
+                        else if (data.get(today).getValue() > meanHourly)
                         {
                             data.get(today).setValue(meanHourly);
                         }
