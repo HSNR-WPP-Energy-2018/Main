@@ -15,6 +15,8 @@ public class NumberDescriptor implements Descriptor {
      *
      * @param string string representation
      * @return instantiated descriptor
+     *
+     * @throws ParserException on invalid data
      */
     public static NumberDescriptor fromString(String string) throws ParserException {
         String[] parts = string.split("[-]");

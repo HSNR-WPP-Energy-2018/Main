@@ -12,6 +12,7 @@ The output file has the same structure as the input file but contains a more com
 
 ## Application structure
 
+Gradle is used as a tool for managing dependencies and simplifying the build process.
 The application consists of multiple packages that serve different purposes. Their usage is explained in this following section.
 
 ### Base
@@ -32,14 +33,19 @@ The base package contains general classes that are used throughout the applicati
 
 ### Algorithms
 
-This package contains all algorithms implemented by the application. Their functionality is explained in more detail inside the [project paper](https://github.com/HSNR-WPP-Energy-2018/Paper/releases).
+This package contains all algorithms implemented by the application. Their functionality is explained in more detail inside the project paper.
 All algorithms are subclasses of the [Algorithm](./src/main/java/de/hsnr/wpp2018/base/Algorithm.java) interface that defines a common usage for all algorithms.
 
 The input parameters required for every algorithm are managed by distinct configuration classes. These are subclasses of the [basic configuration class](./src/main/java/de/hsnr/wpp2018/base/Algorithm.java) defined inside the algorithm interface.
 
 ### Optimizations
 
-This package contains the implementations for all heuristics. Their functionality is explained in more detail inside the [project paper](https://github.com/HSNR-WPP-Energy-2018/Paper/releases).
+This package contains the implementations for all heuristics. Their functionality is explained in more detail inside the project paper.
+
+### Database
+
+This package contains all classes related to the database approach. [Database](./src/main/java/de/hsnr/wpp2018/database/Database.java) is the main class for this package. Other classes define the structure for elements inside the database.
+The functionality is described in more detail inside the project paper.
 
 ### Evaluation
 
