@@ -16,31 +16,39 @@ import static de.hsnr.wpp2018.base.Helper.isBusinessDay;
 
 /**
  * Pattern recognition heuristics
+ *
+ *
+ *
+ *
+ * UNDER CONSTRUCTION!!!!!!!!!!!
  */
 public class PatternRecognition {
 
 
+    /**
+     *
+     * @param currentData
+     * @param avgRangeValue average consumption in this time interval
+     * @param meanRange
+     * @param rangeTolerance
+     * @return
+     */
     public static double calcFromPattern(Consumption currentData, double avgRangeValue, double meanRange, double rangeTolerance) {
 
-        /**
-         * @param minNightTolerance minimum amount of energy consumed at night -> is applied if the interpolated data is much too small
-         * @param maxNightTolerance maximum amount of energy consumed at night -> is applied if when the interpolated data is much too big
-         * @param avgNight average consumption at night -> not used in this configuration, but it can be applied as an alternative parameter
-         *                 of minNightTolerance and maxNightTolerance in order to look for more realistic results
-         * @param avgDay average consumption at day
-         * @param peak identifies a high consumption of energy
-         * @param meanRangeUpperBound tolerance interval -> maximum tolerance limit which is defined with parameters for realistic energy consumption
-         *                            -> if interpolated data > UpperBound, then it has to be corrected
-         * @param meanRangeLowerBound same function as meanRangeUpperBound for lower values
-         */
 
         WastingData wastingData = new WastingData(meanRange);
 
         double minNightTolerance = meanRange * 4 / 100;
+        /* minimum amount of energy consumed at night -> is applied if the interpolated data is much too small */
         double maxNightTolerance = minNightTolerance + wastingData.getHeating() + (wastingData.getICT() / 2);
+        /* maximum amount of energy consumed at night -> is applied if when the interpolated data is much too big */
         //double avgNight = minNightTolerance + wastingData.getHeating();
+        /* average consumption at night -> not used in this configuration, but it can be applied as an alternative parameter
+           of minNightTolerance and maxNightTolerance in order to look for more realistic results */
         double avgDay = wastingData.getHeating() + wastingData.getICT() + wastingData.getIllumination();
+        /* average consumption at day */
         double peak = avgDay + wastingData.getProcessCooling() + wastingData.getProcessHeating() + wastingData.getWarmWater();
+        /* identifies a high consumption of energy */
 
         /**
          * Consider slight deviations in + or - % from the mean value, since hardly any interpolated value will be exact = meanRange.
@@ -48,6 +56,8 @@ public class PatternRecognition {
 
         double meanRangeUpperBound = meanRange + (rangeTolerance * meanRange);
         double meanRangeLowerBound = meanRange - (rangeTolerance * meanRange);
+        /* tolerance intervals -> max/min tolerance limits which are defined with parameters for realistic energy consumption
+            -> if interpolated data > UpperBound or < LowerBound, then it has to be corrected */
 
         double result = 0.0;
 

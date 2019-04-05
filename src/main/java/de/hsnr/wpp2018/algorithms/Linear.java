@@ -15,11 +15,27 @@ import java.util.TreeMap;
 public class Linear implements Algorithm<Algorithm.Configuration> {
     public static final String NAME = "linear";
 
+
+    /**
+     *
+     * @param x current date without consumption information
+     * @return candidate value between neighbors x1 and x2
+     */
     public static double interpolateValue(double x, double x1, double x2, double y1, double y2) {
         return y1 + (x - x1) / (x2 - x1) * (y2 - y1);
     }
 
+
+    /**
+     *
+     * @param input source data
+     * @param configuration algorithm configuration
+     * @return
+     */
+
+
     public TreeMap<LocalDateTime, Consumption> interpolate(TreeMap<LocalDateTime, Consumption> input, Configuration configuration) {
+
         TreeMap<LocalDateTime, Consumption> data = new TreeMap<>(input);
 
         int decimals = 5;
@@ -37,6 +53,10 @@ public class Linear implements Algorithm<Algorithm.Configuration> {
             }
         }
 
+        /**
+         * sets an unrealistic value for consumption data -> termination condition, because linear interpolation cannot
+         * calculate an energy consumption which is in the future
+         */
         if (endDate.isAfter(data.lastKey())) {
             data.put(endDate.plusMinutes(15), new Consumption(-100.0, true));
         }
@@ -48,7 +68,7 @@ public class Linear implements Algorithm<Algorithm.Configuration> {
             if ((Helper.getDistance(one, two) / 60) > configuration.getInterval()) {
                 if (data.get(two).getValue() != (-100.0)) {
 
-                    //x1<=x<=x2s
+                    /* x1<=x<=x2 */
                     yLinear = interpolateValue(counter, counter - 1, counter + 1, entry.getValue().getValue(), data.higherEntry(entry.getKey()).getValue().getValue());
                     yLinear = Helper.roundDouble(yLinear, decimals);
 
@@ -68,7 +88,6 @@ public class Linear implements Algorithm<Algorithm.Configuration> {
                 entry = data.higherEntry(entry.getKey());
             }
         }
-        //values.forEach((time, value) -> System.out.println("Time: " + time + ". Value: " + value.getValue() + ". Interpolated? " + value.isInterpolated()));
         return values;
     }
 

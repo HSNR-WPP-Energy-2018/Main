@@ -41,8 +41,12 @@ public class SeasonalDifferences {
         return false;
     }
 
+
     /**
      * calculates mean consumption in winter and summer
+     *
+     * @param data input data
+     * @return energy consumption difference between summer and winter in percent
      */
     public static double percentageFromConsumption(TreeMap<LocalDateTime, Consumption> data) {
         double winter = 0;
@@ -65,12 +69,12 @@ public class SeasonalDifferences {
     }
 
 
-
+    /**
+     *
+     * @param data input data
+     * @param heuristic tries to generate an individual percentage for the difference between winter and summer on the basis of the interpolated data
+     */
     public static void adjustSeasons(TreeMap<LocalDateTime, Consumption> data, boolean heuristic) {
-        /**
-         * @param heuristic tries to generate an individual percentage for the difference between winter and summer on the basis of the interpolated data
-         * @param decimals decimal places (for rounding)
-         */
         double percents;
         int decimals = 6;
 
@@ -100,7 +104,7 @@ public class SeasonalDifferences {
                     data.get(time).setValue(Helper.roundDouble(data.get(time).getValue(), decimals));
                 }
             }
-            //System.out.println("Time: " + time + ". Value: " + data.get(time).getValue() + ". Interpolated? " + data.get(time).isInterpolated());
+
         }
     }
 }

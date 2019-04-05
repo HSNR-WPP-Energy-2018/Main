@@ -16,14 +16,17 @@ import static de.hsnr.wpp2018.base.Helper.isBusinessDay;
  */
 public class AvgNightDay {
 
+    /**
+     *
+     * @param data input data
+     * @param household configuration for amount of people living in the household
+     */
     public static void nightDayWaste(TreeMap<LocalDateTime, Consumption> data, Household household) {
 
-        /**
-         * @param meanDaily determines the daily energy consumption on the basis of the amount of people living in the household
-         * @param meanHourly determines the hourly energy consumption
-         */
         double meanDaily = averageWastePerDay(household);
+        /* determines the daily energy consumption on the basis of the amount of people living in the household */
         double meanHourly = meanDaily / 60;
+        /* determines the hourly energy consumption */
         WastingData wastingData = new WastingData(meanHourly);
 
 
@@ -32,18 +35,16 @@ public class AvgNightDay {
          * in Germany (observation period: 2004 to 2006)
          */
 
-        /**
-         * @param minNightTolerance nearly no consumption at night -> the variable catches interpolated (unrealistic) values equal or below zero
-         * @param maxNightTolerance some devices are switched on
-         * @param avgNight estimated average consumption at night
-         * @param avgMorning estimated average consumption in the morning
-         * @param avgDay estimated average consumption during the day (normally in the evening when the person is at home)
-         */
         double minNightTolerance = meanHourly*4/100;
+        /* nearly no consumption at night -> the variable catches interpolated (unrealistic) values equal or below zero */
         double maxNightTolerance = minNightTolerance + wastingData.getHeating() + (wastingData.getICT() / 2);
+        /* some devices are switched on */
         double avgNight = minNightTolerance + wastingData.getHeating();
+        /* estimated average consumption at night */
         double avgMorning = avgNight + wastingData.getIllumination() + (wastingData.getWarmWater() / 6);
+        /* estimated average consumption in the morning */
         double avgDay = wastingData.getHeating() + wastingData.getICT() + wastingData.getIllumination();
+        /* estimated average consumption during the day (normally in the evening when the person is at home) */
 
         /**
          * In this configuration, LocalTime weekdayNightBegin the variable considers a different day than weekdayNightEnd
@@ -136,6 +137,5 @@ public class AvgNightDay {
             }
         }
 
-        //data.forEach((i) -> System.out.println("Time: " + i.getTime() + ". Value: " + i.getValue() + ". Interpolated? " + i.isInterpolated()));
     }
 }

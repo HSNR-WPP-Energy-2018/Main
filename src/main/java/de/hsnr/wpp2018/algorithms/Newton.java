@@ -17,6 +17,11 @@ import static java.util.stream.Collectors.toMap;
 public class Newton implements Algorithm<Newton.Configuration> {
     public static final String NAME = "newton";
 
+    /**
+     *
+     * @param neighborsAsc neighbor values in ascending order
+     * @return initialized table with divided differences (with zeros)
+     */
     private Map<LocalDateTime, ArrayList<Consumption>> fValuesCreation(Map<LocalDateTime, Consumption> neighborsAsc) {
         Map<LocalDateTime, ArrayList<Consumption>> fValues = new LinkedHashMap<>();
 
@@ -31,11 +36,17 @@ public class Newton implements Algorithm<Newton.Configuration> {
         return fValues;
     }
 
-    private double createNewtonPolynoms(Map<LocalDateTime, ArrayList<Consumption>> values, int x, LocalDateTime newDate, LocalDateTime lastDate) {
+    /**
+     *
+     * @param values fValues
+     * @param x size of fValues matrix -> identifies the index of the current variable x
+     * @return interpolation value
+     */
+    private double createNewtonPolynoms(Map<LocalDateTime, ArrayList<Consumption>> values, int x) {
         int decimals = 6;
         int i = 1;
 
-        //Schritt 1: Polynome berechnen
+        /* Step 1: Calculate polynomials */
         LocalDateTime previousKey = null;
         ArrayList<Consumption> previousVal = null;
         for (Map.Entry<LocalDateTime, ArrayList<Consumption>> entry_i : values.entrySet()) {
@@ -57,13 +68,12 @@ public class Newton implements Algorithm<Newton.Configuration> {
         }
 
 
-        //Schritt 2: Setze Polynome in folgende Formel ein:
-        //P(x) = f[x0]+f[x0,x1](x-x0)+f[x0,x1,x2](x-x0)(x-x1)(x-x2)...
+        /* Step 2: Insert polynomials into the following formula:
+           P(x) = f[x0]+f[x0,x1](x-x0)+f[x0,x1,x2](x-x0)(x-x1)(x-x2)... */
         double p = values.entrySet().iterator().next().getValue().get(0).getValue();
         double a = 1.0;
         int iCounter = 0;
         for (Map.Entry<LocalDateTime, ArrayList<Consumption>> entry : values.entrySet()) {
-            //System.out.println(entry.getValue().get(0));
             if (iCounter > 0 && iCounter < values.size()) {
                 a = a * (x - (iCounter - 1));
                 p = p + entry.getValue().get(iCounter).getValue() * a;
@@ -71,20 +81,16 @@ public class Newton implements Algorithm<Newton.Configuration> {
             iCounter++;
         }
         p = Helper.roundDouble(p, decimals);
-        /*
-        if (p < 0) {
-            p = Heuristics.castNegativesToZero(p);
-        }
-        */
-
-        //System.out.printf("Approximation for next x is " + "%f" + " at " + newDate + "\n", p); //"%f\n"
-        if (p == Double.POSITIVE_INFINITY) {
-            //Heuristik ergänzen
-        }
 
         return p;
     }
 
+    /**
+     *
+     * @param data          data to be interpolated
+     * @param configuration algorithm configuration
+     * @return
+     */
     public TreeMap<LocalDateTime, Consumption> interpolate(TreeMap<LocalDateTime, Consumption> data, Configuration configuration) {
         double p;
         TreeMap<LocalDateTime, Double> resultMap = new TreeMap<>();
@@ -108,7 +114,7 @@ public class Newton implements Algorithm<Newton.Configuration> {
             data.put(endDate.plusMinutes(15), new Consumption(0.0, true));
         }
 
-        while (entry.getKey().isBefore(endDate) && data.higherEntry(entry.getKey()) != null) { //had to use isBefore instead of !isAfter
+        while (entry.getKey().isBefore(endDate) && data.higherEntry(entry.getKey()) != null) { //uses isBefore instead of !isAfter
             neighborsMap.put(entry.getKey(), entry.getValue());
             LocalDateTime one = entry.getKey();
             LocalDateTime two = data.higherKey(entry.getKey());
@@ -119,7 +125,7 @@ public class Newton implements Algorithm<Newton.Configuration> {
                     .sorted(Map.Entry.<LocalDateTime, Consumption>comparingByKey().reversed())
                     .collect(toMap(Map.Entry::getKey,
                             Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
-            //damit die k nächsten Nachbarn nicht später von der falschen Seite abgeschnitten werden
+            /* so that the k nearest neighbours are not later cut off from the wrong side */
 
 
             if ((Helper.getDistance(one, two)/60) > configuration.getInterval()) {
@@ -147,22 +153,21 @@ public class Newton implements Algorithm<Newton.Configuration> {
                 Map<LocalDateTime, ArrayList<Consumption>> fValues = fValuesCreation(neighborsAsc);
 
 
-                int x = fValues.size(); //Das nächste x, das berechnet werden soll
+                int x = fValues.size(); /* next x that has to be calculated */
 
                 List<Map.Entry<LocalDateTime, ArrayList<Consumption>>> entryList = new ArrayList<>(fValues.entrySet());
                 LocalDateTime lastDate = entryList.get(entryList.size() - 1).getKey();
 
                 LocalDateTime newDate = lastDate.plusMinutes(configuration.getInterval());
-                p = createNewtonPolynoms(fValues, x, newDate, lastDate);
+                p = createNewtonPolynoms(fValues, x);
                 values.put(newDate, new Consumption(p, true));
                 resultMap.put(newDate, p);
 
                 /*
-                Falls mehrere x-Werte gesucht werden:
-                fValues nicht komplett neu initialisieren, sondern das vorhandene Differenzschema nur um eine weitere untere Schrägzeile in der Dreiecksmatrix ergänzen
-                -> Spart Rechenzeit
+                If several x-values are needed:
+                Do not completely reinitialize fValues -> only add a new lower oblique line to the existing difference scheme in the triangle matrix.
+                -> Saves computing time
                 */
-
                 if (xAmount >= 2) {
 
                     for (int i = 1; i <= xAmount; i++) {
@@ -175,7 +180,7 @@ public class Newton implements Algorithm<Newton.Configuration> {
                         fValues.put(newDate, temp);
 
                         x = fValues.size();
-                        p = createNewtonPolynoms(fValues, x, newDate, lastDate); //Bei p kommt dann der interpolierte Wert für's neue aktuelle x raus
+                        p = createNewtonPolynoms(fValues, x);
                         resultMap.put(newDate, p);
                         values.put(newDate, new Consumption(p, true));
                         newDate = newDate.plusMinutes(configuration.getInterval());
@@ -194,14 +199,7 @@ public class Newton implements Algorithm<Newton.Configuration> {
                 entry = data.higherEntry(entry.getKey());
             }
         }
-/*
-        resultMap.forEach((key, value) ->
-        {
-            values.add(new Consumption(key, value, true));
-            data.put(key, value);
-        });
-*/
-        //values.forEach((time, value) -> System.out.println("Time: " + time + ". Value: " + value.getValue() + ". Interpolated? " + value.isInterpolated()));
+
         return values;
     }
 

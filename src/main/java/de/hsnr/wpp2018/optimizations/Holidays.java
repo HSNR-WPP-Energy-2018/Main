@@ -19,6 +19,11 @@ public class Holidays {
      * This method is called from other algorithms in order to verify if the actual date is a holiday
      */
 
+    /**
+     *
+     * @param today current date
+     * @return is holiday?
+     */
     public static boolean checkHoliday(LocalDate today) {
         for (LocalDate thisDate : holidayArray) {
             if (thisDate.getMonth().equals(today.getMonth()) && thisDate.getDayOfMonth() == today.getDayOfMonth()) {
