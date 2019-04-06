@@ -7,8 +7,8 @@ Multiple different approaches (algorithms) are implemented as components of this
 ## User workflow
 
 The usage list is provided with a CSV file that contains timestamps and associated usages.
-Additionally configuration parameters have to provided for the desired algorithm.
-The output file has the same structure as the input file but contains a more complete usage list.
+Additionally configuration parameters have to be provided for the desired algorithm.
+The output file has the same structure as the input file, but it contains a complete usage list.
 
 ## Application structure
 
@@ -36,7 +36,7 @@ The base package contains general classes that are used throughout the applicati
 This package contains all algorithms implemented by the application. Their functionality is explained in more detail inside the project paper.
 All algorithms are subclasses of the [Algorithm](./src/main/java/de/hsnr/wpp2018/base/Algorithm.java) interface that defines a common usage for all algorithms.
 
-The input parameters required for every algorithm are managed by distinct configuration classes. These are subclasses of the [basic configuration class](./src/main/java/de/hsnr/wpp2018/base/Algorithm.java) defined inside the algorithm interface.
+The input parameters which are required for every algorithm are managed by distinct configuration classes. These are subclasses of the [basic configuration class](./src/main/java/de/hsnr/wpp2018/base/Algorithm.java) defined inside the algorithm interface.
 
 ### Optimizations
 
@@ -49,8 +49,8 @@ The functionality is described in more detail inside the project paper.
 
 ### Evaluation
 
-The evaluation package is used to determine the result quality after an algorithm and/or heuristic interpolated the data.
-For distinct testing purposes functionality is implemented to generate testing data from a full usage list by removing a user defined share of data points.
+The evaluation package is used to determine the result quality after the missing data has been interpolated by an algorithm and/or heuristic.
+For distinct testing purposes, a functionality that generates testing data from a full usage list is implemented. It removes a user defined share of data points.
 
 - [TestDataGenerator](./src/main/java/de/hsnr/wpp2018/evaluation/TestDataGenerator.java): Generating test data by removing a defined percentage of weeks, days, hours and/or single data points.
 - [Rating](./src/main/java/de/hsnr/wpp2018/evaluation/Rating.java): Rating the interpolation result based on the comparison between a provided truth dataset and the result.
