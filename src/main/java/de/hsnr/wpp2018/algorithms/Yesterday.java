@@ -17,6 +17,12 @@ import static de.hsnr.wpp2018.base.Helper.isBusinessDay;
 public class Yesterday implements Algorithm<Algorithm.Configuration> {
     public static final String NAME = "yesterday";
 
+    /**
+     *
+     * @param data          data to be interpolated
+     * @param configuration algorithm configuration
+     * @return
+     */
     public TreeMap<LocalDateTime, Consumption> interpolate(TreeMap<LocalDateTime, Consumption> data, Configuration configuration) {
         int decimals = 5;
         TreeMap<LocalDateTime, Consumption> values = new TreeMap<>();
@@ -44,6 +50,10 @@ public class Yesterday implements Algorithm<Algorithm.Configuration> {
 
             if ((Helper.getDistance(one, two) / 60) > configuration.getInterval()) {
                 values.put(one, entry.getValue().copyAsOriginal());
+                /**
+                 * if data is missing, the algorithm takes the energy consumption from the previous day at the same time
+                 * (by noticing consumption differences at weekdays/weekends)
+                 */
                 for (LocalDateTime newDate = one.plusMinutes(configuration.getInterval()); newDate.isBefore(two); newDate = newDate.plusMinutes(configuration.getInterval())) {
                     LocalDateTime yesterday = newDate.minusDays(1);
 
@@ -62,7 +72,12 @@ public class Yesterday implements Algorithm<Algorithm.Configuration> {
 
                     if (values.containsKey(yesterday)) {
                         values.put(newDate, new Consumption(values.get(yesterday).getValue(), true));
-                    } else { //taking value from previous entry (which is current time minus 15 minutes) -> we guess that consumption does not change a lot during this time
+                    } else {
+                        /**
+                         *
+                         * taking value from previous entry (which is current time minus 15 minutes) -> we guess that consumption does not change a lot during this time
+                         */
+
                         neighborVal = Helper.roundDouble(neighborVal, decimals);
                         values.put(newDate, new Consumption(neighborVal, true));
                     }
@@ -77,7 +92,6 @@ public class Yesterday implements Algorithm<Algorithm.Configuration> {
             }
             entry = data.higherEntry(entry.getKey());
         }
-        //values.forEach((time, value) -> System.out.println("Time: " + time + ". Value: " + value.getValue() + ". Interpolated? " + value.isInterpolated()));
         return values;
     }
 

@@ -28,7 +28,7 @@ public class Linear implements Algorithm<Algorithm.Configuration> {
 
     /**
      *
-     * @param input source data
+     * @param input data to be interpolated
      * @param configuration algorithm configuration
      * @return
      */

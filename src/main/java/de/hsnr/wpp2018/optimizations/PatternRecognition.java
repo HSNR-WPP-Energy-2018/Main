@@ -16,21 +16,16 @@ import static de.hsnr.wpp2018.base.Helper.isBusinessDay;
 
 /**
  * Pattern recognition heuristics
- *
- *
- *
- *
- * UNDER CONSTRUCTION!!!!!!!!!!!
  */
 public class PatternRecognition {
 
-
     /**
      *
-     * @param currentData
+     * @param currentData current time
      * @param avgRangeValue average consumption in this time interval
-     * @param meanRange
-     * @param rangeTolerance
+     * @param meanRange global average consumption for every "weekday" or "weekend/holiday" interval
+     * @param rangeTolerance manually configurable deviation in % from the mean value of the current interval
+     *                       -> values within this range are accepted; values outside this range are replaced by using the heuristic
      * @return
      */
     public static double calcFromPattern(Consumption currentData, double avgRangeValue, double meanRange, double rangeTolerance) {
@@ -85,7 +80,6 @@ public class PatternRecognition {
                  */
                 result = avgDay;
             } else if (currentData.getValue() > meanRange) {
-                //result = meanRange;
                 /**
                  * If the interpolated data is very high, there might be a peak, but the consumption has to be set to a more realistic value
                  */
@@ -99,16 +93,16 @@ public class PatternRecognition {
         return result;
     }
 
+    /**
+     *
+     * @param data source data
+     * @param range Amount of hours in an interval, e.g. 4: [00:00-03:59], [04:00-07:59]...
+     * @param rangeTolerance Determines the deviation from the interval in % at which the interpolated value is regarded as an error and has to be reassigned
+     */
 
     public static void checkBehaviour(TreeMap<LocalDateTime, Consumption> data, int range, double rangeTolerance) {
 
-        /**
-         * @param range Amount of hours in an interval, e.g. 4: [00:00-03:59], [04:00-07:59]...
-         * @param rangeTolerance Determines the deviation from the interval in % at which the interpolated value is regarded as an error and has to be reassigned
-         * @param decimals number of decimal places
-         */
-
-        int decimals = 6;
+        int decimals = 6; /* number of decimal places */
 
         HashMap<TimeInterval, ArrayList<Double>> intervalWastingsWeekday = new HashMap<>();
         HashMap<TimeInterval, ArrayList<Double>> intervalWastingsWeekend = new HashMap<>();
@@ -200,7 +194,7 @@ public class PatternRecognition {
         double meanRangeWeekend = meanDailyWeekend / (24d / range);
 
         /**
-         * Run through the interpolated values and call the calcFromPattern method if necessary
+         * Iterate through the interpolated values and call the calcFromPattern method if necessary
          */
 
         for (LocalDateTime time : data.keySet()) {
@@ -226,6 +220,5 @@ public class PatternRecognition {
                 data.get(time).setValue(Helper.roundDouble(data.get(time).getValue(), decimals));
             }
         }
-        //data.forEach((time, value) -> System.out.println("Time: " + time + ". Value: " + value.getValue() + ". Interpolated? " + value.isInterpolated()));
     }
 }
