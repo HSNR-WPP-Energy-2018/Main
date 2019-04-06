@@ -46,7 +46,9 @@ public class Newton implements Algorithm<Newton.Configuration> {
         int decimals = 6;
         int i = 1;
 
-        /* Step 1: Calculate polynomials */
+        /**
+         *  Step 1: Calculate polynomials
+         */
         LocalDateTime previousKey = null;
         ArrayList<Consumption> previousVal = null;
         for (Map.Entry<LocalDateTime, ArrayList<Consumption>> entry_i : values.entrySet()) {
@@ -68,8 +70,10 @@ public class Newton implements Algorithm<Newton.Configuration> {
         }
 
 
-        /* Step 2: Insert polynomials into the following formula:
-           P(x) = f[x0]+f[x0,x1](x-x0)+f[x0,x1,x2](x-x0)(x-x1)(x-x2)... */
+        /**
+         *  Step 2: Insert polynomials into the following formula:
+           P(x) = f[x0]+f[x0,x1](x-x0)+f[x0,x1,x2](x-x0)(x-x1)(x-x2)...
+         */
         double p = values.entrySet().iterator().next().getValue().get(0).getValue();
         double a = 1.0;
         int iCounter = 0;
@@ -125,7 +129,9 @@ public class Newton implements Algorithm<Newton.Configuration> {
                     .sorted(Map.Entry.<LocalDateTime, Consumption>comparingByKey().reversed())
                     .collect(toMap(Map.Entry::getKey,
                             Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
-            /* so that the k nearest neighbours are not later cut off from the wrong side */
+            /**
+             *  so that the k nearest neighbours are not later cut off from the wrong side
+             */
 
 
             if ((Helper.getDistance(one, two)/60) > configuration.getInterval()) {
@@ -163,7 +169,8 @@ public class Newton implements Algorithm<Newton.Configuration> {
                 values.put(newDate, new Consumption(p, true));
                 resultMap.put(newDate, p);
 
-                /*
+                /**
+                 *
                 If several x-values are needed:
                 Do not completely reinitialize fValues -> only add a new lower oblique line to the existing difference scheme in the triangle matrix.
                 -> Saves computing time

@@ -19,19 +19,28 @@ import static java.util.stream.Collectors.toMap;
 public class Splines implements Algorithm<Splines.Configuration> {
     public static final String NAME = "splines";
 
+    /**
+     *
+     * @param xArray supporting points (x) for the calculation of the polynomial function
+     * @param yArray supporting points (y)
+     * @return interpolated value
+     */
     public double equationSys(ArrayList<Double> xArray, ArrayList<Double> yArray) {
         double[] x = xArray.stream().mapToDouble(Double::doubleValue).toArray();
         double[] y = yArray.stream().mapToDouble(Double::doubleValue).toArray();
 
         LinearInterpolator interpolation = new LinearInterpolator();
+        /* Some charakteristics of the function, e.g. the polynomials, can be verified by printing polyFunction.getPolynomials() */
         PolynomialSplineFunction polyFunction = interpolation.interpolate(x, y);
 
-        /* Hier kommen die polynomiellen Funktionen raus, die in Frage kommen
-        / Arrays.stream(polyFunction.getPolynomials()).forEach(System.out::println);
-        */
         return polyFunction.value(x.length);
     }
 
+    /**
+     *
+     * @param neighborsDesc list of the neighbor values in descending order
+     * @return modified list of neighbor values (4 neighbors in ascending order)
+     */
     public TreeMap<LocalDateTime, Double> removingValues(Map<LocalDateTime, Double> neighborsDesc) {
         TreeMap<LocalDateTime, Double> neighborsAsc = new TreeMap<>();
         int local = 0;
@@ -43,6 +52,12 @@ public class Splines implements Algorithm<Splines.Configuration> {
         return neighborsAsc;
     }
 
+    /**
+     *
+     * @param data          data to be interpolated
+     * @param configuration algorithm configuration
+     * @return
+     */
     public TreeMap<LocalDateTime, Consumption> interpolate(TreeMap<LocalDateTime, Consumption> data, Configuration configuration) {
         int decimals = 5;
         TreeMap<LocalDateTime, Consumption> values = new TreeMap<>();
@@ -74,6 +89,10 @@ public class Splines implements Algorithm<Splines.Configuration> {
                     .collect(toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
 
             if ((Helper.getDistance(one, two) / 60) > configuration.getInterval()) {
+                /**
+                 * This spline algorithm also can only estimate the energy consumption between existing values
+                 * Termination if date is "in the future"
+                 */
                 if (data.get(two).getValue() != (-100.0)) {
                     synchronized (neighborsDesc) {
                         int counter = 0;
@@ -106,9 +125,7 @@ public class Splines implements Algorithm<Splines.Configuration> {
                     double result = equationSys(xArray, yArray);
                     result = Helper.roundDouble(result, decimals);
 
-                    //for (LocalDateTime newDate = one.plusMinutes(15); newDate.isBefore(two); newDate = newDate.plusMinutes(15)) {
-                    //    values.put(newDate, new Consumption(result, true));
-                    //}
+
                     if (!values.containsKey(one)) {
                         values.put(one, entry.getValue().copyAsOriginal());
                     }
@@ -131,7 +148,6 @@ public class Splines implements Algorithm<Splines.Configuration> {
                 entry = data.higherEntry(entry.getKey());
             }
         }
-        //values.forEach((time, value) -> System.out.println("Time: " + time + ". Value: " + value.getValue() + ". Interpolated? " + value.isInterpolated()));
         return values;
     }
 
