@@ -25,7 +25,7 @@ public class PatternRecognition {
      * @param avgRangeValue average consumption in this time interval
      * @param meanRange global average consumption for every "weekday" or "weekend/holiday" interval
      * @param rangeTolerance manually configurable deviation in % from the mean value of the current interval
-     *                       -> values within this range are accepted; values outside this range are replaced by using the heuristic
+     *                       - values within this range are accepted; values outside this range are replaced by using the heuristic
      * @return
      */
     public static double calcFromPattern(Consumption currentData, double avgRangeValue, double meanRange, double rangeTolerance) {
